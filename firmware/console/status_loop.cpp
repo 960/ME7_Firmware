@@ -55,7 +55,9 @@
 #include "os_util.h"
 #include "svnversion.h"
 #include "engine.h"
+#if EFI_LCD
 #include "lcd_controller.h"
+#endif
 #include "settings.h"
 #include "can_hw.h"
 #include "periodic_thread_controller.h"
@@ -67,7 +69,9 @@ extern bool main_loop_started;
 #if EFI_PROD_CODE
 // todo: move this logic to algo folder!
 #include "rtc_helper.h"
+#if EFI_LCD
 #include "lcd_HD44780.h"
+#endif
 #include "rusefi.h"
 #include "pin_repository.h"
 #include "flash_main.h"

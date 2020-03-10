@@ -67,7 +67,7 @@ typedef enum {
   CUSTOM_UNEXPECTED_TDC_ANGLE = 6546, // assertAngleRange(tdcPosition, "tdcPos#a1" (Trigger_structure)
   CUSTOM_INVALID_GLOBAL_OFFSET = 6547, // assertAngleRange(CONFIG_PARAM(globalTriggerAngleOffset),
                                        // "tdcPos#a2"(Trigger_structure)
-  CUSTOM_UNEXPECTED_MAP_VALUE = 6548, // No MAP values (map_averaging)
+
   CUSTOM_NAN_ENGINE_LOAD = 6000, // NaN engine load (fuel_math) and NaN engine load (advance_map)
   CUSTOM_WRONG_ALGORITHM = 6001, //"wrong algorithm for MAP-based timing" (advance_map)
   CUSTOM_NAN_ENGINE_LOAD_2 = 6002, // NaN engine load (fuel_map)
@@ -237,6 +237,7 @@ CUSTOM_ERR_TRIGGER_WAVEFORM_TOO_LONG = 6137,
   CUSTOM_ANGLE_NAN = 6633,
   CUSTOM_ERR_6544 = 6544, // angle, "findAngle#a33" (engine_math)
   CUSTOM_ERR_6545 = 6545, // angle, "findAngle#a1" (Trigger structure)
+  CUSTOM_UNEXPECTED_MAP_VALUE = 6548, // No MAP values (map_averaging)
   CUSTOM_ERR_6549 = 6549, // Duplicate, no map angles (map averaging), advance,
                           // "findAngle#a5 (Spark logic)
   CUSTOM_ERR_6550 = 6550, //"findAngle#a6" (park logic)

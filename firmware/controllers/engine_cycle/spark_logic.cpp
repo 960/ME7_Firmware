@@ -13,6 +13,8 @@
 #include "event_queue.h"
 #include "perf_trace.h"
 
+#if EFI_ENGINE_CONTROL
+
 #if EFI_TUNER_STUDIO
 #include "tunerstudio_configuration.h"
 #endif /* EFI_TUNER_STUDIO */
@@ -139,14 +141,19 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 	float ratio = NT2US(actualDwellDurationNt) / 1000.0 / event->sparkDwell;
 
 	// todo: smarted solution for index to field mapping
-	if (event->cylinderIndex == 0) {
+	switch (event->cylinderIndex) {
+	case 0:
 		tsOutputChannels.debugFloatField1 = ratio;
-	} else if (event->cylinderIndex == 1) {
+		break;
+	case 1:
 		tsOutputChannels.debugFloatField2 = ratio;
-	} else if (event->cylinderIndex == 2) {
+		break;
+	case 2:
 		tsOutputChannels.debugFloatField3 = ratio;
-	} else if (event->cylinderIndex == 3) {
+		break;
+	case 3:
 		tsOutputChannels.debugFloatField4 = ratio;
+		break;
 	}
 #endif
 
@@ -523,3 +530,5 @@ percent_t getCoilDutyCycle(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	floatms_t engineCycleDuration = getCrankshaftRevolutionTimeMs(rpm) * (engine->getOperationMode(PASS_ENGINE_PARAMETER_SIGNATURE) == TWO_STROKE ? 1 : 2);
 	return 100 * totalPerCycle / engineCycleDuration;
 }
+
+#endif // EFI_ENGINE_CONTROL

@@ -25,8 +25,6 @@
 #include "os_access.h"
 #include "trigger_central.h"
 #include "engine_controller.h"
-#include "fsio_core.h"
-#include "fsio_impl.h"
 #include "idle_thread.h"
 #include "advance_map.h"
 #include "rpm_calculator.h"
@@ -47,7 +45,6 @@
 #include "alternator_controller.h"
 #include "fuel_math.h"
 #include "settings.h"
-#include "aux_pid.h"
 #include "spark_logic.h"
 #if EFI_AUX_VALVES
 #include "aux_valves.h"
@@ -64,7 +61,7 @@
 #if EFI_SENSOR_CHART
 #include "sensor_chart.h"
 #endif
-
+#include"auxiliaries.h"
 #if EFI_TUNER_STUDIO
 #include "tunerstudio.h"
 #endif
@@ -95,7 +92,9 @@
 
 #include "pwm_tester.h"
 #include "pwm_generator.h"
+#if EFI_LCD
 #include "lcd_controller.h"
+#endif
 #include "pin_repository.h"
 #include "tachometer.h"
 #endif /* EFI_PROD_CODE */
@@ -806,6 +805,7 @@ void initEngineContoller(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX) 
 #if EFI_ALTERNATOR_CONTROL
 	initAlternatorCtrl(sharedLogger PASS_ENGINE_PARAMETER_SUFFIX);
 #endif
+
 
 #if EFI_BOOST_CONTROL
 	initBoostCtrl(sharedLogger PASS_ENGINE_PARAMETER_SUFFIX);

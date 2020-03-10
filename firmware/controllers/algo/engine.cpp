@@ -23,8 +23,8 @@
 #include "settings.h"
 #include "aux_valves.h"
 #include "map_averaging.h"
-#include "fsio_impl.h"
 #include "perf_trace.h"
+#include "auxiliaries.h"
 
 #if EFI_PROD_CODE
 #include "injector_central.h"
@@ -137,10 +137,12 @@ void Engine::periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 #if EFI_FSIO
 	runFsio(PASS_ENGINE_PARAMETER_SIGNATURE);
-#else
+//#else
 	runHardcodedFsio(PASS_ENGINE_PARAMETER_SIGNATURE);
 #endif /* EFI_FSIO */
-
+#if EFI_AUXILIARIES
+	initAuxiliaries(PASS_ENGINE_PARAMETER_SUFFIX);
+#endif
 	cylinderCleanupControl(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 #if (BOARD_TLE8888_COUNT > 0)

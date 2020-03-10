@@ -206,8 +206,10 @@ if (engineConfiguration->multisparkEnable) {
 		// Compute multispark configuration
 		int maxSparkCount = engineConfiguration->multisparkMaxExtraSparkCount;
 		int maxMultisparkRpm = engineConfiguration->multisparkMaxRpm;
+
 		angle_t fireSparksForAngle = engineConfiguration->multisparkMaxSparkingAngle;
 		floatus_t additionalSparksUs = 0;
+
 		int floored = 0;
 		float sparksFitInTime = 0;
 		if (rpm <= maxMultisparkRpm && maxSparkCount > 0) {

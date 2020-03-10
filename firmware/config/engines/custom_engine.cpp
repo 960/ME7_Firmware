@@ -14,7 +14,7 @@
 #include "custom_engine.h"
 #include "allsensors.h"
 #include "engine_math.h"
-#include "fsio_impl.h"
+
 
 #if EFI_ELECTRONIC_THROTTLE_BODY
 #include "electronic_throttle.h"

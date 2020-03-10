@@ -42,17 +42,21 @@
 #include "hip9011.h"
 #include "histogram.h"
 #include "mmc_card.h"
-#include "neo6m.h"
-#include "lcd_HD44780.h"
+
+
 #include "settings.h"
 #if EFI_JOYSTICK
+#include "aux_pid.h"
+#include "lcd_HD44780.h"
+#include "neo6m.h"
 #include "joystick.h"
 #endif
+#include "auxiliaries.h"
 #include "cdm_ion_sense.h"
 #include "trigger_central.h"
 #include "svnversion.h"
 #include "engine_configuration.h"
-#include "aux_pid.h"
+
 #include "perf_trace.h"
 #include "boost_control.h"
 #include "vvt_control.h"
@@ -346,6 +350,10 @@ void applyNewHardwareSettings(void) {
 #if EFI_HD44780_LCD
 	stopHD44780_pins();
 #endif /* #if EFI_HD44780_LCD */
+
+#if EFI_AUXILIARIES
+	stopAuxPins();
+#endif
 
 #if EFI_BOOST_CONTROL
 	stopBoostPin();

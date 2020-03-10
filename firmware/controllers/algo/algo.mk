@@ -1,4 +1,4 @@
-CONTROLLERS_ALGO_SRC = $(PROJECT_DIR)/controllers/algo/nmea.c
+
 
 CONTROLLERS_ALGO_SRC_CPP = $(PROJECT_DIR)/controllers/algo/advance_map.cpp \
 	$(PROJECT_DIR)/controllers/algo/malfunction_central.cpp \
@@ -8,5 +8,4 @@ CONTROLLERS_ALGO_SRC_CPP = $(PROJECT_DIR)/controllers/algo/advance_map.cpp \
 	$(PROJECT_DIR)/controllers/algo/engine_configuration.cpp \
 	$(PROJECT_DIR)/controllers/algo/engine.cpp \
 	$(PROJECT_DIR)/controllers/algo/engine2.cpp \
-	$(PROJECT_DIR)/controllers/gauges/lcd_menu_tree.cpp \
 	$(PROJECT_DIR)/controllers/algo/event_registry.cpp \

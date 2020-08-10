@@ -24,7 +24,7 @@
 	int counter = 0;                                                        \
 	LL_FOREACH2(head, current, field) {                                     \
 		if (++counter > QUEUE_LENGTH_LIMIT) {                               \
-			firmwareError(CUSTOM_ERR_LOOPED_QUEUE, "Looped queue?");        \
+			warning(CUSTOM_ERR_LOOPED_QUEUE, "Looped queue?");        \
 			return false;                                                   \
 		}                                                                   \
 		if (current == element) {                                           \
@@ -45,7 +45,10 @@
  */
 class EventQueue {
 public:
-	EventQueue();
+	// See comment in EventQueue::executeAll for info about lateDelay - it sets the 
+	// time gap between events for which we will wait instead of rescheduling the next
+	// event in a group of events near one another.
+	EventQueue(efitime_t lateDelay = 0) : lateDelay(lateDelay) {}
 
 	/**
 	 * O(size) - linear search in sorted linked list
@@ -58,15 +61,13 @@ public:
 	void clear(void);
 	int size(void) const;
 	scheduling_s *getElementAtIndexForUnitText(int index);
-	void setLateDelay(int value);
 	scheduling_s * getHead();
 	void assertListIsSorted() const;
 private:
-	bool checkIfPending(scheduling_s *scheduling);
 	/**
 	 * this list is sorted
 	 */
-	scheduling_s *head;
-	efitime_t lateDelay;
+	scheduling_s *head = nullptr;
+	const efitime_t lateDelay;
 };
 

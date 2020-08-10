@@ -7,12 +7,12 @@
 
 #include "global.h"
 #include "mpu_util.h"
-#include "flash.h"
+#include "flash_int.h"
 #include "engine.h"
 #include "pin_repository.h"
 #include "stm32f7xx_hal_flash.h"
 #include "os_util.h"
-
+#include "fram.h"
 EXTERN_ENGINE;
 
 extern "C" {
@@ -236,11 +236,11 @@ static int getSpiAf(SPIDriver *driver) {
 brain_pin_e getMisoPin(spi_device_e device) {
 	switch(device) {
 	case SPI_DEVICE_1:
-		return CONFIG(spi1misoPin);
+		return engine->pinSpi1Miso;
 	case SPI_DEVICE_2:
-		return CONFIG(spi2misoPin);
+		return engine->pinSpi2Miso;
 	case SPI_DEVICE_3:
-		return CONFIG(spi3misoPin);
+		return engine->pinSpi3Miso;
 	default:
 		break;
 	}
@@ -250,11 +250,11 @@ brain_pin_e getMisoPin(spi_device_e device) {
 brain_pin_e getMosiPin(spi_device_e device) {
 	switch(device) {
 	case SPI_DEVICE_1:
-		return CONFIG(spi1mosiPin);
+		return engine->pinSpi1Mosi;
 	case SPI_DEVICE_2:
-		return CONFIG(spi2mosiPin);
+		return engine->pinSpi2Mosi;
 	case SPI_DEVICE_3:
-		return CONFIG(spi3mosiPin);
+		return engine->pinSpi3Mosi;
 	default:
 		break;
 	}
@@ -264,11 +264,11 @@ brain_pin_e getMosiPin(spi_device_e device) {
 brain_pin_e getSckPin(spi_device_e device) {
 	switch(device) {
 	case SPI_DEVICE_1:
-		return CONFIG(spi1sckPin);
+		return engine->pinSpi1Sck;
 	case SPI_DEVICE_2:
-		return CONFIG(spi2sckPin);
+		return engine->pinSpi2Sck;
 	case SPI_DEVICE_3:
-		return CONFIG(spi3sckPin);
+		return engine->pinSpi3Sck;
 	default:
 		break;
 	}
@@ -285,10 +285,7 @@ void turnOnSpi(spi_device_e device) {
 //	scheduleMsg(&logging, "Turning on SPI1 pins");
 		initSpiModule(&SPID1, getSckPin(device),
 				getMisoPin(device),
-				getMosiPin(device),
-				engineConfiguration->spi1SckMode,
-				engineConfiguration->spi1MosiMode,
-				engineConfiguration->spi1MisoMode);
+				getMosiPin(device));
 #endif /* STM32_SPI_USE_SPI1 */
 	}
 	if (device == SPI_DEVICE_2) {
@@ -296,10 +293,7 @@ void turnOnSpi(spi_device_e device) {
 //	scheduleMsg(&logging, "Turning on SPI2 pins");
 		initSpiModule(&SPID2, getSckPin(device),
 				getMisoPin(device),
-				getMosiPin(device),
-				engineConfiguration->spi2SckMode,
-				engineConfiguration->spi2MosiMode,
-				engineConfiguration->spi2MisoMode);
+				getMosiPin(device));
 #endif /* STM32_SPI_USE_SPI2 */
 	}
 	if (device == SPI_DEVICE_3) {
@@ -307,10 +301,7 @@ void turnOnSpi(spi_device_e device) {
 //	scheduleMsg(&logging, "Turning on SPI3 pins");
 		initSpiModule(&SPID3, getSckPin(device),
 				getMisoPin(device),
-				getMosiPin(device),
-				engineConfiguration->spi3SckMode,
-				engineConfiguration->spi3MosiMode,
-				engineConfiguration->spi3MisoMode);
+				getMosiPin(device));
 #endif /* STM32_SPI_USE_SPI3 */
 	}
 	if (device == SPI_DEVICE_4) {
@@ -323,15 +314,11 @@ void turnOnSpi(spi_device_e device) {
 }
 
 void initSpiModule(SPIDriver *driver, brain_pin_e sck, brain_pin_e miso,
-		brain_pin_e mosi,
-		int sckMode,
-		int mosiMode,
-		int misoMode) {
+		brain_pin_e mosi) {
 
-	efiSetPadMode("SPI clock", sck,	PAL_MODE_ALTERNATE(getSpiAf(driver)) + sckMode);
-
-	efiSetPadMode("SPI master out", mosi, PAL_MODE_ALTERNATE(getSpiAf(driver)) + mosiMode);
-	efiSetPadMode("SPI master in ", miso, PAL_MODE_ALTERNATE(getSpiAf(driver)) + misoMode);
+	efiSetPadMode("SPI clock", sck,	PAL_MODE_ALTERNATE(getSpiAf(driver)));
+	efiSetPadMode("SPI master out", mosi, PAL_MODE_ALTERNATE(getSpiAf(driver)));
+	efiSetPadMode("SPI master in ", miso, PAL_MODE_ALTERNATE(getSpiAf(driver)));
 }
 
 void initSpiCs(SPIConfig *spiConfig, brain_pin_e csPin) {

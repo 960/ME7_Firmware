@@ -8,7 +8,15 @@
 #pragma once
 
 #include "engine.h"
-#include "pwm_generator_logic.h"
+
+class Logging;
+class PwmConfig;
+class MultiChannelStateSequence;
+
+void initTriggerEmulator( DECLARE_ENGINE_PARAMETER_SUFFIX);
+void setTriggerEmulatorRPM(int value DECLARE_ENGINE_PARAMETER_SUFFIX);
+void onConfigurationChangeRpmEmulatorCallback(engine_configuration_s *previousConfiguration);
+
 
 class TriggerEmulatorHelper {
 public:
@@ -16,7 +24,7 @@ public:
 	void handleEmulatorCallback(PwmConfig *state, int stateIndex);
 };
 
-void initTriggerEmulatorLogic(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX);
+void initTriggerEmulatorLogic( DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 int getPreviousIndex(const int currentIndex, const int size);
 bool needEvent(const int currentIndex, const int size, MultiChannelStateSequence *multiChannelStateSequence, int channelIndex);

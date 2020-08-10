@@ -2,7 +2,7 @@
  * auxiliaries.h
  *
  *  Created on: 10. mar. 2020
- *      Author: Ola
+ *    (C) All rights reserved by RUUD BILELEKTRO, NORWAY
  */
 
 #pragma once

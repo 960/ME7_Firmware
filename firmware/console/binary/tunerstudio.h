@@ -5,14 +5,12 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef TUNERSTUDIO_H_
-#define TUNERSTUDIO_H_
-
+#pragma once
 #include "global.h"
 #include "tunerstudio_io.h"
 
 #if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
+#include "tunerstudio_outputs.h"
 
 typedef struct {
 	int queryCommandCounter;
@@ -31,6 +29,8 @@ typedef struct {
 
 extern tunerstudio_counters_s tsState;
 
+#define CONNECTIVITY_THREAD_STACK (2 * UTILITY_THREAD_STACK_SIZE)
+
 /**
  * handle non CRC wrapped command
  */
@@ -38,24 +38,11 @@ bool handlePlainCommand(ts_channel_s *tsChannel, uint8_t command);
 int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomingPacketSize);
 
 /**
- * rusEfi own test command
- */
-void handleTestCommand(ts_channel_s *tsChannel);
-/**
  * this command is part of protocol initialization
  */
 void handleQueryCommand(ts_channel_s *tsChannel, ts_response_format_e mode);
-/**
- * Gauges refresh
- */
-void handleOutputChannelsCommand(ts_channel_s *tsChannel, ts_response_format_e mode);
 
 char *getWorkingPageAddr();
-void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t page, uint16_t offset, uint8_t value);
-void handleWriteChunkCommand(ts_channel_s *tsChannel, ts_response_format_e mode, short offset, short count, void *content);
-void handlePageSelectCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t pageId);
-void handlePageReadCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t pageId, uint16_t offset, uint16_t count);
-void handleBurnCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t page);
 
 void tunerStudioDebug(const char *msg);
 void tunerStudioError(const char *msg);
@@ -106,5 +93,3 @@ typedef pre_packed struct
 			} TunerStudioWriteValueRequest;
 
 #endif /* EFI_TUNER_STUDIO */
-
-#endif /* TUNERSTUDIO_H_ */

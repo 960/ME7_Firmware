@@ -29,13 +29,11 @@
 #if EFI_SIGNAL_EXECUTOR_ONE_TIMER
 
 #include "microsecond_timer.h"
-#include "tunerstudio_configuration.h"
+#include "tunerstudio_outputs.h"
 #include "os_util.h"
 
 #include "engine.h"
 EXTERN_ENGINE;
-
-extern schfunc_t globalTimerCallback;
 
 /**
  * these fields are global in order to facilitate debugging
@@ -45,25 +43,16 @@ static efitime_t nextEventTimeNt = 0;
 uint32_t hwSetTimerDuration;
 uint32_t lastExecutionCount;
 
-static void executorCallback(void *arg) {
-	(void)arg;
+void globalTimerCallback() {
 	efiAssertVoid(CUSTOM_ERR_6624, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "lowstck#2y");
-
-//	callbackTime = getTimeNowNt();
-//	if ((callbackTime > nextEventTimeNt) && (callbackTime - nextEventTimeNt > US2NT(5000))) {
-//		timerIsLate++;
-//	}
 
 	___engine.executor.onTimerCallback();
 }
 
-SingleTimerExecutor::SingleTimerExecutor() {
-	reentrantFlag = false;
-	doExecuteCounter = scheduleCounter = timerCallbackCounter = 0;
-	/**
-	 * todo: a good comment
-	 */
-	queue.setLateDelay(US2NT(100));
+SingleTimerExecutor::SingleTimerExecutor()
+	// 10us is roughly double the cost of the interrupt + overhead of a single timer event
+	: queue(US2NT(10))
+{
 }
 
 void SingleTimerExecutor::scheduleForLater(scheduling_s *scheduling, int delayUs, action_s action) {
@@ -92,7 +81,7 @@ void SingleTimerExecutor::scheduleByTimestampNt(scheduling_s* scheduling, efitim
 
 	if (deltaTimeUs >= TOO_FAR_INTO_FUTURE_US) {
 		// we are trying to set callback for too far into the future. This does not look right at all
-		firmwareError(CUSTOM_ERR_TASK_TIMER_OVERFLOW, "scheduleByTimestampNt() too far: %d", deltaTimeUs);
+		warning(CUSTOM_ERR_TASK_TIMER_OVERFLOW, "scheduleByTimestampNt() too far: %d", deltaTimeUs);
 		return;
 	}
 #endif
@@ -105,7 +94,7 @@ void SingleTimerExecutor::scheduleByTimestampNt(scheduling_s* scheduling, efitim
 	}
 	bool needToResetTimer = queue.insertTask(scheduling, nt, action);
 	if (!reentrantFlag) {
-		doExecute();
+		executeAllPendingActions();
 		if (needToResetTimer) {
 			scheduleTimerCallback();
 		}
@@ -117,7 +106,7 @@ void SingleTimerExecutor::scheduleByTimestampNt(scheduling_s* scheduling, efitim
 void SingleTimerExecutor::onTimerCallback() {
 	timerCallbackCounter++;
 	bool alreadyLocked = lockAnyContext();
-	doExecute();
+	executeAllPendingActions();
 	scheduleTimerCallback();
 	if (!alreadyLocked)
 		unlockAnyContext();
@@ -126,10 +115,10 @@ void SingleTimerExecutor::onTimerCallback() {
 /*
  * this private method is executed under lock
  */
-void SingleTimerExecutor::doExecute() {
+void SingleTimerExecutor::executeAllPendingActions() {
 	ScopePerf perf(PE::SingleTimerExecutorDoExecute);
 
-	doExecuteCounter++;
+	executeAllPendingActionsInvocationCounter++;
 	/**
 	 * Let's execute actions we should execute at this point.
 	 * reentrantFlag takes care of the use case where the actions we are executing are scheduling
@@ -153,7 +142,7 @@ void SingleTimerExecutor::doExecute() {
 	}
 	lastExecutionCount = totalExecuted;
 	if (!isLocked()) {
-		firmwareError(CUSTOM_ERR_LOCK_ISSUE, "Someone has stolen my lock");
+		warning(CUSTOM_ERR_LOCK_ISSUE, "Someone has stolen my lock");
 		return;
 	}
 	reentrantFlag = false;
@@ -180,7 +169,6 @@ void SingleTimerExecutor::scheduleTimerCallback() {
 }
 
 void initSingleTimerExecutorHardware(void) {
-	globalTimerCallback = executorCallback;
 	initMicrosecondTimer();
 }
 
@@ -188,7 +176,7 @@ void executorStatistics() {
 	if (engineConfiguration->debugMode == DBG_EXECUTOR) {
 #if EFI_TUNER_STUDIO && EFI_SIGNAL_EXECUTOR_ONE_TIMER
 		tsOutputChannels.debugIntField1 = ___engine.executor.timerCallbackCounter;
-		tsOutputChannels.debugIntField2 = ___engine.executor.doExecuteCounter;
+		tsOutputChannels.debugIntField2 = ___engine.executor.executeAllPendingActionsInvocationCounter;
 		tsOutputChannels.debugIntField3 = ___engine.executor.scheduleCounter;
 #endif /* EFI_TUNER_STUDIO */
 	}

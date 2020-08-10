@@ -7,12 +7,11 @@
  * @author Andrey Gusakov, (c) 2019
  */
 
-#ifndef GPIO_EXT_H_
-#define GPIO_EXT_H_
+#pragma once
 
 #if EFI_PROD_CODE
 #include "board.h"
-#endif
+#endif /* EFI_PROD_CODE */
 
 #include "rusefi_enums.h"
 
@@ -27,7 +26,7 @@ extern "C"
 
 struct gpiochip_ops {
 	/* pin argument is pin number within gpio chip, not a global number */
-	int (*setPadMode)(void *data, unsigned int pin, int mode);
+	int (*setPadMode)(void *data, unsigned int pin, iomode_t mode);
 	int (*writePad)(void *data, unsigned int pin, int value);
 	int (*readPad)(void *data, unsigned int pin);
 	brain_pin_diag_e (*getDiag)(void *data, unsigned int pin);
@@ -50,7 +49,7 @@ int gpiochips_setPinNames(brain_pin_e pin, const char **names);
 /* gpio extenders subsystem init */
 int gpiochips_init(void);
 
-int gpiochips_setPadMode(brain_pin_e pin, int mode);
+int gpiochips_setPadMode(brain_pin_e pin, iomode_t mode);
 int gpiochips_writePad(brain_pin_e pin, int value);
 int gpiochips_readPad(brain_pin_e pin);
 brain_pin_diag_e gpiochips_getDiag(brain_pin_e pin);
@@ -61,5 +60,3 @@ int gpiochips_get_total_pins(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* GPIO_EXT_H_ */

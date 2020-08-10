@@ -26,10 +26,6 @@
 #include "scheduler.h"
 #include "main_trigger_callback.h"
 
-#if EFI_SIMULATOR
-// this is about debugging
-#include "efi_gpio.h"
-#endif /* EFI_SIMULATOR */
 
 #if EFI_SIGNAL_EXECUTOR_SLEEP
 
@@ -42,15 +38,7 @@ void SleepExecutor::scheduleByTimestampNt(scheduling_s* scheduling, efitick_t ti
 }
 
 static void timerCallback(scheduling_s *scheduling) {
-#if EFI_PRINTF_FUEL_DETAILS
-	if (scheduling->action.getCallback() == (schfunc_t)&turnInjectionPinLow) {
-		printf("executing cb=turnInjectionPinLow p=%d sch=%d now=%d\r\n", (int)scheduling->action.getArgument(), (int)scheduling,
-				(int)getTimeNowUs());
-	} else {
-//		printf("exec cb=%d p=%d\r\n", (int)scheduling->callback, (int)scheduling->param);
-	}
 
-#endif /* EFI_SIMULATOR */
 	scheduling->action.execute();
 }
 
@@ -74,13 +62,6 @@ static void doScheduleForLater(scheduling_s *scheduling, int delayUs, action_s a
 		chVTResetI(&scheduling->timer);
 	}
 
-#if EFI_SIMULATOR
-	if (action.getCallback() == (schfunc_t)&turnInjectionPinLow) {
-		printf("setTime cb=turnInjectionPinLow p=%d\r\n", (int)action.getArgument());
-	} else {
-//		printf("setTime cb=%d p=%d\r\n", (int)callback, (int)param);
-	}
-#endif /* EFI_SIMULATOR */
 
 	chVTSetI(&scheduling->timer, delaySt, (vtfunc_t)timerCallback, scheduling);
 	if (!alreadyLocked) {

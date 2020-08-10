@@ -10,7 +10,7 @@
 #include "global.h"
 
 #if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
+#include "tunerstudio_outputs.h"
 #endif /* EFI_TUNER_STUDIO */
 
 #if EFI_ALTERNATOR_CONTROL
@@ -22,7 +22,7 @@
 #include "local_version_holder.h"
 #include "periodic_task.h"
 
-#include "pwm_generator.h"
+#include "pwm_generator_logic.h"
 #include "pin_repository.h"
 
 
@@ -30,14 +30,11 @@
 #error "Unexpected OS ACCESS HERE"
 #endif /* HAS_OS_ACCESS */
 
-EXTERN_ENGINE
-;
+EXTERN_ENGINE;
 
-static Logging *logger;
 
 static SimplePwm alternatorControl("alt");
-static pid_s *altPidS = &persistentState.persistentConfiguration.engineConfiguration.alternatorControl;
-static PidIndustrial alternatorPid(altPidS);
+static PidIndustrial alternatorPid(&persistentState.persistentConfiguration.engineConfiguration.alternatorControl);
 
 static percent_t currentAltDuty;
 
@@ -75,9 +72,9 @@ class AlternatorController : public PeriodicTimerController {
 
 		// todo: migrate this to FSIO
 		bool alternatorShouldBeEnabledAtCurrentRpm = GET_RPM_VALUE > engineConfiguration->cranking.rpm;
-		engine->isAlternatorControlEnabled = CONFIG(isAlternatorControlEnabled) && alternatorShouldBeEnabledAtCurrentRpm;
+		engine->enableAlternatorControl = CONFIG(enableAlternatorControl) && alternatorShouldBeEnabledAtCurrentRpm;
 
-		if (!engine->isAlternatorControlEnabled) {
+		if (!engine->enableAlternatorControl) {
 			// we need to avoid accumulating iTerm while engine is not running
 			pidReset();
 			return;
@@ -102,12 +99,6 @@ class AlternatorController : public PeriodicTimerController {
 
 
 		currentAltDuty = alternatorPid.getOutput(targetVoltage, vBatt);
-#if EFI_VERBOSE
-		if (CONFIG(isVerboseAlternator)) {
-			scheduleMsg(logger, "alt duty: %.2f/vbatt=%.2f/p=%.2f/i=%.2f/d=%.2f int=%.2f", currentAltDuty, vBatt,
-					alternatorPid.getP(), alternatorPid.getI(), alternatorPid.getD(), alternatorPid.getIntegration());
-		}
-#endif
 
 
 		alternatorControl.setSimplePwmDutyCycle(PERCENT_TO_DUTY(currentAltDuty));
@@ -116,33 +107,12 @@ class AlternatorController : public PeriodicTimerController {
 
 static AlternatorController instance;
 
-void showAltInfo(void) {
-	scheduleMsg(logger, "alt=%s @%s t=%dms", boolToString(engineConfiguration->isAlternatorControlEnabled),
-			hwPortname(CONFIG(alternatorControlPin)),
-			engineConfiguration->alternatorControl.periodMs);
-	scheduleMsg(logger, "p=%.2f/i=%.2f/d=%.2f offset=%.2f", engineConfiguration->alternatorControl.pFactor,
-			0, 0, engineConfiguration->alternatorControl.offset); // todo: i & d
-	scheduleMsg(logger, "vbatt=%.2f/duty=%.2f/target=%.2f", getVBatt(PASS_ENGINE_PARAMETER_SIGNATURE), currentAltDuty,
-			engineConfiguration->targetVBatt);
-}
 
 void setAltPFactor(float p) {
 	engineConfiguration->alternatorControl.pFactor = p;
-	scheduleMsg(logger, "setAltPid: %.2f", p);
-	pidReset();
-	showAltInfo();
-}
 
-static void applyAlternatorPinState(int stateIndex, PwmConfig *state) /* pwm_gen_callback */ {
-	efiAssertVoid(CUSTOM_ERR_6643, stateIndex < PWM_PHASE_MAX_COUNT, "invalid stateIndex");
-	efiAssertVoid(CUSTOM_IDLE_WAVE_CNT, state->multiChannelStateSequence.waveCount == 1, "invalid idle waveCount");
-	OutputPin *output = state->outputPins[0];
-	int value = state->multiChannelStateSequence.getChannelState(/*channelIndex*/0, stateIndex);
-	/**
-	 * 'engine->isAlternatorControlEnabled' would be false is RPM is too low
-	 */
-	if (!value || engine->isAlternatorControlEnabled)
-		output->setValue(value);
+	pidReset();
+
 }
 
 void setDefaultAlternatorParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
@@ -159,22 +129,21 @@ void onConfigurationChangeAlternatorCallback(engine_configuration_s *previousCon
 	shouldResetPid = !alternatorPid.isSame(&previousConfiguration->alternatorControl);
 }
 
-void initAlternatorCtrl(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	logger = sharedLogger;
-	addConsoleAction("altinfo", showAltInfo);
-	if (CONFIG(alternatorControlPin) == GPIO_UNASSIGNED)
+void initAlternatorCtrl( DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	
+
+	if (CONFIG(pinAlternator) == GPIO_UNASSIGNED)
 		return;
 
 	if (CONFIG(onOffAlternatorLogic)) {
-		enginePins.alternatorPin.initPin("on/off alternator", CONFIG(alternatorControlPin));
-
+		enginePins.alternatorPin.initPin("Alternator control", CONFIG(pinAlternator));
 	} else {
-		startSimplePwmExt(&alternatorControl,
+		startSimplePwmHard(&alternatorControl,
 				"Alternator control",
 				&engine->executor,
-				CONFIG(alternatorControlPin),
+				CONFIG(pinAlternator),
 				&enginePins.alternatorPin,
-				engineConfiguration->alternatorPwmFrequency, 0.1, (pwm_gen_callback*)applyAlternatorPinState);
+				engineConfiguration->alternatorPwmFrequency, 0.1);
 	}
 	instance.Start();
 }

@@ -314,17 +314,18 @@ static int tle6240_wake_driver(struct tle6240_priv *chip)
 {
 	(void)chip;
 
-	if (isIsrContext()) {
-		// this is for normal runtime
-		int wasLocked = lockAnyContext();
-		chSemSignalI(&tle6240_wake);
-		if (!wasLocked) {
-			unlockAnyContext();
-		}
-	} else {
-		// this is for start-up to not hang up
-		chSemSignal(&tle6240_wake);
+	/* Entering a reentrant critical zone.*/
+	syssts_t sts = chSysGetStatusAndLockX();
+	chSemSignalI(&tle6240_wake);
+	if (!port_is_isr_context()) {
+		/**
+		 * chSemSignalI above requires rescheduling
+		 * interrupt handlers have implicit rescheduling
+		 */
+		chSchRescheduleS();
 	}
+	/* Leaving the critical zone.*/
+	chSysRestoreStatusX(sts);
 
 	return 0;
 }
@@ -376,7 +377,7 @@ static THD_FUNCTION(tle6240_driver_thread, p)
 /* Driver exported functions.												*/
 /*==========================================================================*/
 
-int tle6240_writePad(void *data, unsigned int pin, int value)
+static int tle6240_writePad(void *data, unsigned int pin, int value)
 {
 	struct tle6240_priv *chip;
 
@@ -409,7 +410,7 @@ int tle6240_writePad(void *data, unsigned int pin, int value)
 	return 0;
 }
 
-brain_pin_diag_e tle6240_getDiag(void *data, unsigned int pin)
+static brain_pin_diag_e tle6240_getDiag(void *data, unsigned int pin)
 {
 	int val;
 	brain_pin_diag_e diag;
@@ -434,7 +435,7 @@ brain_pin_diag_e tle6240_getDiag(void *data, unsigned int pin)
 	return diag;
 }
 
-int tle6240_init(void * data)
+static int tle6240_init(void * data)
 {
 	int ret;
 	struct tle6240_priv *chip;
@@ -456,7 +457,7 @@ int tle6240_init(void * data)
 	return 0;
 }
 
-int tle6240_deinit(void *data)
+static int tle6240_deinit(void *data)
 {
 	(void)data;
 

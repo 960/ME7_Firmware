@@ -19,9 +19,9 @@
 typedef unsigned int time_t;
 #endif
 
+#include "rusefi_generated.h"
 #include "rusefi_enums.h"
 #include "firing_order.h"
-#include "rusefi_generated.h"
 
 #define DEFAULT_FUEL_LOAD_COUNT 16
 #define DEFAULT_IGN_LOAD_COUNT 16
@@ -81,9 +81,6 @@ typedef float percent_t;
 
 typedef void (*Void)(void);
 
-typedef char le_formula_t[LE_COMMAND_LENGTH];
-
-typedef brain_pin_e egt_cs_array_t[EGT_CHANNEL_COUNT];
 
 typedef uint8_t afr_table_t[FUEL_LOAD_COUNT][FUEL_RPM_COUNT];
 // todo: merge these two types together? but these tables have different TS parameters like ranges etc
@@ -99,8 +96,8 @@ typedef float fsio_table_8x8_f32t[FSIO_TABLE_8][FSIO_TABLE_8];
 typedef float tps_tps_table_t[TPS_TPS_ACCEL_TABLE][TPS_TPS_ACCEL_TABLE];
 typedef uint8_t fsio_table_8x8_u8t[FSIO_TABLE_8][FSIO_TABLE_8];
 typedef uint8_t boost_table_t[BOOST_LOAD_COUNT][BOOST_RPM_COUNT];
-//typedef uint8_t vvt_table_t[VVT_LOAD_COUNT][VVT_RPM_COUNT];
-typedef uint8_t gp_pwm_table_t [GP_PWM_LOAD_COUNT][GP_PWM_RPM_COUNT];
+typedef uint8_t gppwm_table_t[GPPWM_LOAD_COUNT][GPPWM_RPM_COUNT]; 
+
 typedef float fsio_table_8x8_f32t[VVT_LOAD_COUNT][VVT_RPM_COUNT];
 // this is different type simply to have different hi/low range in rusefi.ini
 typedef ignition_table_t angle_table_t;
@@ -117,7 +114,7 @@ typedef float cfg_float_t_1f;
 typedef brain_pin_e brain_input_pin_e;
 typedef brain_pin_e switch_input_pin_e;
 
-//typedef fuel_table_t ve_table_t;
+typedef fuel_table_t ve_table_t;
 
 typedef void (*VoidPtr)(void*);
 

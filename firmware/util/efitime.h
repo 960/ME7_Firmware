@@ -48,25 +48,13 @@ extern "C"
  */
 efitimeus_t getTimeNowUs(void);
 
-efitick_t getTimeNowNt(void);
-
-static inline bool efiTimeIsInRangeX(efitick_t time, efitick_t start,efitick_t end) {
-
-  return (bool)((efitick_t)((efitick_t)time - (efitick_t)start) <  (efitick_t)((efitick_t)end - (efitick_t)start));
-}
-
-
-static inline bool efiSystemTimeWithinX(efitick_t start, efitick_t end) {
-
-  return efiTimeIsInRangeX(getTimeNowNt(), start, end);
-}
 /**
  * 64-bit counter CPU cycles since MCU reset
  *
  * See getTimeNowLowerNt for a quicker version which returns only lower 32 bits
  * Lower 32 bits are enough if all we need is to measure relatively short time durations
  */
-
+efitick_t getTimeNowNt(void);
 
 efitick_t getHalTimer(void);
 

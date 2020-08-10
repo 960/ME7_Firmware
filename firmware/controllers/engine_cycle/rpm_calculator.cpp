@@ -22,6 +22,7 @@
 #include "engine_configuration.h"
 #include "engine_math.h"
 #include "perf_trace.h"
+#include "tooth_logger.h"
 
 #if EFI_PROD_CODE
 #include "os_util.h"
@@ -79,14 +80,8 @@ int RpmCalculator::getRpm(DECLARE_ENGINE_PARAMETER_SIGNATURE) const {
 	return rpmValue;
 }
 
-#if EFI_SHAFT_POSITION_INPUT
+EXTERN_ENGINE;
 
-EXTERN_ENGINE
-;
-
-extern bool hasFirmwareErrorFlag;
-
-static Logging * logger;
 
 RpmCalculator::RpmCalculator() {
 #if !EFI_PROD_CODE
@@ -164,13 +159,20 @@ void RpmCalculator::setRpmValue(float value DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		 */
 		state = CRANKING;
 	}
-#if EFI_ENGINE_CONTROL
+
 	// This presumably fixes injection mode change for cranking-to-running transition.
 	// 'isSimultanious' flag should be updated for events if injection modes differ for cranking and running.
-	if (state != oldState) {
+	if (state != oldState && CONFIG(crankingInjectionMode) != CONFIG(injectionMode)) {
+		// Reset the state of all injectors: when we change fueling modes, we could
+		// immediately reschedule an injection that's currently underway.  That will cause
+		// the injector's overlappingCounter to get out of sync with reality.  As the fix,
+		// every injector's state is forcibly reset just before we could cause that to happen.
+		engine->injectionEvents.resetOverlapping();
+
+		// reschedule all injection events now that we've reset them
 		engine->injectionEvents.addFuelEvents(PASS_ENGINE_PARAMETER_SIGNATURE);
 	}
-#endif
+
 }
 
 spinning_state_e RpmCalculator::getState() const {
@@ -190,7 +192,7 @@ void RpmCalculator::setStopped(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	revolutionCounterSinceStart = 0;
 	if (rpmValue != 0) {
 		assignRpmValue(0 PASS_ENGINE_PARAMETER_SUFFIX);
-		scheduleMsg(logger, "engine stopped");
+
 	}
 	state = STOPPED;
 }
@@ -228,13 +230,12 @@ void RpmCalculator::setSpinningUp(efitick_t nowNt DECLARE_ENGINE_PARAMETER_SUFFI
  */
 void rpmShaftPositionCallback(trigger_event_e ckpSignalType,
 		uint32_t index, efitick_t nowNt DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	UNUSED(ckpSignalType);
 	efiAssertVoid(CUSTOM_ERR_6632, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "lowstckRCL");
 
 	RpmCalculator *rpmState = &engine->rpmCalculator;
 
 	if (index == 0) {
-		ENGINE(m.beforeRpmCb) = getTimeNowLowerNt();
-
 		bool hadRpmRecently = rpmState->checkIfSpinning(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
 
 		if (hadRpmRecently) {
@@ -256,19 +257,8 @@ void rpmShaftPositionCallback(trigger_event_e ckpSignalType,
 		}
 		rpmState->onNewEngineCycle();
 		rpmState->lastRpmEventTimeNt = nowNt;
-		ENGINE(m.rpmCbTime) = getTimeNowLowerNt() - ENGINE(m.beforeRpmCb);
 	}
 
-
-#if EFI_SENSOR_CHART
-	// this 'index==0' case is here so that it happens after cycle callback so
-	// it goes into sniffer report into the first position
-	if (ENGINE(sensorChartMode) == SC_TRIGGER) {
-		angle_t crankAngle = getCrankshaftAngleNt(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
-		int signal = 1000 * ckpSignalType + index;
-		scAddData(crankAngle, signal);
-	}
-#endif /* EFI_SENSOR_CHART */
 
 	if (rpmState->isSpinningUp(PASS_ENGINE_PARAMETER_SIGNATURE)) {
 		// we are here only once trigger is synchronized for the first time
@@ -280,9 +270,7 @@ void rpmShaftPositionCallback(trigger_event_e ckpSignalType,
 		// validate instant RPM - we shouldn't skip the cranking state
 		instantRpm = minI(instantRpm, CONFIG(cranking.rpm) - 1);
 		rpmState->assignRpmValue(instantRpm PASS_ENGINE_PARAMETER_SUFFIX);
-#if 0
-		scheduleMsg(logger, "** RPM: idx=%d sig=%d iRPM=%d", index, ckpSignalType, instantRpm);
-#endif
+
 	}
 }
 
@@ -306,6 +294,9 @@ static void onTdcCallback(Engine *engine) {
 	waveChart.startDataCollection();
 #endif
 	addEngineSnifferEvent(TOP_DEAD_CENTER_MESSAGE, (char* ) rpmBuffer);
+#if EFI_TOOTH_LOGGER
+	LogTriggerTopDeadCenter(getTimeNowNt() PASS_ENGINE_PARAMETER_SUFFIX);
+#endif /* EFI_TOOTH_LOGGER */
 }
 
 /**
@@ -315,16 +306,7 @@ static void tdcMarkCallback(trigger_event_e ckpSignalType,
 		uint32_t index0, efitick_t edgeTimestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	(void) ckpSignalType;
 	bool isTriggerSynchronizationPoint = index0 == 0;
-	if (isTriggerSynchronizationPoint && ENGINE(isEngineChartEnabled)) {
-		// two instances of scheduling_s are needed to properly handle event overlap
-		int revIndex2 = getRevolutionCounter() % 2;
-		int rpm = GET_RPM();
-		// todo: use tooth event-based scheduling, not just time-based scheduling
-		if (isValidRpm(rpm)) {
-			scheduleByAngle(&tdcScheduler[revIndex2], edgeTimestamp, tdcPosition(),
-					{ onTdcCallback, engine } PASS_ENGINE_PARAMETER_SUFFIX);
-		}
-	}
+
 }
 
 
@@ -344,8 +326,7 @@ float getCrankshaftAngleNt(efitick_t timeNt DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	return rpm == 0 ? NAN : timeSinceZeroAngleNt / getOneDegreeTimeNt(rpm);
 }
 
-void initRpmCalculator(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	logger = sharedLogger;
+void initRpmCalculator(DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	if (hasFirmwareError()) {
 		return;
 	}
@@ -372,10 +353,4 @@ efitick_t scheduleByAngle(scheduling_s *timer, efitick_t edgeTimestamp, angle_t 
 	return delayedTime;
 }
 
-#else
-RpmCalculator::RpmCalculator() {
-
-}
-
-#endif /* EFI_SHAFT_POSITION_INPUT */
 

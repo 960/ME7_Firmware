@@ -17,7 +17,7 @@
 class Engine;
 typedef void (*ShaftPositionListener)(trigger_event_e signal, uint32_t index, efitick_t edgeTimestamp DECLARE_ENGINE_PARAMETER_SUFFIX);
 
-#define HAVE_CAM_INPUT() engineConfiguration->camInputs[0] != GPIO_UNASSIGNED
+#define HAVE_CAM_INPUT() engineConfiguration->pinCam[0] != GPIO_UNASSIGNED
 
 class TriggerNoiseFilter {
 public:
@@ -47,14 +47,21 @@ public:
 	TriggerStateWithRunningStatistics triggerState;
 
 	TriggerNoiseFilter noiseFilter;
-
+	uint32_t currentDurationLong = 0;
+	efitick_t lastFall = 0;
 	angle_t getVVTPosition();
 
+	// latest VVT event position (could be not synchronization event)
+	angle_t currentVVTEventPosition = 0;
+	// synchronization event position
 	angle_t vvtPosition = 0;
+
 	/**
 	 * this is similar to TriggerState#startOfCycleNt but with the crank-only sensor magic
 	 */
 	efitick_t timeAtVirtualZeroNt = 0;
+
+	efitick_t vvtSyncTimeNt = 0;
 
 	TriggerWaveform triggerShape;
 
@@ -70,7 +77,7 @@ void triggerInfo(void);
 void hwHandleShaftSignal(trigger_event_e signal, efitick_t timestamp);
 void hwHandleVvtCamSignal(trigger_value_e front, efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX);
 
-void initTriggerCentral(Logging *sharedLogger);
+void initTriggerCentral();
 void printAllTriggers();
 
 void addTriggerEventListener(ShaftPositionListener handler, const char *name, Engine *engine);

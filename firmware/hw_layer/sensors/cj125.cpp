@@ -1,6 +1,14 @@
 /*
  * @file CJ125.cpp
  *
+ * https://github.com/rusefi/rusefi/tree/master/hardware/CJ125_board
+ *
+ * https://github.com/rusefi/hw_modular/tree/master/cj125_Module
+ *
+ *
+ * See vag_18_Turbo for test configuration
+ * set engine_type 102
+ *
  * @date: Jun 24, 2016
  * @author Andrey Belomutskiy, (c) 2012-2020
  *
@@ -8,40 +16,37 @@
 
 #include "engine.h"
 #include "cj125.h"
-
-#if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
-#endif /* EFI_TUNER_STUDIO */
-#include "pwm_generator.h"
+#include "pwm_generator_logic.h"
 #include "rpm_calculator.h"
 
-#if EFI_CJ125 && HAL_USE_SPI
+EXTERN_ENGINE;
+
+#if EFI_CJ125
 
 #include "adc_inputs.h"
 
-#if EFI_PROD_CODE
+#if HAL_USE_SPI
 #include "mpu_util.h"
-#endif
+#endif /* HAL_USE_SPI */
 
 //#define CJ125_DEBUG
 //#define CJ125_DEBUG_SPI
 
-EXTERN_ENGINE;
-#if EFI_TUNER_STUDIO
-extern TunerStudioOutputChannels tsOutputChannels;
-#endif /* EFI_TUNER_STUDIO */
 #include "hardware.h"
 #include "backup_ram.h"
 #include "pin_repository.h"
 
-static Logging *logger;
 
 static uint8_t tx_buff[2] NO_CACHE;
 static uint8_t rx_buff[1] NO_CACHE;
 
 static CJ125 globalInstance;
 
+#if ! EFI_UNIT_TEST
 static THD_WORKING_AREA(cj125ThreadStack, UTILITY_THREAD_STACK_SIZE);
+#endif /* EFI_UNIT_TEST */
+
+#if HAL_USE_SPI
 
 static SPIDriver *driver;
 
@@ -56,6 +61,8 @@ static SPIConfig cj125spicfg = {
 		.cr2 =
 			SPI_CR2_8BIT_MODE
 };
+
+#endif /* HAL_USE_SPI */
 
 static volatile int lastSlowAdcCounter = 0;
 
@@ -94,62 +101,37 @@ static uint8_t cjReadRegister(uint8_t regAddr) {
 	spiReceive(driver, 1, rx_buff);
 	spiUnselect(driver);
 
-#ifdef CJ125_DEBUG_SPI
-	scheduleMsg(logger, "cjReadRegister: addr=%d answer=%d", regAddr, rx_buff[0]);
-#endif /* CJ125_DEBUG_SPI */
 	return rx_buff[0];
-#else /* EFI_UNIT_TEST */
-	return 0;
 #endif /* EFI_UNIT_TEST */
 }
 
 static void cjWriteRegister(uint8_t regAddr, uint8_t regValue) {
 	tx_buff[0] = regAddr;
 	tx_buff[1] = regValue;
-#ifdef CJ125_DEBUG_SPI
-	scheduleMsg(logger, "cjWriteRegister: addr=%d value=%d", regAddr, regValue);
-#endif /* CJ125_DEBUG_SPI */
+
 	// todo: extract 'sendSync' method?
+#if HAL_USE_SPI
 	spiSelect(driver);
 	spiSend(driver, 2, tx_buff);
 	spiUnselect(driver);
+#endif /* HAL_USE_SPI */
 }
 
 static float getUr() {
-#if ! EFI_UNIT_TEST
-	if (CONFIG(cj125ur) != EFI_ADC_NONE) {
-#if EFI_PROD_CODE
-	if (!engineConfiguration->cj125isUrDivided) {
-		// in case of directly connected Ur signal from CJ125 to the ADC pin of MCU
-		return getVoltage("cj125ur", CONFIG(cj125ur) PASS_ENGINE_PARAMETER_SUFFIX);
-	} else {
+
+	if (engine->cj125ur != EFI_ADC_NONE) {
 		// if a standard voltage division scheme with OpAmp is used
-		return getVoltageDivided("cj125ur", CONFIG(cj125ur) PASS_ENGINE_PARAMETER_SUFFIX);
-	}
-#endif /* EFI_PROD_CODE */
+		return getVoltageDivided("cj125ur", engine->cj125ur PASS_ENGINE_PARAMETER_SUFFIX);
 	}
 	return 0.0f;
-#else /* EFI_UNIT_TEST */
-	return 0;
-#endif /* EFI_UNIT_TEST */
 }
 
 static float getUa() {
-#if ! EFI_UNIT_TEST
-	if (CONFIG(cj125ua) != EFI_ADC_NONE) {
-#if EFI_PROD_CODE
-		if (engineConfiguration->cj125isUaDivided) {
-			return getVoltageDivided("cj125ua", CONFIG(cj125ua) PASS_ENGINE_PARAMETER_SUFFIX);
-		} else {
-			return getVoltage("cj125ua", CONFIG(cj125ua));
-		}
-#endif /* EFI_PROD_CODE */
-	}
 
+	if (engine->cj125ua != EFI_ADC_NONE) {
+			return getVoltageDivided("cj125ua", engine->cj125ua PASS_ENGINE_PARAMETER_SUFFIX);
+	}
 	return 0.0f;
-#else /* EFI_UNIT_TEST */
-	return 0;
-#endif /* EFI_UNIT_TEST */
 }
 
 static float getVoltageFrom16bit(uint32_t stored) {
@@ -160,36 +142,10 @@ static uint32_t get16bitFromVoltage(float v) {
 	return (uint32_t)(v * CJ125_VOLTAGE_TO_16BIT_FACTOR);
 }
 
-static void cjPrintData(void) {
-#ifdef CJ125_DEBUG
-	scheduleMsg(logger, "cj125: state=%d diag=0x%x (vUa=%.3f vUr=%.3f) (vUaCal=%.3f vUrCal=%.3f)", state, globalInstance.diag, vUa, vUr, globalInstance.vUaCal, globalInstance.vUrCal);
-#endif
-}
 
-static void cjPrintErrorCode(cj125_error_e errCode) {
-	const char *errString = nullptr;
-	switch (errCode) {
-	case CJ125_ERROR_HEATER_MALFUNCTION:
-		errString = "Heater malfunction (Too long preheat)"; 
-		break;
-	case CJ125_ERROR_OVERHEAT:
-		errString = "Sensor overheating";
-		break;
-	case CJ125_NO_ERROR:
-		errString = "N/A";
-		break;
-	case CJ125_ERROR_WRONG_IDENT:
-		errString = "W_IDENT";
-		break;
-	case CJ125_ERROR_WRONG_INIT:
-		errString = "W_INIT";
-		break;
-	case CJ125_ERROR_DISABLED:
-		errString = "DISABLED";
-		break;
-	}
-	scheduleMsg(logger, "cj125 ERROR: %s.", errString);
-}
+
+
+
 
 class RealSpi : public Cj125SpiStream {
 public:
@@ -208,38 +164,39 @@ static void cjUpdateAnalogValues() {
 #if EFI_PROD_CODE
 	// todo: some solution for testing
 	waitForSlowAdc(lastSlowAdcCounter);
-#endif
+#endif /* EFI_PROD_CODE */
+
 	globalInstance.vUr = getUr();
 	globalInstance.vUa = getUa();
 #if EFI_PROD_CODE
 	// todo: some solution for testing
     lastSlowAdcCounter = getSlowAdcCounter();
-#endif
+#endif /* EFI_PROD_CODE */
 }
 
-void cjCalibrate(void) {
-	globalInstance.cjIdentify();
+void CJ125::calibrate(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	cjIdentify(PASS_ENGINE_PARAMETER_SIGNATURE);
 
-	scheduleMsg(logger, "cj125: Starting calibration...");
-	globalInstance.cjSetMode(CJ125_MODE_CALIBRATION);
+
+	cjSetMode(CJ125_MODE_CALIBRATION);
 	int init1 = cjReadRegister(INIT_REG1_RD);
 	// check if our command has been accepted
 	if (init1 != CJ125_INIT1_CALBRT) {
-		scheduleMsg(logger, "cj125: Calibration error (init1=0x%02x)! Failed!", init1);
-		globalInstance.cjSetMode(CJ125_MODE_NORMAL_17);
+
+		cjSetMode(CJ125_MODE_NORMAL_17);
 		return;
 	}
 #if EFI_PROD_CODE
 	// todo: some testing solution
 	// wait for the start of the calibration
 	chThdSleepMilliseconds(CJ125_CALIBRATION_DELAY);
-#endif
-	globalInstance.vUaCal = 0.0f;
-	globalInstance.vUrCal = 0.0f;
+#endif /* EFI_PROD_CODE */
+	vUaCal = 0.0f;
+	vUrCal = 0.0f;
 	// wait for some more ADC samples
 	for (int i = 0; i < CJ125_CALIBRATE_NUM_SAMPLES; i++) {
 		cjUpdateAnalogValues();
-		cjPrintData();
+
 
 #if EFI_TUNER_STUDIO
 		if (engineConfiguration->debugMode == DBG_CJ125) {
@@ -247,42 +204,41 @@ void cjCalibrate(void) {
 		}
 #endif /* EFI_TUNER_STUDIO */
 
-		globalInstance.vUaCal += globalInstance.vUa;
-		globalInstance.vUrCal += globalInstance.vUr;
+		vUaCal += vUa;
+		vUrCal += vUr;
 	}
 	// find average
-	globalInstance.vUaCal /= (float)CJ125_CALIBRATE_NUM_SAMPLES;
-	globalInstance.vUrCal /= (float)CJ125_CALIBRATE_NUM_SAMPLES;
+	vUaCal /= (float)CJ125_CALIBRATE_NUM_SAMPLES;
+	vUrCal /= (float)CJ125_CALIBRATE_NUM_SAMPLES;
 	// restore normal mode
-	globalInstance.cjSetMode(CJ125_MODE_NORMAL_17);
+	cjSetMode(CJ125_MODE_NORMAL_17);
 #if EFI_PROD_CODE
 	// todo: testing solution
 	chThdSleepMilliseconds(CJ125_CALIBRATION_DELAY);
 #endif
 	// check if everything is ok
-	globalInstance.diag = cjReadRegister(DIAG_REG_RD);
+	diag = cjReadRegister(DIAG_REG_RD);
 	cjUpdateAnalogValues();
-	cjPrintData();
+
 
 	// store new calibration data
-	uint32_t storedLambda = get16bitFromVoltage(globalInstance.vUaCal);
-	uint32_t storedHeater = get16bitFromVoltage(globalInstance.vUrCal);
-	scheduleMsg(logger, "cj125: Done! Saving calibration data (%d %d).", storedLambda, storedHeater);
+	uint32_t storedLambda = get16bitFromVoltage(vUaCal);
+	uint32_t storedHeater = get16bitFromVoltage(vUrCal);
+
 #if EFI_PROD_CODE
 	backupRamSave(BACKUP_CJ125_CALIBRATION_LAMBDA, storedLambda);
 	backupRamSave(BACKUP_CJ125_CALIBRATION_HEATER, storedHeater);
 #endif /* EFI_PROD_CODE */
 
-	globalInstance.state = CJ125_IDLE;
+	state = CJ125_IDLE;
 }
 
 static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	if (!CONFIG(isCJ125Enabled)) {
-		scheduleMsg(logger, "cj125 is disabled.");
 		return;
 	}
 	
-	globalInstance.cjIdentify();
+	globalInstance.cjIdentify(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	// Load calibration values
 #if EFI_PROD_CODE
@@ -294,15 +250,18 @@ static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 #endif
 	// if no calibration, try to calibrate now and store new values
 	if (storedLambda == 0 || storedHeater == 0) {
-		cjCalibrate();
+		/**
+		 * open question if we need special considerations for calibration. Some controllers insist on open air calibration
+		 */
+		globalInstance.calibrate(PASS_ENGINE_PARAMETER_SIGNATURE);
 	} else {
-		scheduleMsg(logger, "cj125: Loading stored calibration data (%d %d)", storedLambda, storedHeater);
+
 		globalInstance.vUaCal = getVoltageFrom16bit(storedLambda);
 		globalInstance.vUrCal = getVoltageFrom16bit(storedHeater);
 		// Start normal measurement mode
 		globalInstance.cjSetMode(CJ125_MODE_NORMAL_17);
 	}
-	cjPrintData();
+
 
 #if EFI_PROD_CODE
 	// todo: testig solution
@@ -313,53 +272,33 @@ static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 void CJ125::setError(cj125_error_e errCode DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	errorCode = errCode;
 	state = CJ125_ERROR;
-	cjPrintErrorCode(errorCode);
+
 	// This is for safety:
-	scheduleMsg(logger, "cj125: Controller Shutdown!");
 	SetHeater(0 PASS_ENGINE_PARAMETER_SUFFIX);
 	// Software-reset of CJ125
 	cjWriteRegister(INIT_REG2_WR, CJ125_INIT2_RESET);
 }
 
-//	engineConfiguration->spi2SckMode = PAL_STM32_OTYPE_OPENDRAIN; // 4
-//	engineConfiguration->spi2MosiMode = PAL_STM32_OTYPE_OPENDRAIN; // 4
-//	engineConfiguration->spi2MisoMode = PAL_STM32_PUDR_PULLUP; // 32
-//	CONFIG(cj125CsPin) = GPIOA_15;
-//	engineConfiguration->cj125CsPinMode = OM_OPENDRAIN;
-
-void cj125defaultPinout(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	engineConfiguration->cj125ua = EFI_ADC_2; // PC3
-	engineConfiguration->cj125ur = EFI_ADC_1; // PA4
-	CONFIG(wboHeaterPin) = GPIOE_9;
-
-	CONFIG(isCJ125Enabled) = false;
-
-	CONFIG(spi2mosiPin) = GPIOB_15;
-	CONFIG(spi2misoPin) = GPIOB_14;
-	CONFIG(spi2sckPin) = GPIOB_13;
-
-	CONFIG(cj125CsPin) = GPIOE_13;
-	CONFIG(isCJ125Enabled) = true;
-	CONFIG(is_enabled_spi_2) = true;
-}
-
-static void cjStartSpi(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	globalInstance.cj125Cs.initPin("cj125 CS", CONFIG(cj125CsPin),
-			&engineConfiguration->cj125CsPinMode);
+static bool cjStartSpi(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+#if HAL_USE_SPI
+	globalInstance.cj125Cs.initPin("cj125 CS", engine->cj125CsPin,
+			&engine->cj125CsPinMode);
 	// Idle CS pin - SPI CS is high when idle
 	globalInstance.cj125Cs.setValue(true);
 
-	cj125spicfg.cr1 += getSpiPrescaler(_150KHz, engineConfiguration->cj125SpiDevice);
+	cj125spicfg.cr1 += getSpiPrescaler(_150KHz, engine->cj125SpiDevice);
 
-	cj125spicfg.ssport = getHwPort("cj125", CONFIG(cj125CsPin));
-	cj125spicfg.sspad = getHwPin("cj125", CONFIG(cj125CsPin));
-	driver = getSpiDevice(engineConfiguration->cj125SpiDevice);
+	cj125spicfg.ssport = getHwPort("cj125", engine->cj125CsPin);
+	cj125spicfg.sspad = getHwPin("cj125", engine->cj125CsPin);
+	driver = getSpiDevice(engine->cj125SpiDevice);
 	if (driver == NULL) {
 		// error already reported
-		return;
+		return false;
 	}
-	scheduleMsg(logger, "cj125: Starting SPI driver");
+
 	spiStart(driver, &cj125spicfg);
+#endif /* HAL_USE_SPI */
+	return true;
 }
 
 /**
@@ -378,7 +317,7 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		}
 
 		if (instance->state == CJ125_CALIBRATION) {
-			cjCalibrate();
+			globalInstance.calibrate(PASS_ENGINE_PARAMETER_SIGNATURE);
 			// Start normal operation
 			instance->state = CJ125_INIT;
 			globalInstance.cjSetMode(CJ125_MODE_NORMAL_17);
@@ -426,7 +365,7 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 				if (nowNt - instance->startHeatingNt > NT_PER_SECOND * CJ125_PREHEAT_TIMEOUT) {
 					instance->setError(CJ125_ERROR_HEATER_MALFUNCTION PASS_ENGINE_PARAMETER_SUFFIX);
 				}
-				cjPrintData();
+
 				instance->prevNt = nowNt;
 			}
 			break;
@@ -439,9 +378,7 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 				 * So the simple trick is to inverse the error by swapping the target and input values.
 				 */
 				float duty = globalInstance.heaterPid.getOutput(globalInstance.vUr, globalInstance.vUrCal, MS2SEC(CJ125_TICK_DELAY));
-				globalInstance.heaterPid.showPidStatus(logger, "cj");
 				instance->SetHeater(duty PASS_ENGINE_PARAMETER_SUFFIX);
-				cjPrintData();
 				instance->prevNt = nowNt;
 			}
 			break;
@@ -456,6 +393,8 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 }
 	return false;
 }
+
+#if ! EFI_UNIT_TEST
 
 static msg_t cjThread(void)
 {
@@ -472,10 +411,8 @@ static msg_t cjThread(void)
 	return -1;
 }
 
-#if ! EFI_UNIT_TEST
 static bool cjCheckConfig(void) {
 	if (!CONFIG(isCJ125Enabled)) {
-		scheduleMsg(logger, "cj125 is disabled. Failed!");
 		return false;
 	}
 	return true;
@@ -486,16 +423,17 @@ void cjStartCalibration(void) {
 		return;
 	if (globalInstance.isWorkingState()) {
 		// todo: change this later for the normal thread operation (auto pre-heating)
-		scheduleMsg(logger, "cj125: Cannot start calibration. Please restart the board and make sure that your sensor is not heating");
 		return;
 	}
 	globalInstance.state = CJ125_CALIBRATION;
 }
 
-static void cjStartTest(void) {
+void cjRestart(void) {
 	if (!cjCheckConfig())
 		return;
 	globalInstance.state = CJ125_INIT;
+	globalInstance.errorCode = CJ125_NO_ERROR;
+	cjStart(PASS_ENGINE_PARAMETER_SIGNATURE);
 }
 #endif /* EFI_UNIT_TEST */
 
@@ -504,13 +442,12 @@ static void cjStartTest(void) {
 static void cjSetInit1(int v) {
 	cjWriteRegister(INIT_REG1_WR, v & 0xff);
 	v = cjReadRegister(INIT_REG1_RD);
-	scheduleMsg(logger, "cj125 INIT_REG1=0x%02x.", v);
 }
 
 static void cjSetInit2(int v) {
 	cjWriteRegister(INIT_REG2_WR, v & 0xff);
 	v = cjReadRegister(INIT_REG2_RD);
-	scheduleMsg(logger, "cj125 INIT_REG2=0x%02x.", v);
+
 }
 #endif /* CJ125_DEBUG */
 
@@ -520,23 +457,21 @@ float cjGetAfr(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	
 	if (engineConfiguration->cj125isLsu49) {
 		globalInstance.lambda = interpolate2d("cj125Lsu", pumpCurrent, pumpCurrentLsu49, lambdaLsu49);
-		enginePins.cj125Mode.setValue(0);
-
+		enginePins.cj125ModePin.setValue(0);
 	} else {
 		globalInstance.lambda = interpolate2d("cj125Lsu", pumpCurrent, pumpCurrentLsu42, lambdaLsu42);
-		enginePins.cj125Mode.setValue(1);
+		enginePins.cj125ModePin.setValue(1);
 	}
 
 	// todo: make configurable stoich ratio
 	return globalInstance.lambda * CJ125_STOICH_RATIO;
 }
 
-bool cjHasAfrSensor(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+bool cjHasAfrSensor(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 	if (!CONFIG(isCJ125Enabled))
 		return false;
 	return globalInstance.isValidState();
 }
-
 
 #if EFI_TUNER_STUDIO
 // used by DBG_CJ125
@@ -544,8 +479,8 @@ void cjPostState(TunerStudioOutputChannels *tsOutputChannels) {
 	tsOutputChannels->debugFloatField1 = globalInstance.heaterDuty;
 	tsOutputChannels->debugFloatField2 = globalInstance.heaterPid.getIntegration();
 	tsOutputChannels->debugFloatField3 = globalInstance.heaterPid.getPrevError();
-	tsOutputChannels->widebandUa = globalInstance.vUa;
-	tsOutputChannels->widebandUr = globalInstance.vUr;
+	tsOutputChannels->debugFloatField4 = globalInstance.vUa;
+	tsOutputChannels->debugFloatField5 = globalInstance.vUr;
 	tsOutputChannels->debugFloatField6 = globalInstance.vUaCal;
 	tsOutputChannels->debugFloatField7 = globalInstance.vUrCal;
 	tsOutputChannels->debugIntField1 = globalInstance.state;
@@ -553,50 +488,50 @@ void cjPostState(TunerStudioOutputChannels *tsOutputChannels) {
 }
 #endif /* EFI_TUNER_STUDIO */
 
-void initCJ125(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	logger = sharedLogger;
+void initCJ125(DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	
 	globalInstance.spi = &spi;
-	globalInstance.logger = sharedLogger;
+
 
 	if (!CONFIG(isCJ125Enabled)) {
 		globalInstance.errorCode = CJ125_ERROR_DISABLED;
 		return;
 	}
 
-	if (CONFIG(cj125ur) == EFI_ADC_NONE || CONFIG(cj125ua) == EFI_ADC_NONE) {
-		scheduleMsg(logger, "cj125 init error! cj125ur and cj125ua are required.");
+	if (engine->cj125ur == EFI_ADC_NONE || engine->cj125ua == EFI_ADC_NONE) {
 		warning(CUSTOM_CJ125_0, "cj ur ua");
 		globalInstance.errorCode = CJ125_ERROR_DISABLED;
 		return;
 	}
 
-	if (CONFIG(wboHeaterPin) == GPIO_UNASSIGNED) {
-		scheduleMsg(logger, "cj125 init error! wboHeaterPin is required.");
+	if (engine->wboHeaterPin == GPIO_UNASSIGNED) {
 		warning(CUSTOM_CJ125_1, "cj heater");
 		globalInstance.errorCode = CJ125_ERROR_DISABLED;
 		return;
 	}
 
 	globalInstance.cjInitPid(PASS_ENGINE_PARAMETER_SIGNATURE);
-	cjStartSpi(PASS_ENGINE_PARAMETER_SIGNATURE);
-	if (driver == NULL) {
-		// error already reported
+	if (!cjStartSpi(PASS_ENGINE_PARAMETER_SIGNATURE))
 		return;
-	}
-	scheduleMsg(logger, "cj125: Starting heater control");
-	globalInstance.StartHeaterControl((pwm_gen_callback*)applyPinState PASS_ENGINE_PARAMETER_SUFFIX);
-	cjStart(PASS_ENGINE_PARAMETER_SIGNATURE);
-	
-#ifdef CJ125_DEBUG
-//	addConsoleActionF("cj125_heater", cjConsoleSetHeater);
-	addConsoleActionI("cj125_set_init1", cjSetInit1);
-	addConsoleActionI("cj125_set_init2", cjSetInit2);
-#endif /* CJ125_DEBUG */
 
-	addConsoleAction("cj125", cjStartTest);
-	addConsoleAction("cj125_calibrate", cjStartCalibration);
+	globalInstance.StartHeaterControl(PASS_ENGINE_PARAMETER_SUFFIX);
+	cjStart(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	chThdCreateStatic(cj125ThreadStack, sizeof(cj125ThreadStack), LOWPRIO, (tfunc_t)(void*) cjThread, NULL);
+
+
 }
 
 #endif /* EFI_CJ125 && HAL_USE_SPI */
+
+#if EFI_CJ125
+//	engineConfiguration->spi2SckMode = PAL_STM32_OTYPE_OPENDRAIN; // 4
+//	engineConfiguration->spi2MosiMode = PAL_STM32_OTYPE_OPENDRAIN; // 4
+//	engineConfiguration->spi2MisoMode = PAL_STM32_PUDR_PULLUP; // 32
+//	engine->cj125CsPin = GPIOA_15;
+//	engine->cj125CsPinMode = OM_OPENDRAIN;
+
+void cj125defaultPinout(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
+
+}
+#endif /* EFI_CJ125 */

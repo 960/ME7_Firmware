@@ -43,12 +43,6 @@ public:
 	float auxValveStart = 0;
 	float auxValveEnd = 0;
 
-	// too much copy-paste here, something should be improved :)
-	ThermistorMath iatCurve;
-	ThermistorMath cltCurve;
-	ThermistorMath auxTemp1Curve;
-	ThermistorMath auxTemp2Curve;
-
 	/**
 	 * MAP averaging angle start, in relation to 'mapAveragingSchedulingAtIndex' trigger index index
 	 */
@@ -69,11 +63,9 @@ public:
 
 	int vssEventCounter = 0;
 
+	float fuelingLoad = 0;
+	float ignitionLoad = 0;
 
-	/**
-	 * pre-calculated value from simple fuel lookup
-	 */
-	floatms_t baseTableFuel = 0;
 	/**
 	 * Raw fuel injection duration produced by current fuel algorithm, without any correction
 	 */
@@ -90,5 +82,5 @@ public:
 	MockAdcState mockAdcState;
 #endif /* EFI_ENABLE_MOCK_ADC */
 
+	multispark_state multispark;
 };
-

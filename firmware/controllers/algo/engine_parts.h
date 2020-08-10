@@ -10,7 +10,6 @@
 #include "global.h"
 #include "engine_configuration_generated_structures.h"
 #include "cyclic_buffer.h"
-#include "thermistor_generated.h"
 
 #define MOCK_ADC_SIZE 26
 
@@ -24,19 +23,6 @@ public:
 	int getMockAdcValue(int hwChannel) const;
 };
 
-class ThermistorMath : public thermistor_state_s {
-public:
-	void setConfig(thermistor_conf_s *config);
-	void prepareThermistorCurve(thermistor_conf_s *tc);
-	float getKelvinTemperatureByResistance(float resistance) const;
-	float s_h_a = 0;
-	float s_h_b = 0;
-	float s_h_c = 0;
-	bool isLinear;
-private:
-	thermistor_conf_s currentConfig = {0,0,0,0,0,0,0};
-};
-
 class Accelerometer {
 public:
 	float x = 0; // G value
@@ -47,26 +33,11 @@ public:
 class SensorsState {
 public:
 	SensorsState();
-	/**
-	 * Performance optimization:
-	 * log() function needed for thermistor logic is relatively heavy, to avoid it we have these
-	 * pre-calculated values
-	 * Access to these two fields is not synchronized in any way - that should work since float read/write are atomic.
-	 *
-	 * values are in Celsius
-	 */
-	float iat = NAN;
-#if EFI_UNIT_TEST
-	float mockClt = NAN;
-#endif
-	float clt = NAN;
-	float auxTemp1 = NAN;
-	float auxTemp2 = NAN;
 
 	Accelerometer accelerometer;
 
 	float vBatt = 0;
-	float currentAfr;
+	float currentAfr = 0;
 	/**
 	 * that's fuel in tank - just a gauge
 	 */
@@ -105,69 +76,7 @@ public:
 	cyclic_buffer<int, 8> recentWarnings;
 };
 
-typedef struct {
-	uint32_t beforeMainTrigger;
-	uint32_t mainTriggerCallbackTime;
 
-	uint32_t beforeIgnitionSch;
-	uint32_t ignitionSchTime;
-
-	uint32_t beforeInjectonSch;
-	uint32_t injectonSchTime;
-
-	uint32_t beforeZeroTest;
-	uint32_t zeroTestTime;
-
-	uint32_t beforeAdvance;
-	uint32_t advanceLookupTime;
-
-	uint32_t beforeFuelCalc;
-	uint32_t fuelCalcTime;
-
-	uint32_t beforeMapAveragingCb;
-	uint32_t mapAveragingCbTime;
-
-	uint32_t beforeHipCb;
-	uint32_t hipCbTime;
-
-	uint32_t beforeRpmCb;
-	uint32_t rpmCbTime;
-} monitoring_timestamps_s;
-
-class FsioState {
-public:
-	FsioState();
-	float fsioTimingAdjustment = 0;
-	float fsioIdleTargetRPMAdjustment = 0;
-	float servoValues[SERVO_COUNT];
-	float fsioLastValue[FSIO_COMMAND_COUNT];
-
-	float fsioIdleOffset = 0;
-	float fsioIdleMinValue = 0;
-
-#if EFI_UNIT_TEST
-	float mockFan = 0;
-	float mockRpm = 0;
-	float mockCrankingRpm = 0;
-	float mockTimeSinceBoot = 0;
-	int mockAcToggle = 0;
-#endif
-
-#if EFI_ENABLE_ENGINE_WARNING
-	/**
-	 * Shall we purposely miss on some cylinders in order to attract driver's attention to some problem
-	 * like getting too hot
-	 */
-	float isEngineWarning;
-#endif /* EFI_ENABLE_ENGINE_WARNING */
-
-#if EFI_ENABLE_CRITICAL_ENGINE_STOP
-	/**
-	 * Shall we stop engine due to some critical condition in order to save the engine
-	 */
-	float isCriticalEngineCondition;
-#endif /* EFI_ENABLE_CRITICAL_ENGINE_STOP */
-};
 
 /**
  * 6 crossing over 50% TPS means pressing and releasing three times
@@ -183,4 +92,11 @@ public:
 	int pumpsCounter;
 private:
 	void setPumpsCounter(int newValue);
+};
+
+struct multispark_state
+{
+	efitick_t delay = 0;
+	efitick_t dwell = 0;
+	uint8_t count = 0;
 };

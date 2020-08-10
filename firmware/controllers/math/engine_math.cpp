@@ -24,17 +24,13 @@
 #include "engine_configuration.h"
 #include "interpolation.h"
 #include "allsensors.h"
+#include "sensor.h"
 #include "event_registry.h"
 #include "efi_gpio.h"
 #include "fuel_math.h"
 #include "advance_map.h"
-#include "config_engine_specs.h"
 
-EXTERN_ENGINE
-;
-#if EFI_UNIT_TEST
-extern bool verboseMode;
-#endif /* EFI_UNIT_TEST */
+EXTERN_ENGINE;
 
 floatms_t getEngineCycleDuration(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	return getCrankshaftRevolutionTimeMs(rpm) * (engine->getOperationMode(PASS_ENGINE_PARAMETER_SIGNATURE) == TWO_STROKE ? 1 : 2);
@@ -50,6 +46,14 @@ floatms_t getCrankshaftRevolutionTimeMs(int rpm) {
 	return 360 * getOneDegreeTimeMs(rpm);
 }
 
+float getFuelingLoad(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	return ENGINE(engineState.fuelingLoad);
+}
+
+float getIgnitionLoad(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	return ENGINE(engineState.ignitionLoad);
+}
+
 /**
  * @brief Returns engine load according to selected engine_load_mode
  *
@@ -58,25 +62,15 @@ float getEngineLoadT(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	efiAssert(CUSTOM_ERR_ASSERT, engine!=NULL, "engine 2NULL", NAN);
 	efiAssert(CUSTOM_ERR_ASSERT, engineConfiguration!=NULL, "engineConfiguration 2NULL", NAN);
 	switch (engineConfiguration->fuelAlgorithm) {
-	case LM_PLAIN_MAF:
-		if (!hasMafSensor(PASS_ENGINE_PARAMETER_SIGNATURE)) {
-			warning(CUSTOM_MAF_NEEDED, "MAF sensor needed for current fuel algorithm");
-			return NAN;
-		}
-		return getMafVoltage(PASS_ENGINE_PARAMETER_SIGNATURE);
 	case LM_SPEED_DENSITY:
-		// SD engine load is used for timing lookup but not for fuel calculation,
-		// so fall thru to the MAP case.
-	case LM_MAP:
 		return getMap(PASS_ENGINE_PARAMETER_SIGNATURE);
-	case LM_ALPHA_N:
-		return getTPS(PASS_ENGINE_PARAMETER_SIGNATURE);
-	case LM_REAL_MAF: {
+	case LM_ALPHA_N_2:
+		return Sensor::get(SensorType::Tps1).value_or(0);
+	case LM_REAL_MAF:
 		return getRealMaf(PASS_ENGINE_PARAMETER_SIGNATURE);
-	}
 	default:
-		warning(CUSTOM_UNKNOWN_ALGORITHM, "Unexpected engine load parameter: %d", engineConfiguration->fuelAlgorithm);
-		return -1;
+		firmwareError(CUSTOM_UNKNOWN_ALGORITHM, "Unexpected engine load parameter: %d", engineConfiguration->fuelAlgorithm);
+		return 0;
 	}
 }
 
@@ -99,142 +93,8 @@ void setSingleCoilDwell(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 	engineConfiguration->sparkDwellValues[7] = 0;
 }
 
-#if EFI_ENGINE_CONTROL
-
-FuelSchedule::FuelSchedule() {
-	clear();
-	for (int cylinderIndex = 0; cylinderIndex < MAX_INJECTION_OUTPUT_COUNT; cylinderIndex++) {
-		InjectionEvent *ev = &elements[cylinderIndex];
-		ev->ownIndex = cylinderIndex;
-	}
-}
-
-void FuelSchedule::clear() {
-	isReady = false;
-}
-
-/**
- * @returns false in case of error, true if success
- */
-bool FuelSchedule::addFuelEventsForCylinder(int i  DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	efiAssert(CUSTOM_ERR_ASSERT, engine!=NULL, "engine is NULL", false);
-
-	floatus_t oneDegreeUs = ENGINE(rpmCalculator.oneDegreeUs); // local copy
-	if (cisnan(oneDegreeUs)) {
-		// in order to have fuel schedule we need to have current RPM
-		// wonder if this line slows engine startup?
-		return false;
-	}
-
-	/**
-	 * injection phase is scheduled by injection end, so we need to step the angle back
-	 * for the duration of the injection
-	 *
-	 * todo: since this method is not invoked within trigger event handler and
-	 * engineState.injectionOffset is calculated from the same utility timer should we more that logic here?
-	 */
-	floatms_t fuelMs = ENGINE(injectionDuration);
-	efiAssert(CUSTOM_ERR_ASSERT, !cisnan(fuelMs), "NaN fuelMs", false);
-	angle_t injectionDuration = MS2US(fuelMs) / oneDegreeUs;
-	efiAssert(CUSTOM_ERR_ASSERT, !cisnan(injectionDuration), "NaN injectionDuration", false);
-	assertAngleRange(injectionDuration, "injectionDuration_r", CUSTOM_INJ_DURATION);
-	floatus_t injectionOffset = ENGINE(engineState.injectionOffset);
-	if (cisnan(injectionOffset)) {
-		// injection offset map not ready - we are not ready to schedule fuel events
-		return false;
-	}
-	angle_t baseAngle = injectionOffset - injectionDuration;
-	efiAssert(CUSTOM_ERR_ASSERT, !cisnan(baseAngle), "NaN baseAngle", false);
-	assertAngleRange(baseAngle, "baseAngle_r", CUSTOM_ERR_6554);
-
-	int injectorIndex;
-
-	injection_mode_e mode = engine->getCurrentInjectionMode(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-	if (mode == IM_SIMULTANEOUS || mode == IM_SINGLE_POINT) {
-		injectorIndex = 0;
-	} else if (mode == IM_SEQUENTIAL) {
-		injectorIndex = getCylinderId(i PASS_ENGINE_PARAMETER_SUFFIX) - 1;
-	} else if (mode == IM_BATCH) {
-		// does not look exactly right, not too consistent with IM_SEQUENTIAL
-		injectorIndex = i % (engineConfiguration->specs.cylindersCount / 2);
-	} else {
-		warning(CUSTOM_OBD_UNEXPECTED_INJECTION_MODE, "Unexpected injection mode %d", mode);
-		injectorIndex = 0;
-	}
-
-	bool isSimultanious = mode == IM_SIMULTANEOUS;
-
-	assertAngleRange(baseAngle, "addFbaseAngle", CUSTOM_ADD_BASE);
-
-	int cylindersCount = CONFIG(specs.cylindersCount);
-	if (cylindersCount < 1) {
-		warning(CUSTOM_OBD_ZERO_CYLINDER_COUNT, "temp cylindersCount %d", cylindersCount);
-		return false;
-	}
-
-	float angle = baseAngle
-			+ i * ENGINE(engineCycle) / cylindersCount;
-
-	InjectorOutputPin *secondOutput;
-	if (mode == IM_BATCH && CONFIG(twoWireBatchInjection)) {
-		/**
-		 * also fire the 2nd half of the injectors so that we can implement a batch mode on individual wires
-		 */
-		int secondIndex = injectorIndex + (CONFIG(specs.cylindersCount) / 2);
-		secondOutput = &enginePins.injectors[secondIndex];
-	} else {
-		secondOutput = NULL;
-	}
-
-	InjectorOutputPin *output = &enginePins.injectors[injectorIndex];
-
-	if (!isSimultanious && !output->isInitialized()) {
-		// todo: extract method for this index math
-		warning(CUSTOM_OBD_INJECTION_NO_PIN_ASSIGNED, "no_pin_inj #%s", output->name);
-	}
-
-	InjectionEvent *ev = &elements[i];
-	ev->ownIndex = i;
-	INJECT_ENGINE_REFERENCE(ev);
-	fixAngle(angle, "addFuel#1", CUSTOM_ERR_6554);
-
-	ev->outputs[0] = output;
-	ev->outputs[1] = secondOutput;
-
-	ev->isSimultanious = isSimultanious;
-
-	if (TRIGGER_WAVEFORM(getSize()) < 1) {
-		warning(CUSTOM_ERR_NOT_INITIALIZED_TRIGGER, "uninitialized TriggerWaveform");
-		return false;
-	}
-
-	efiAssert(CUSTOM_ERR_ASSERT, !cisnan(angle), "findAngle#3", false);
-	assertAngleRange(angle, "findAngle#a33", CUSTOM_ERR_6544);
-	ev->injectionStart.setAngle(angle PASS_ENGINE_PARAMETER_SUFFIX);
-#if EFI_UNIT_TEST
-	printf("registerInjectionEvent angle=%.2f trgIndex=%d inj %d\r\n", angle, ev->injectionStart.triggerEventIndex, injectorIndex);
-#endif
-	return true;
-}
-
-void FuelSchedule::addFuelEvents(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	clear();
-
-	for (int cylinderIndex = 0; cylinderIndex < CONFIG(specs.cylindersCount); cylinderIndex++) {
-		InjectionEvent *ev = &elements[cylinderIndex];
-		ev->ownIndex = cylinderIndex;  // todo: is this assignment needed here? we now initialize in constructor
-		bool result = addFuelEventsForCylinder(cylinderIndex PASS_ENGINE_PARAMETER_SUFFIX);
-		if (!result)
-			return;
-	}
-	isReady = true;
-}
-
-#endif
-
 static floatms_t getCrankingSparkDwell(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	if (engineConfiguration->useConstantDwellDuringCranking) {
+	if (engineConfiguration->enableFixedDwellCranking) {
 		return engineConfiguration->ignitionDwellForCrankingMs;
 	} else {
 		// technically this could be implemented via interpolate2d
@@ -247,7 +107,7 @@ static floatms_t getCrankingSparkDwell(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
  * @return Spark dwell time, in milliseconds. 0 if tables are not ready.
  */
 floatms_t getSparkDwell(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
-#if EFI_ENGINE_CONTROL && EFI_SHAFT_POSITION_INPUT
+
 	float dwellMs;
 	if (ENGINE(rpmCalculator).isCranking(PASS_ENGINE_PARAMETER_SIGNATURE)) {
 		dwellMs = getCrankingSparkDwell(PASS_ENGINE_PARAMETER_SIGNATURE);
@@ -263,15 +123,14 @@ floatms_t getSparkDwell(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		return 0;
 	}
 	return dwellMs;
-#else
-	return 0;
-#endif
+
 }
 
 
 static const int order_1_2[] = {1, 2};
 
 static const int order_1_2_3[] = {1, 2, 3};
+static const int order_1_3_2[] = {1, 3, 2};
 // 4 cylinder
 
 static const int order_1_THEN_3_THEN_4_THEN2[] = { 1, 3, 4, 2 };
@@ -293,6 +152,10 @@ static const int order_1_8_4_3_6_5_7_2[] = { 1, 8, 4, 3, 6, 5, 7, 2 };
 static const int order_1_8_7_2_6_5_4_3[] = { 1, 8, 7, 2, 6, 5, 4, 3 };
 static const int order_1_5_4_2_6_3_7_8[] = { 1, 5, 4, 2, 6, 3, 7, 8 };
 static const int order_1_2_7_8_4_5_6_3[] = { 1, 2, 7, 8, 4, 5, 6, 3 };
+static const int order_1_3_7_2_6_5_4_8[] = { 1, 3, 7, 2, 6, 5, 4, 8 };
+
+// 9 cylinder
+static const int order_1_2_3_4_5_6_7_8_9[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 // 10 cylinder
 static const int order_1_10_9_4_3_6_5_8_7_2[] = {1, 10, 9, 4, 3, 6, 5, 8, 7, 2};
@@ -301,6 +164,10 @@ static const int order_1_10_9_4_3_6_5_8_7_2[] = {1, 10, 9, 4, 3, 6, 5, 8, 7, 2};
 static const int order_1_7_5_11_3_9_6_12_2_8_4_10[] = {1, 7, 5, 11, 3, 9, 6, 12, 2, 8, 4, 10};
 static const int order_1_7_4_10_2_8_6_12_3_9_5_11[] = {1, 7, 4, 10, 2, 8, 6, 12, 3, 9, 5, 11};
 static const int order_1_12_5_8_3_10_6_7_2_11_4_9[] = {1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9};
+static const int order_1_2_3_4_5_6_7_8_9_10_11_12[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+
+// no comments
+static const int order_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10[] = {1, 14, 9, 4, 7, 12, 15, 6, 13, 8, 3, 16, 11, 2, 5, 10};
 
 static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
@@ -312,6 +179,7 @@ static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		return 2;
 // 3 cylinder
 	case FO_1_2_3:
+	case FO_1_3_2:
 		return 3;
 // 4 cylinder
 	case FO_1_3_4_2:
@@ -335,7 +203,12 @@ static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	case FO_1_8_7_2_6_5_4_3:
 	case FO_1_5_4_2_6_3_7_8:
 	case FO_1_2_7_8_4_5_6_3:
+	case FO_1_3_7_2_6_5_4_8:
 		return 8;
+
+// 9 cylinder radial
+	case FO_1_2_3_4_5_6_7_8_9:
+		return 9;
 
 // 10 cylinder
 	case FO_1_10_9_4_3_6_5_8_7_2:
@@ -345,7 +218,11 @@ static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	case FO_1_7_5_11_3_9_6_12_2_8_4_10:
 	case FO_1_7_4_10_2_8_6_12_3_9_5_11:
 	case FO_1_12_5_8_3_10_6_7_2_11_4_9:
+	case FO_1_2_3_4_5_6_7_8_9_10_11_12:
 		return 12;
+
+	case FO_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10:
+		return 16;
 
 	default:
 		warning(CUSTOM_OBD_UNKNOWN_FIRING_ORDER, "getCylinderId not supported for %d", CONFIG(specs.firingOrder));
@@ -363,17 +240,18 @@ int getCylinderId(int index DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	const int firingOrderLength = getFiringOrderLength(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	if (firingOrderLength < 1 || firingOrderLength > INJECTION_PIN_COUNT) {
-		firmwareError(CUSTOM_ERR_6687, "fol %d", firingOrderLength);
+		warning(CUSTOM_ERR_6687, "fol %d", firingOrderLength);
 		return 1;
 	}
 	if (engineConfiguration->specs.cylindersCount != firingOrderLength) {
-		warning(CUSTOM_OBD_WRONG_FIRING_ORDER, "Wrong firing order %d/%d", engineConfiguration->specs.cylindersCount, firingOrderLength);
+		// May 2020 this somehow still happens with functional tests, maybe race condition?
+		warning(CUSTOM_OBD_WRONG_FIRING_ORDER, "Wrong cyl count for firing order, expected %d cylinders", firingOrderLength);
 		return 1;
 	}
 
 	if (index < 0 || index >= firingOrderLength) {
-		// todo: open question when does this happen? reproducible with functional tests?
-		warning(CUSTOM_ERR_6686, "index %d", index);
+		// May 2020 this somehow still happens with functional tests, maybe race condition?
+		warning(CUSTOM_ERR_6686, "firing order index %d", index);
 		return 1;
 	}
 
@@ -386,6 +264,8 @@ int getCylinderId(int index DECLARE_ENGINE_PARAMETER_SUFFIX) {
 // 3 cylinder
 	case FO_1_2_3:
 		return order_1_2_3[index];
+	case FO_1_3_2:
+		return order_1_3_2[index];
 // 4 cylinder
 	case FO_1_3_4_2:
 		return order_1_THEN_3_THEN_4_THEN2[index];
@@ -418,6 +298,12 @@ int getCylinderId(int index DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		return order_1_5_4_2_6_3_7_8[index];
 	case FO_1_2_7_8_4_5_6_3:
 		return order_1_2_7_8_4_5_6_3[index];
+	case FO_1_3_7_2_6_5_4_8:
+		return order_1_3_7_2_6_5_4_8[index];
+
+	case FO_1_2_3_4_5_6_7_8_9:
+		return order_1_2_3_4_5_6_7_8_9[index];
+
 
 // 10 cylinder
 	case FO_1_10_9_4_3_6_5_8_7_2:
@@ -430,6 +316,12 @@ int getCylinderId(int index DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		return order_1_7_4_10_2_8_6_12_3_9_5_11[index];
 	case FO_1_12_5_8_3_10_6_7_2_11_4_9:
 		return order_1_12_5_8_3_10_6_7_2_11_4_9[index];
+	case FO_1_2_3_4_5_6_7_8_9_10_11_12:
+		return order_1_2_3_4_5_6_7_8_9_10_11_12[index];
+
+// do not ask
+	case FO_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10:
+		return order_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10[index];
 
 	default:
 		warning(CUSTOM_OBD_UNKNOWN_FIRING_ORDER, "getCylinderId not supported for %d", CONFIG(specs.firingOrder));
@@ -457,18 +349,17 @@ static int getIgnitionPinForIndex(int cylinderIndex DECLARE_ENGINE_PARAMETER_SUF
 		return cylinderIndex % 2;
 
 	default:
-		warning(CUSTOM_OBD_IGNITION_MODE, "unsupported ignitionMode %d in getIgnitionPinForIndex()", engineConfiguration->ignitionMode);
 		return 0;
 	}
 }
 
 void prepareIgnitionPinIndices(ignition_mode_e ignitionMode DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	if (ignitionMode != engine->ignitionModeForPinIndices) {
-#if EFI_ENGINE_CONTROL
+
 		for (int cylinderIndex = 0; cylinderIndex < CONFIG(specs.cylindersCount); cylinderIndex++) {
 			ENGINE(ignitionPin[cylinderIndex]) = getIgnitionPinForIndex(cylinderIndex PASS_ENGINE_PARAMETER_SUFFIX);
 		}
-#endif /* EFI_ENGINE_CONTROL */
+
 		engine->ignitionModeForPinIndices = ignitionMode;
 	}
 }
@@ -479,15 +370,15 @@ void prepareIgnitionPinIndices(ignition_mode_e ignitionMode DECLARE_ENGINE_PARAM
  */
 ignition_mode_e getCurrentIgnitionMode(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ignition_mode_e ignitionMode = CONFIG(ignitionMode);
-#if EFI_SHAFT_POSITION_INPUT
+
 	// In spin-up cranking mode we don't have full phase sync. info yet, so wasted spark mode is better
 	if (ignitionMode == IM_INDIVIDUAL_COILS && ENGINE(rpmCalculator.isSpinningUp(PASS_ENGINE_PARAMETER_SIGNATURE)))
 		ignitionMode = IM_WASTED_SPARK;
-#endif /* EFI_SHAFT_POSITION_INPUT */
+
 	return ignitionMode;
 }
 
-#if EFI_ENGINE_CONTROL
+
 
 /**
  * This heavy method is only invoked in case of a configuration change or initialization.
@@ -504,12 +395,6 @@ void prepareOutputSignals(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		}
 	}
 
-#if EFI_UNIT_TEST
-	if (verboseMode) {
-		printf("prepareOutputSignals %d onlyEdge=%s %s\r\n", engineConfiguration->trigger.type, boolToString(engineConfiguration->useOnlyRisingEdgeForTrigger),
-				getIgnition_mode_e(engineConfiguration->ignitionMode));
-	}
-#endif /* EFI_UNIT_TEST */
 
 	for (int i = 0; i < CONFIG(specs.cylindersCount); i++) {
 		ENGINE(ignitionPositionWithinEngineCycle[i]) = ENGINE(engineCycle) * i / CONFIG(specs.cylindersCount);
@@ -520,13 +405,6 @@ void prepareOutputSignals(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	TRIGGER_WAVEFORM(prepareShape());
 }
 
-void setFuelRpmBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
-	setLinearCurve(config->fuelRpmBins, from, to);
-}
-
-void setFuelLoadBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
-	setLinearCurve(config->fuelLoadBins, from, to);
-}
 
 void setTimingRpmBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
 	setRpmBin(config->ignitionRpmBins, IGN_RPM_COUNT, from, to);
@@ -541,9 +419,7 @@ void setTimingLoadBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
  */
 void setAlgorithm(engine_load_mode_e algo DECLARE_CONFIG_PARAMETER_SUFFIX) {
 	engineConfiguration->fuelAlgorithm = algo;
-	if (algo == LM_ALPHA_N) {
-		setTimingLoadBin(20, 120 PASS_CONFIG_PARAMETER_SUFFIX);
-	} else if (algo == LM_SPEED_DENSITY) {
+	if (algo == LM_SPEED_DENSITY) {
 		setLinearCurve(config->ignitionLoadBins, 20, 120, 3);
 		buildTimingMap(35 PASS_CONFIG_PARAMETER_SUFFIX);
 	}
@@ -553,4 +429,4 @@ void setFlatInjectorLag(float value DECLARE_CONFIG_PARAMETER_SUFFIX) {
 	setArrayValues(engineConfiguration->injector.battLagCorr, value);
 }
 
-#endif /* EFI_ENGINE_CONTROL */
+

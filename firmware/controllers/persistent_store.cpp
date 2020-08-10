@@ -23,12 +23,12 @@
 
 #include "global.h"
 #if !EFI_UNIT_TEST
-#include "sensor_chart.h"
+
 #include "engine_configuration.h"
 #include "trigger_central.h"
 #include "engine_controller.h"
 
-persistent_config_container_s persistentState CCM_OPTIONAL;
+persistent_config_container_s persistentState;
 
 persistent_config_s *config = &persistentState.persistentConfiguration;
 

@@ -30,6 +30,20 @@
 
 #include "mcuconf.h"
 
+/* THIS IS HACK: to allow smooth transition to ChibiOS with ELF support we
+ * need to disable hal_flash.h until we move to ChibiOS EFL driver.
+ * hal_flash.h in ChibiOS has definitions that conflict with current RusEFI
+ * flash driver.
+ * but it is included unconditionaly from hal.h */
+#define HAL_FLASH_H
+
+/**
+ * @brief   Enables the FLASH subsystem.
+ */
+#if !defined(HAL_USE_FLASH) || defined(__DOXYGEN__)
+#define HAL_USE_FLASH               FALSE
+#endif
+
 /**
  * @brief   Enables the PAL subsystem.
  */
@@ -163,7 +177,7 @@
  */
 #if !defined(HAL_USE_UART) || defined(__DOXYGEN__)
 /* Configured in efifeatures.h */
-#if (TS_UART_DMA_MODE || TS_UART_MODE)
+#if (PRIMARY_UART_DMA_MODE || TS_UART_DMA_MODE || TS_UART_MODE)
 #define HAL_USE_UART                TRUE
 #else
 #define HAL_USE_UART                FALSE
@@ -368,7 +382,7 @@
  */
 #if !defined(UART_USE_WAIT) || defined(__DOXYGEN__)
 /* Configured in efifeatures.h */
-#if (TS_UART_DMA_MODE || TS_UART_MODE)
+#if (PRIMARY_UART_DMA_MODE || TS_UART_DMA_MODE || TS_UART_MODE)
 #define UART_USE_WAIT               TRUE
 #else
 #define UART_USE_WAIT               FALSE

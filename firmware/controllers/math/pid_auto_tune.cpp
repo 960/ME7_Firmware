@@ -27,10 +27,6 @@
 #include "efilib.h"
 #include "efitime.h"
 
-#if EFI_UNIT_TEST
-extern bool verboseMode;
-#endif /* EFI_UNIT_TEST */
-
 // see https://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method
 // order must be match enumerated type for auto tune methods
 Tuning tuningRule[PID_AutoTune::NO_OVERSHOOT_PID + 1] =
@@ -59,12 +55,12 @@ void PID_AutoTune::reset() {
 
 	controlType = ZIEGLER_NICHOLS_PID;
 	noiseBand = 0.5;
-	state = AUTOTUNER_OFF; // cannot invoke setter here since logger is not initialized yet
+	state = AUTOTUNER_OFF; // cannot invoke setter here since is not initialized yet
 	oStep = 10.0;
 	memset(lastPeaks, 0, sizeof(lastPeaks));
 	memset(lastInputs, 0, sizeof(lastInputs));
 
-	logger = nullptr;
+
 	input = output = 0;
 	SetLookbackSec(10);
 
@@ -90,7 +86,7 @@ void PID_AutoTune::SetLookbackSec(int value)
 
 double inline PID_AutoTune::fastArcTan(double x)
 {
-  // source: “Efficient approximations for the arctangent function”, Rajan, S. Sichun Wang Inkol, R. Joyal, A., May 2006
+  // source: ï¿½Efficient approximations for the arctangent functionï¿½, Rajan, S. Sichun Wang Inkol, R. Joyal, A., May 2006
   //return CONST_PI / 4.0 * x - x * (abs(x) - 1.0) * (0.2447 + 0.0663 * abs(x));
 
   // source: "Understanding Digital Signal Processing", 2nd Ed, Richard G. Lyons, eq. 13-107
@@ -115,29 +111,20 @@ double PID_AutoTune::calculatePhaseLag(double inducedAmplitude)
 
 void PID_AutoTune::setState(PidAutoTune_AutoTunerState state) {
 	this->state = state;
-	scheduleMsg(logger, "setState %s", getPidAutoTune_AutoTunerState(state));
-#if EFI_UNIT_TEST
-	if (verboseMode)
-		printf("setState %s\r\n", getPidAutoTune_AutoTunerState(state));
-#endif /* EFI_UNIT_TEST */
+
 }
 
 void PID_AutoTune::setPeakType(PidAutoTune_Peak peakType) {
 	this->peakType = peakType;
-	scheduleMsg(logger, "setPeakType %s", getPidAutoTune_Peak(peakType));
-#if EFI_UNIT_TEST
-	if (verboseMode)
-		printf("peakType %s\r\n", getPidAutoTune_Peak(peakType));
-#endif /* EFI_UNIT_TEST */
 }
 
 /**
  * returns true when done, otherwise returns false
  */
-bool PID_AutoTune::Runtime(Logging *logger)
+bool PID_AutoTune::Runtime()
 {
 
-	this->logger = logger; // a bit lazy but good enough
+
   // check ready for new input
   unsigned long now = currentTimeMillis();
 
@@ -168,19 +155,14 @@ bool PID_AutoTune::Runtime(Logging *logger)
     }
     else
     {
-    	scheduleMsg(logger, "starting...");
-    	setState(RELAY_STEP_UP);
+    	    	setState(RELAY_STEP_UP);
     }
   }
 
   // otherwise check ready for new input
   else if ((now - lastTime) < sampleTime)
   {
-#if EFI_UNIT_TEST
-	  if (verboseMode)
-		  printf("too soon for new input %d %d %d\r\n", now, lastTime, sampleTime);
-#endif /* EFI_UNIT_TEST */
-	scheduleMsg(logger, "AT skipping now=%d %d %d", now, lastTime, sampleTime);
+
 
     return false;
   }
@@ -200,13 +182,13 @@ bool PID_AutoTune::Runtime(Logging *logger)
   // check input and change relay state if necessary
   if ((state == RELAY_STEP_UP) && (refVal > setpoint + workingNoiseBand))
   {
-	  scheduleMsg(logger, "noise crossed up %f s=%f n=%f", refVal, setpoint, workingNoiseBand);
+
 	  setState(RELAY_STEP_DOWN);
     justChanged = true;
   }
   else if ((state == RELAY_STEP_DOWN) && (refVal < setpoint - workingNoiseBand))
   {
-	  scheduleMsg(logger, "noise crossed down %f s=%f n=%f", refVal, setpoint, workingNoiseBand);
+
 	  setState(RELAY_STEP_UP);
     justChanged = true;
   }
@@ -231,11 +213,6 @@ bool PID_AutoTune::Runtime(Logging *logger)
         Serial.println(asymmetry);
 #endif /* AUTOTUNE_DEBUG */
 
-#if EFI_UNIT_TEST
-        if (verboseMode) {
-        	printf("asymmetry=%f\r\n", asymmetry);
-        }
-#endif /* EFI_UNIT_TEST */
 
         if (asymmetry > AUTOTUNE_STEP_ASYMMETRY_TOLERANCE)
         {
@@ -281,11 +258,6 @@ bool PID_AutoTune::Runtime(Logging *logger)
             Serial.println(relayBias);
 #endif /* AUTOTUNE_DEBUG */
 
-#if EFI_UNIT_TEST
-            if (verboseMode) {
-            printf("deltaRelayBias=%f relayBias=%f\r\n", deltaRelayBias, relayBias);
-            }
-#endif /* EFI_UNIT_TEST */
 
             // reset relay step counter
             // to give the process value oscillation
@@ -330,7 +302,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
 #if defined (AUTOTUNE_RELAY_BIAS)
     setOutput(outputStart + workingOstep + relayBias);
 #else
-	  scheduleMsg(logger, "AT adding %f", workingOutputstep);
+
     setOutput(outputStart + workingOutputstep);
 #endif
 
@@ -341,28 +313,11 @@ bool PID_AutoTune::Runtime(Logging *logger)
 #if defined (AUTOTUNE_RELAY_BIAS)
 	  setOutput(outputStart - workingOstep + relayBias);
 #else
-	  scheduleMsg(logger, "AT subtracting %f", workingOutputstep);
-	  setOutput(outputStart - workingOutputstep);
+	  	  setOutput(outputStart - workingOutputstep);
 #endif
 
   }
 
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("refVal "));
-  Serial.println(refVal);
-  Serial.print(F("setpoint "));
-  Serial.println(setpoint);
-  Serial.print(F("output "));
-  Serial.println(output);
-  Serial.print(F("state "));
-  Serial.println(state);
-#endif
-
-#if EFI_UNIT_TEST
-  if (verboseMode) {
-	  printf("setpoint=%f refVal=%f\r\n", setpoint, refVal);
-  }
-#endif /* EFI_UNIT_TEST */
 
   // store initial inputs
   // we don't want to trust the maxes or mins
@@ -371,12 +326,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
   if (inputCount <= nLookBack)
   {
     lastInputs[nLookBack - inputCount] = refVal;
-	  scheduleMsg(logger, "AT need more data %d %d", inputCount, nLookBack);
-#if EFI_UNIT_TEST
-	  if (verboseMode) {
-		  printf("need more data %d %d\r\n", inputCount, nLookBack);
-	  }
-#endif /* EFI_UNIT_TEST */
+
 	return false;
   }
 
@@ -398,7 +348,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
     lastInputs[i + 1] = val;
   }
   lastInputs[0] = refVal;
-  scheduleMsg(logger, "isMin=%d isMax=%d", isMin, isMax);
+
 
   // for AMIGOf tuning rule, perform an initial
   // step change to calculate process gain K_process
@@ -426,27 +376,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
     }
     avgInput /= (double)(inputCount + 1);
 
-#if defined(AUTOTUNE_DEBUG) || EFI_UNIT_TEST
-    bool stable = (iMax - iMin) <= 2.0 * workingNoiseBand;
-#endif
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("iMax "));
-  Serial.println(iMax);
-  Serial.print(F("iMin "));
-  Serial.println(iMin);
-  Serial.print(F("avgInput "));
-  Serial.println(avgInput);
-  Serial.print(F("stable "));
-  Serial.println(stable);
-#endif
 
-
-#if EFI_UNIT_TEST
-  if (verboseMode) {
-	  printf("iMax=%f iMin=%f\r\n", iMax, iMin);
-	printf("avgInput=%f stable=%d\r\n", avgInput, stable);
-  }
-#endif /* EFI_UNIT_TEST */
 
 
     // if recent inputs are stable
@@ -462,11 +392,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
     	  setState(STEADY_STATE_AFTER_STEP_UP);
         lastPeaks[0] = avgInput;
         inputCount = 0;
-#if EFI_UNIT_TEST
-        if (verboseMode) {
-		printf(":( 3\r\n");
-        }
-#endif /* EFI_UNIT_TEST */
+
 		return false;
       }
       // else state == STEADY_STATE_AFTER_STEP_UP
@@ -478,19 +404,12 @@ bool PID_AutoTune::Runtime(Logging *logger)
       Serial.println(K_process);
 #endif
 
-#if EFI_UNIT_TEST
-      if (verboseMode) {
-    	  printf("K_process=%f\r\n", K_process);
-      }
-#endif /* EFI_UNIT_TEST */
 
       // bad estimate of process gain
       if (K_process < 1e-10) // zero
       {
     	  setState(AUTOTUNER_OFF);
-#if EFI_UNIT_TEST
-		printf(":( 4\r\n");
-#endif /* EFI_UNIT_TEST */
+
 		return false;
       }
       setState(RELAY_STEP_DOWN);
@@ -506,9 +425,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
     }
     else
     {
-#if EFI_UNIT_TEST
-		printf(":( 6\r\n");
-#endif /* EFI_UNIT_TEST */
+
 		return false;
     }
   }
@@ -538,18 +455,9 @@ bool PID_AutoTune::Runtime(Logging *logger)
   if (justChanged)
   {
     peakCount++;
-    scheduleMsg(logger, "peakCount=%d", peakCount);
 
 
-#if defined (AUTOTUNE_DEBUG)
-    Serial.println(F("peakCount "));
-    Serial.println(peakCount);
-    Serial.println(F("peaks"));
-    for (byte i = 0; i < (peakCount > 4 ? 5 : peakCount); i++)
-    {
-      Serial.println(lastPeaks[i]);
-    }
-#endif
+
 
     // shift peak time and peak value arrays
     for (byte i = (peakCount > 4 ? 4 : peakCount); i > 0; i--)
@@ -563,26 +471,6 @@ bool PID_AutoTune::Runtime(Logging *logger)
     lastPeakTime[0] = now;
     lastPeaks[0] = refVal;
 
-#if defined (AUTOTUNE_DEBUG)
-    Serial.println();
-    Serial.println(F("peakCount "));
-    Serial.println(peakCount);
-    Serial.println(F("refVal "));
-    Serial.println(refVal);
-    Serial.print(F("peak type "));
-    Serial.println(peakType);
-    Serial.print(F("isMin "));
-    Serial.println(isMin);
-    Serial.print(F("isMax "));
-    Serial.println(isMax);
-    Serial.println();
-    Serial.println(F("lastInputs:"));
-    for (byte i = 0; i <= inputCount; i++)
-    {
-      Serial.println(lastInputs[i]);
-    }
-    Serial.println();
-#endif
 
   }
 
@@ -615,26 +503,13 @@ bool PID_AutoTune::Runtime(Logging *logger)
          absMin = val;
       }
     }
-#if EFI_UNIT_TEST
-  this->absMax = absMax;
-  this->absMin = absMin;
-#endif /* EFI_UNIT_TEST */
+
 
     inducedAmplitude /= 6.0;
 
-#if defined (AUTOTUNE_DEBUG)
-    Serial.print(F("amplitude "));
-    Serial.println(inducedAmplitude);
-    Serial.print(F("absMin "));
-    Serial.println(absMin);
-    Serial.print(F("absMax "));
-    Serial.println(absMax);
-    Serial.print(F("convergence criterion "));
-    Serial.println((0.5 * (absMax - absMin) - inducedAmplitude) / inducedAmplitude);
-#endif
 
     // source for AMIGOf PI auto tuning method:
-    // "Revisiting the Ziegler-Nichols tuning rules for PI control —
+    // "Revisiting the Ziegler-Nichols tuning rules for PI control ï¿½
     //  Part II. The frequency response method."
     // T. Hagglund and K. J. Astrom
     // Asian Journal of Control, Vol. 6, No. 4, pp. 469-482, December 2004
@@ -643,19 +518,14 @@ bool PID_AutoTune::Runtime(Logging *logger)
     {
       phaseLag = calculatePhaseLag(inducedAmplitude);
 
-#if defined (AUTOTUNE_DEBUG)
-      Serial.print(F("phase lag "));
-      Serial.println(phaseLag / CONST_PI * 180.0);
-#endif
-
-      // check that phase lag is within acceptable bounds, ideally between 120° and 140°
-      // but 115° to 145° will just about do, and might converge quicker
+      // check that phase lag is within acceptable bounds, ideally between 120ï¿½ and 140ï¿½
+      // but 115ï¿½ to 145ï¿½ will just about do, and might converge quicker
       if (abs(phaseLag - CONST_PI * 130.0 / 180.0) > (CONST_PI * 15.0 / 180.0))
       {
         // phase lag outside the desired range
         // set noiseBand to new estimate
-        // aiming for 135° = 0.75 * pi (radians)
-        // sin(135°) = sqrt(2)/2
+        // aiming for 135ï¿½ = 0.75 * pi (radians)
+        // sin(135ï¿½) = sqrt(2)/2
         // NB noiseBand = 0.5 * hysteresis
         newWorkingNoiseBand = 0.5 * inducedAmplitude * CONST_SQRT2_DIV_2;
 
@@ -670,14 +540,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
         */
 #endif
 
-#if defined (AUTOTUNE_DEBUG)
-        Serial.print(F("newWorkingNoiseBand "));
-        Serial.println(newWorkingNoiseBand);
-#endif
 
-#if EFI_UNIT_TEST
-		printf(":( 7\r\n");
-#endif /* EFI_UNIT_TEST */
 		return false;
       }
     }
@@ -705,37 +568,25 @@ bool PID_AutoTune::Runtime(Logging *logger)
 	tooManyCycles
   )
   {
-#if EFI_UNIT_TEST
-		printf("tooManyCycles=%d tooLongBetween=%d\r\n", tooManyCycles, tooLongBetween);
-#endif /* EFI_UNIT_TEST */
+
 	  setState(FAILED);
   }
 
   if (((byte) state & (CONVERGED | FAILED)) == 0)
   {
-#if EFI_UNIT_TEST
-		if (verboseMode) {
-			printf(":( 1 state=%s\r\n", getPidAutoTune_AutoTunerState(state));
-		}
-#endif /* EFI_UNIT_TEST */
+
 	return false;
   }
 
   // autotune algorithm has terminated
   // reset autotuner variables
-  scheduleMsg(logger, "AT done");
+
   setOutput( outputStart);
 
   if (state == FAILED)
   {
     // do not calculate gain parameters
 
-#if defined (AUTOTUNE_DEBUG)
-    Serial.println("failed");
-#endif
-#if EFI_UNIT_TEST
-		printf("failed\r\n");
-#endif /* EFI_UNIT_TEST */
     return true;
   }
 
@@ -744,19 +595,10 @@ bool PID_AutoTune::Runtime(Logging *logger)
   // calculate ultimate gain
   double Ku = 4.0 * workingOutputstep / (inducedAmplitude * CONST_PI);
 
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("ultimate gain "));
-  Serial.println(1.0 / Ku);
-  Serial.println(Ku);
-#endif
 
   // calculate ultimate period in seconds
   double Pu = (double) 0.5 * ((lastPeakTime[1] - lastPeakTime[3]) + (lastPeakTime[2] - lastPeakTime[4])) / 1000.0;
 
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("ultimate period "));
-  Serial.println(Pu);
-#endif
 
   // calculate gain parameters using tuning rules
   // NB PID generally outperforms PI for lag-dominated processes
@@ -770,27 +612,16 @@ bool PID_AutoTune::Runtime(Logging *logger)
     // calculate gain ratio
     double kappa_phi = (1.0 / Ku) / K_process;
 
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("gain ratio kappa "));
-  Serial.println(kappa_phi);
-#endif
 
     // calculate phase lag
     phaseLag = calculatePhaseLag(inducedAmplitude);
 
-#if defined (AUTOTUNE_DEBUG)
-  Serial.print(F("phase lag "));
-  Serial.println(phaseLag / CONST_PI * 180.0);
-#endif
 
     // calculate tunings
     Kp = (( 2.50 - 0.92 * phaseLag) / (1.0 + (10.75 - 4.01 * phaseLag) * kappa_phi)) * Ku;
     Ti = ((-3.05 + 1.72 * phaseLag) / pow(1.0 + (-6.10 + 3.44 * phaseLag) * kappa_phi, 2)) * Pu;
     Td = 0.0;
-#if EFI_UNIT_TEST
-		printf("Happy end AMIGOF_PI!\r\n");
-#endif /* EFI_UNIT_TEST */
-	scheduleMsg(logger, "output %f", output);
+
     // converged
     return true;
   }
@@ -799,9 +630,7 @@ bool PID_AutoTune::Runtime(Logging *logger)
   Ti = Pu / (double) tuningRule[controlType].divisor(TI_DIVISOR);
   Td = tuningRule[controlType].PI_controller() ?
        0.0 : Pu / (double) tuningRule[controlType].divisor(TD_DIVISOR);
-#if EFI_UNIT_TEST
-		printf("Happy end!\r\n");
-#endif /* EFI_UNIT_TEST */
+
   // converged
   return true;
 }
@@ -824,13 +653,6 @@ float PID_AutoTune::GetKd() const
 void PID_AutoTune::setOutput(float output) {
 	this->output = output;
 
-	scheduleMsg(logger, "setOutput %f %s", output, getPidAutoTune_AutoTunerState(state));
-
-#if EFI_UNIT_TEST
-	if (verboseMode) {
-		printf("output=%f\r\n", output);
-	}
-#endif /* EFI_UNIT_TEST */
 }
 
 void PID_AutoTune::SetOutputStep(double Step)

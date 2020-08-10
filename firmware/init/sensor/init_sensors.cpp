@@ -2,35 +2,28 @@
  * @file init_sensorss.cpp
  */
 
-#include "cli_registry.h"
 #include "init.h"
+
 #include "sensor.h"
 
-static void initSensorCli();
 
-// Sensor init/config
-void initTps();
-void initOilPressure();
 
-void initSensors0() {
-	initTps();
-	initOilPressure();
+void initNewSensors(DECLARE_ENGINE_PARAMETER_SUFFIX) {
+#if EFI_CAN_SUPPORT
+	initCanSensors();
+#endif
+
+	initTps(PASS_ENGINE_PARAMETER_SIGNATURE);
+	initOilPressure(PASS_ENGINE_PARAMETER_SIGNATURE);
+	initNewThermistors(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	// Init CLI functionality for sensors (mocking)
-	initSensorCli();
+
 }
 
-// Sensor reconfiguration
-void reconfigureTps();
-void reconfigureOilPressure();
-
-void reconfigureSensors() {
-	reconfigureTps();
-	reconfigureOilPressure();
+void reconfigureSensors(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	reconfigureTps(PASS_ENGINE_PARAMETER_SIGNATURE);
+	reconfigureOilPressure(PASS_ENGINE_PARAMETER_SIGNATURE);
+	reconfigureThermistors(PASS_ENGINE_PARAMETER_SIGNATURE);
 }
 
-// Mocking/testing helpers
-static void initSensorCli() {
-	addConsoleActionIF("set_sensor_mock", Sensor::setMockValue);
-	addConsoleAction("reset_sensor_mocks", Sensor::resetAllMocks);
-}

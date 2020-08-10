@@ -1,0 +1,2614 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<msq xmlns="http://www.msefi.com/:msq">
+    <bibliography author="rusEFI" tuneComment="comments" writeDate="date"/>
+    <page number="0" size="20000">
+        <constant name="absoluteFuelPressure">No</constant>
+        <constant name="accelerometerSpiDevice">Off</constant>
+        <constant name="acRelayPin">NONE</constant>
+        <constant name="acRelayPinMode">default</constant>
+        <constant name="acSwitchAdc">PA0</constant>
+        <constant name="activateAuxPid1">No</constant>
+        <constant name="activateAuxPid2">No</constant>
+        <constant name="activateAuxPid3">No</constant>
+        <constant name="activateAuxPid4">No</constant>
+        <constant name="adcVcc" units="volts">0.0</constant>
+        <constant name="afr_hwChannel">PA0</constant>
+        <constant name="afr_type">BPSX</constant>
+        <constant name="afr_v1" units="volts">0.0</constant>
+        <constant name="afr_v2" units="volts">0.0</constant>
+        <constant name="afr_value1" units="AFR">0.0</constant>
+        <constant name="afr_value2" units="AFR">0.0</constant>
+        <constant name="afrLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="afrRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="afrTable">
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="afterCrankingIACtaperDuration" units="cycles">0</constant>
+        <constant name="afterstartCoolantBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="afterstartDecayTime">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="afterstartEnrich">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="afterstartHoldTime">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="alignEngineSnifferAtTDC">No</constant>
+        <constant name="alternator_antiwindupFreq" units="x">0.0</constant>
+        <constant name="alternator_derivativeFilterLoss" units="x">0.0</constant>
+        <constant name="alternatorControl_dFactor" units="1">0.0</constant>
+        <constant name="alternatorControl_iFactor" units="1">0.0</constant>
+        <constant name="alternatorControl_maxValue" units="1">0</constant>
+        <constant name="alternatorControl_minValue" units="1">0</constant>
+        <constant name="alternatorControl_offset" units="1">0</constant>
+        <constant name="alternatorControl_periodMs" units="ms">0</constant>
+        <constant name="alternatorControl_pFactor" units="1">0.0</constant>
+        <constant name="alternatorControlPin">NONE</constant>
+        <constant name="alternatorControlPinMode">default</constant>
+        <constant name="alternatorOffAboveTps" units="%">0.0</constant>
+        <constant name="alternatorPwmFrequency" units="Hz">0</constant>
+        <constant name="ambiguousOperationMode">INVALID</constant>
+        <constant name="analogInputDividerCoefficient" units="coef">0.0</constant>
+        <constant name="antiLag_antiLagActivationMode">Always Active</constant>
+        <constant name="antiLag_antiLagAirSupply">Solenoid</constant>
+        <constant name="antiLag_antiLagBoost" units="%">0</constant>
+        <constant name="antiLag_antiLagCoolantTreshold" units="*C">0</constant>
+        <constant name="antiLag_antilagExtraAir" units="%">0</constant>
+        <constant name="antiLag_antiLagExtraFuel" units="%">0</constant>
+        <constant name="antiLag_antiLagRetard" units="ATDC">0</constant>
+        <constant name="antiLag_antiLagRpmTreshold" units="RPM">0</constant>
+        <constant name="antiLag_antilagTimeout" units="Sec">0</constant>
+        <constant name="antiLag_antiLagTpsTreshold" units="RPM">0</constant>
+        <constant name="antiLagActivatePin">NONE</constant>
+        <constant name="antiLagEnabled">No</constant>
+        <constant name="auxFastSensor1_adcChannel">PA0</constant>
+        <constant name="auxPid1_dFactor" units="1">0.0</constant>
+        <constant name="auxPid1_iFactor" units="1">0.0</constant>
+        <constant name="auxPid1_maxValue" units="1">0</constant>
+        <constant name="auxPid1_minValue" units="1">0</constant>
+        <constant name="auxPid1_offset" units="1">0</constant>
+        <constant name="auxPid1_periodMs" units="ms">0</constant>
+        <constant name="auxPid1_pFactor" units="1">0.0</constant>
+        <constant name="auxPid2_dFactor" units="1">0.0</constant>
+        <constant name="auxPid2_iFactor" units="1">0.0</constant>
+        <constant name="auxPid2_maxValue" units="1">0</constant>
+        <constant name="auxPid2_minValue" units="1">0</constant>
+        <constant name="auxPid2_offset" units="1">0</constant>
+        <constant name="auxPid2_periodMs" units="ms">0</constant>
+        <constant name="auxPid2_pFactor" units="1">0.0</constant>
+        <constant name="auxPid3_dFactor" units="1">0.0</constant>
+        <constant name="auxPid3_iFactor" units="1">0.0</constant>
+        <constant name="auxPid3_maxValue" units="1">0</constant>
+        <constant name="auxPid3_minValue" units="1">0</constant>
+        <constant name="auxPid3_offset" units="1">0</constant>
+        <constant name="auxPid3_periodMs" units="ms">0</constant>
+        <constant name="auxPid3_pFactor" units="1">0.0</constant>
+        <constant name="auxPid4_dFactor" units="1">0.0</constant>
+        <constant name="auxPid4_iFactor" units="1">0.0</constant>
+        <constant name="auxPid4_maxValue" units="1">0</constant>
+        <constant name="auxPid4_minValue" units="1">0</constant>
+        <constant name="auxPid4_offset" units="1">0</constant>
+        <constant name="auxPid4_periodMs" units="ms">0</constant>
+        <constant name="auxPid4_pFactor" units="1">0.0</constant>
+        <constant name="auxPidFrequency1" units="Hz">0</constant>
+        <constant name="auxPidFrequency2" units="Hz">0</constant>
+        <constant name="auxPidFrequency3" units="Hz">0</constant>
+        <constant name="auxPidFrequency4" units="Hz">0</constant>
+        <constant name="auxPidPins1">NONE</constant>
+        <constant name="auxPidPins2">NONE</constant>
+        <constant name="auxPidPins3">NONE</constant>
+        <constant name="auxPidPins4">NONE</constant>
+        <constant name="auxSerialRxPin">NONE</constant>
+        <constant name="auxSerialSpeed" units="BPs">0</constant>
+        <constant name="auxSerialTxPin">NONE</constant>
+        <constant name="auxTempSensor1_adcChannel">PA0</constant>
+        <constant name="auxTempSensor1_bias_resistor" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor1_resistance_1" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor1_resistance_2" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor1_resistance_3" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor1_tempC_1" units="*C">0.0</constant>
+        <constant name="auxTempSensor1_tempC_2" units="*C">0.0</constant>
+        <constant name="auxTempSensor1_tempC_3" units="*C">0.0</constant>
+        <constant name="auxTempSensor2_adcChannel">PA0</constant>
+        <constant name="auxTempSensor2_bias_resistor" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor2_resistance_1" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor2_resistance_2" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor2_resistance_3" units="Ohm">0.0</constant>
+        <constant name="auxTempSensor2_tempC_1" units="*C">0.0</constant>
+        <constant name="auxTempSensor2_tempC_2" units="*C">0.0</constant>
+        <constant name="auxTempSensor2_tempC_3" units="*C">0.0</constant>
+        <constant name="auxValves1">NONE</constant>
+        <constant name="auxValves2">NONE</constant>
+        <constant name="auxVoltage1">PA0</constant>
+        <constant name="auxVoltage2">PA0</constant>
+        <constant name="baroCorrPressureBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="baroCorrRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="baroCorrTable">
+	 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="baroSensor_highValue" units="kpa">0.0</constant>
+        <constant name="baroSensor_hwChannel">PA0</constant>
+        <constant name="baroSensor_lowValue" units="kpa">0.0</constant>
+        <constant name="baroSensor_type">Custom</constant>
+        <constant name="binarySerialRxPin">NONE</constant>
+        <constant name="binarySerialTxPin">NONE</constant>
+        <constant name="boostControlPin">NONE</constant>
+        <constant name="boostControlPinMode">default</constant>
+        <constant name="boostCutPressure" units="kPa">0.0</constant>
+        <constant name="boostPid_dFactor" units="1">0.0</constant>
+        <constant name="boostPid_iFactor" units="1">0.0</constant>
+        <constant name="boostPid_maxValue" units="1">0</constant>
+        <constant name="boostPid_minValue" units="1">0</constant>
+        <constant name="boostPid_offset" units="1">0</constant>
+        <constant name="boostPid_periodMs" units="ms">0</constant>
+        <constant name="boostPid_pFactor" units="1">0.0</constant>
+        <constant name="boostPwmFrequency" units="Hz">0</constant>
+        <constant name="boostRpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="boostTableClosedLoop">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="boostTableOpenLoop">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="boostTpsBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="boostType">Open Loop</constant>
+        <constant name="brakePedalPin">NONE</constant>
+        <constant name="brakePedalPinMode">Default</constant>
+        <constant name="byFirmwareVersion" units="index">0</constant>
+        <constant name="camInputs1">NONE</constant>
+        <constant name="camInputs2">NONE</constant>
+        <constant name="camInputs3">NONE</constant>
+        <constant name="camInputs4">NONE</constant>
+        <constant name="canNbcType">None</constant>
+        <constant name="canReadEnabled">No</constant>
+        <constant name="canRxPin">NONE</constant>
+        <constant name="canSleepPeriodMs" units="ms">0</constant>
+        <constant name="canTxPin">NONE</constant>
+        <constant name="canVssNbcType">BMW_e46</constant>
+        <constant name="canWriteEnabled">No</constant>
+        <constant name="cdmInputPin">NONE</constant>
+        <constant name="cj125CsPin">NONE</constant>
+        <constant name="cj125CsPinMode">default</constant>
+        <constant name="cj125isLsu49">No</constant>
+        <constant name="cj125isUaDivided">No</constant>
+        <constant name="cj125isUrDivided">false</constant>
+        <constant name="cj125ModePin">NONE</constant>
+        <constant name="cj125ModePinMode">default</constant>
+        <constant name="cj125SpiDevice">Off</constant>
+        <constant name="cj125ua">PA0</constant>
+        <constant name="cj125ur">PA0</constant>
+        <constant name="clt_adcChannel">PA0</constant>
+        <constant name="clt_bias_resistor" units="Ohm">0.0</constant>
+        <constant name="clt_resistance_1" units="Ohm">0.0</constant>
+        <constant name="clt_resistance_2" units="Ohm">0.0</constant>
+        <constant name="clt_resistance_3" units="Ohm">0.0</constant>
+        <constant name="clt_tempC_1" units="*C">0.0</constant>
+        <constant name="clt_tempC_2" units="*C">0.0</constant>
+        <constant name="clt_tempC_3" units="*C">0.0</constant>
+        <constant name="cltCrankingCorr">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltCrankingCorrBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltFuelCorr">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltFuelCorrBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltIdleCorr">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltIdleCorrBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltIdleRpm">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltIdleRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltTimingBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cltTimingExtra">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="clutchDownPin">NONE</constant>
+        <constant name="clutchDownPinMode">Default</constant>
+        <constant name="clutchUpPin">NONE</constant>
+        <constant name="clutchUpPinMode">Default</constant>
+        <constant name="coastingFuelCutClt" units="C">0</constant>
+        <constant name="coastingFuelCutEnabled">No</constant>
+        <constant name="coastingFuelCutMap" units="kPa">0</constant>
+        <constant name="coastingFuelCutRpmHigh" units="rpm">0</constant>
+        <constant name="coastingFuelCutRpmLow" units="rpm">0</constant>
+        <constant name="coastingFuelCutTps" units="%">0</constant>
+        <constant name="communicationLedPin">NONE</constant>
+        <constant name="consoleUartDevice">Off</constant>
+        <constant name="cranking_baseFuel" units="ms">0.0</constant>
+        <constant name="cranking_rpm" units="RPM">0</constant>
+        <constant name="crankingAdvance">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingAdvanceBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingChargeAngle" units="deg">0.0</constant>
+        <constant name="crankingCycleBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingCycleCoef">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingFuelBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingFuelCoef">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingIACposition" units="1">0</constant>
+        <constant name="crankingInjectionMode">Simultaneous</constant>
+        <constant name="crankingTimingAngle" units="deg">0.0</constant>
+        <constant name="crankingTpsBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="crankingTpsCoef">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="cutFuelOnHardLimit">No</constant>
+        <constant name="cutSparkOnHardLimit">No</constant>
+        <constant name="cylinderBore" units="mm">0.0</constant>
+        <constant name="cylindersCount">INVALID</constant>
+        <constant name="debugMapAveraging">NONE</constant>
+        <constant name="debugMode">Alternator PID</constant>
+        <constant name="debugTriggerSync">NONE</constant>
+        <constant name="digitalPotentiometerChipSelect1">NONE</constant>
+        <constant name="digitalPotentiometerChipSelect2">NONE</constant>
+        <constant name="digitalPotentiometerChipSelect3">NONE</constant>
+        <constant name="digitalPotentiometerChipSelect4">NONE</constant>
+        <constant name="digitalPotentiometerSpiDevice">Off</constant>
+        <constant name="displacement" units="L">0.0</constant>
+        <constant name="displayLogicLevelsInEngineSniffer">false</constant>
+        <constant name="displayMode">none</constant>
+        <constant name="dizzySparkOutputPin">NONE</constant>
+        <constant name="dizzySparkOutputPinMode">default</constant>
+        <constant name="egoValueShift" units="value">0.0</constant>
+        <constant name="electronicThrottlePin1Mode">default</constant>
+        <constant name="enableAemXSeries">No</constant>
+        <constant name="enableAntiLagAir">No</constant>
+        <constant name="enableAntiLagBoost">No</constant>
+        <constant name="enableAntiLagFuel">No</constant>
+        <constant name="enableAntiLagRetard">No</constant>
+        <constant name="enableCanVss">false</constant>
+        <constant name="enabledStep1Limiter">No</constant>
+        <constant name="enableInnovateLC2">false</constant>
+        <constant name="enableLaunchBoost">No</constant>
+        <constant name="enableLaunchRetard">No</constant>
+        <constant name="enableVerboseCanTx">No</constant>
+        <constant name="engineChartSize" units="count">0</constant>
+        <constant name="engineLoadAccelEnrichmentMultiplier" units="%">0.0</constant>
+        <constant name="engineLoadAccelEnrichmentThreshold" units="Engine Cycles">0.0</constant>
+        <constant name="engineLoadAccelLength" units="Engine Cycles">0</constant>
+        <constant name="engineLoadDecelEnleanmentMultiplier" units="%">0.0</constant>
+        <constant name="engineLoadDecelEnleanmentThreshold" units="Engine Cycles">0.0</constant>
+        <constant name="engineSnifferRpmThreshold" units="RPM">0</constant>
+        <constant name="engineType">AUDI_AAN</constant>
+        <constant name="etb_dFactor" units="1">0.0</constant>
+        <constant name="etb_iFactor" units="1">0.0</constant>
+        <constant name="etb_iTermMax" units="1">0</constant>
+        <constant name="etb_iTermMin" units="1">0</constant>
+        <constant name="etb_maxValue" units="1">0</constant>
+        <constant name="etb_minValue" units="1">0</constant>
+        <constant name="etb_offset" units="1">0</constant>
+        <constant name="etb_periodMs" units="ms">0</constant>
+        <constant name="etb_pFactor" units="1">0.0</constant>
+        <constant name="etb_use_two_wires">No</constant>
+        <constant name="etbBiasBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="etbBiasValues">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="etbDeadband" units="1">0.0</constant>
+        <constant name="etbFreq" units="Hz">0</constant>
+        <constant name="etbIdleThrottleRange" units="%">0.0</constant>
+        <constant name="etbIo1_controlPin1">NONE</constant>
+        <constant name="etbIo1_directionPin1">NONE</constant>
+        <constant name="etbIo1_directionPin2">NONE</constant>
+        <constant name="etbIo1_disablePin">NONE</constant>
+        <constant name="etbIo21_controlPin1">NONE</constant>
+        <constant name="etbIo21_directionPin1">NONE</constant>
+        <constant name="etbIo21_directionPin2">NONE</constant>
+        <constant name="etbIo21_disablePin">NONE</constant>
+        <constant name="etbIo22_controlPin1">NONE</constant>
+        <constant name="etbIo22_directionPin1">NONE</constant>
+        <constant name="etbIo22_directionPin2">NONE</constant>
+        <constant name="etbIo22_disablePin">NONE</constant>
+        <constant name="etbIo2_controlPin1">NONE</constant>
+        <constant name="etbIo2_directionPin1">NONE</constant>
+        <constant name="etbIo2_directionPin2">NONE</constant>
+        <constant name="etbIo2_disablePin">NONE</constant>
+        <constant name="etbNeutralPosition" units="%">0</constant>
+        <constant name="etbPidPaused">No</constant>
+        <constant name="externalKnockSenseAdc">PA0</constant>
+        <constant name="extraInjectionOffset" units="deg">0.0</constant>
+        <constant name="fanOffTemperature" units="*C">0.0</constant>
+        <constant name="fanOnTemperature" units="*C">0.0</constant>
+        <constant name="fanPin">NONE</constant>
+        <constant name="fanPinMode">default</constant>
+        <constant name="firingOrder">One Cylinder</constant>
+        <constant name="fixedModeTiming" units="RPM">0.0</constant>
+        <constant name="fixedTiming" units="deg">0.0</constant>
+        <constant name="frequencyReportingMapInputPin">NONE</constant>
+        <constant name="fsio_setting1" units="Val">0.0</constant>
+        <constant name="fsio_setting10" units="Val">0.0</constant>
+        <constant name="fsio_setting11" units="Val">0.0</constant>
+        <constant name="fsio_setting12" units="Val">0.0</constant>
+        <constant name="fsio_setting13" units="Val">0.0</constant>
+        <constant name="fsio_setting14" units="Val">0.0</constant>
+        <constant name="fsio_setting15" units="Val">0.0</constant>
+        <constant name="fsio_setting16" units="Val">0.0</constant>
+        <constant name="fsio_setting2" units="Val">0.0</constant>
+        <constant name="fsio_setting3" units="Val">0.0</constant>
+        <constant name="fsio_setting4" units="Val">0.0</constant>
+        <constant name="fsio_setting5" units="Val">0.0</constant>
+        <constant name="fsio_setting6" units="Val">0.0</constant>
+        <constant name="fsio_setting7" units="Val">0.0</constant>
+        <constant name="fsio_setting8" units="Val">0.0</constant>
+        <constant name="fsio_setting9" units="Val">0.0</constant>
+        <constant name="fsioAdc1">PA0</constant>
+        <constant name="fsioAdc2">PA0</constant>
+        <constant name="fsioAdc3">PA0</constant>
+        <constant name="fsioAdc4">PA0</constant>
+        <constant name="fsioCurve1">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve1Bins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve2">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve2Bins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve3">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve3Bins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve4">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioCurve4Bins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioDigitalInputs1">NONE</constant>
+        <constant name="fsioDigitalInputs10">NONE</constant>
+        <constant name="fsioDigitalInputs11">NONE</constant>
+        <constant name="fsioDigitalInputs12">NONE</constant>
+        <constant name="fsioDigitalInputs13">NONE</constant>
+        <constant name="fsioDigitalInputs14">NONE</constant>
+        <constant name="fsioDigitalInputs15">NONE</constant>
+        <constant name="fsioDigitalInputs16">NONE</constant>
+        <constant name="fsioDigitalInputs2">NONE</constant>
+        <constant name="fsioDigitalInputs3">NONE</constant>
+        <constant name="fsioDigitalInputs4">NONE</constant>
+        <constant name="fsioDigitalInputs5">NONE</constant>
+        <constant name="fsioDigitalInputs6">NONE</constant>
+        <constant name="fsioDigitalInputs7">NONE</constant>
+        <constant name="fsioDigitalInputs8">NONE</constant>
+        <constant name="fsioDigitalInputs9">NONE</constant>
+        <constant name="fsioFormulas1"></constant>
+        <constant name="fsioFormulas10"></constant>
+        <constant name="fsioFormulas11"></constant>
+        <constant name="fsioFormulas12"></constant>
+        <constant name="fsioFormulas13"></constant>
+        <constant name="fsioFormulas14"></constant>
+        <constant name="fsioFormulas15"></constant>
+        <constant name="fsioFormulas16"></constant>
+        <constant name="fsioFormulas2"></constant>
+        <constant name="fsioFormulas3"></constant>
+        <constant name="fsioFormulas4"></constant>
+        <constant name="fsioFormulas5"></constant>
+        <constant name="fsioFormulas6"></constant>
+        <constant name="fsioFormulas7"></constant>
+        <constant name="fsioFormulas8"></constant>
+        <constant name="fsioFormulas9"></constant>
+        <constant name="fsioFrequency1" units="Hz">0</constant>
+        <constant name="fsioFrequency10" units="Hz">0</constant>
+        <constant name="fsioFrequency11" units="Hz">0</constant>
+        <constant name="fsioFrequency12" units="Hz">0</constant>
+        <constant name="fsioFrequency13" units="Hz">0</constant>
+        <constant name="fsioFrequency14" units="Hz">0</constant>
+        <constant name="fsioFrequency15" units="Hz">0</constant>
+        <constant name="fsioFrequency16" units="Hz">0</constant>
+        <constant name="fsioFrequency2" units="Hz">0</constant>
+        <constant name="fsioFrequency3" units="Hz">0</constant>
+        <constant name="fsioFrequency4" units="Hz">0</constant>
+        <constant name="fsioFrequency5" units="Hz">0</constant>
+        <constant name="fsioFrequency6" units="Hz">0</constant>
+        <constant name="fsioFrequency7" units="Hz">0</constant>
+        <constant name="fsioFrequency8" units="Hz">0</constant>
+        <constant name="fsioFrequency9" units="Hz">0</constant>
+        <constant name="fsioInputModes1">Default</constant>
+        <constant name="fsioInputModes10">Default</constant>
+        <constant name="fsioInputModes11">Default</constant>
+        <constant name="fsioInputModes12">Default</constant>
+        <constant name="fsioInputModes13">Default</constant>
+        <constant name="fsioInputModes14">Default</constant>
+        <constant name="fsioInputModes15">Default</constant>
+        <constant name="fsioInputModes16">Default</constant>
+        <constant name="fsioInputModes2">Default</constant>
+        <constant name="fsioInputModes3">Default</constant>
+        <constant name="fsioInputModes4">Default</constant>
+        <constant name="fsioInputModes5">Default</constant>
+        <constant name="fsioInputModes6">Default</constant>
+        <constant name="fsioInputModes7">Default</constant>
+        <constant name="fsioInputModes8">Default</constant>
+        <constant name="fsioInputModes9">Default</constant>
+        <constant name="fsioOutputPins1">NONE</constant>
+        <constant name="fsioOutputPins10">NONE</constant>
+        <constant name="fsioOutputPins11">NONE</constant>
+        <constant name="fsioOutputPins12">NONE</constant>
+        <constant name="fsioOutputPins13">NONE</constant>
+        <constant name="fsioOutputPins14">NONE</constant>
+        <constant name="fsioOutputPins15">NONE</constant>
+        <constant name="fsioOutputPins16">NONE</constant>
+        <constant name="fsioOutputPins2">NONE</constant>
+        <constant name="fsioOutputPins3">NONE</constant>
+        <constant name="fsioOutputPins4">NONE</constant>
+        <constant name="fsioOutputPins5">NONE</constant>
+        <constant name="fsioOutputPins6">NONE</constant>
+        <constant name="fsioOutputPins7">NONE</constant>
+        <constant name="fsioOutputPins8">NONE</constant>
+        <constant name="fsioOutputPins9">NONE</constant>
+        <constant name="fsioTable1">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="fsioTable1LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable1RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable2">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="fsioTable2LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable2RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable3">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="fsioTable3LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable3RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable4">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="fsioTable4LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fsioTable4RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fuelAlgorithm">MAF</constant>
+        <constant name="fuelClosedLoopCorrectionEnabled">No</constant>
+        <constant name="fuelLevelEmptyTankVoltage" units="V">0.0</constant>
+        <constant name="fuelLevelFullTankVoltage" units="V">0.0</constant>
+        <constant name="fuelLevelSensor">PA0</constant>
+        <constant name="fuelLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fuelPumpPin">NONE</constant>
+        <constant name="fuelPumpPinMode">default</constant>
+        <constant name="fuelRailPressure" units="kPa">0.0</constant>
+        <constant name="fuelRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="fuelTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="globalFuelCorrection" units="coef">0.0</constant>
+        <constant name="globalTriggerAngleOffset" units="deg">0.0</constant>
+        <constant name="gpioPinModes1">default</constant>
+        <constant name="gpioPinModes10">default</constant>
+        <constant name="gpioPinModes11">default</constant>
+        <constant name="gpioPinModes12">default</constant>
+        <constant name="gpioPinModes13">default</constant>
+        <constant name="gpioPinModes14">default</constant>
+        <constant name="gpioPinModes15">default</constant>
+        <constant name="gpioPinModes16">default</constant>
+        <constant name="gpioPinModes2">default</constant>
+        <constant name="gpioPinModes3">default</constant>
+        <constant name="gpioPinModes4">default</constant>
+        <constant name="gpioPinModes5">default</constant>
+        <constant name="gpioPinModes6">default</constant>
+        <constant name="gpioPinModes7">default</constant>
+        <constant name="gpioPinModes8">default</constant>
+        <constant name="gpioPinModes9">default</constant>
+        <constant name="gpPwm1_conditions1_belowOrAbove">Below</constant>
+        <constant name="gpPwm1_conditions1_gpPwmChannel">None</constant>
+        <constant name="gpPwm1_conditions1_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm1_conditions2_belowOrAbove">Below</constant>
+        <constant name="gpPwm1_conditions2_gpPwmChannel">None</constant>
+        <constant name="gpPwm1_conditions2_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm1_conditions3_belowOrAbove">Below</constant>
+        <constant name="gpPwm1_conditions3_gpPwmChannel">None</constant>
+        <constant name="gpPwm1_conditions3_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm1_conditions4_belowOrAbove">Below</constant>
+        <constant name="gpPwm1_conditions4_gpPwmChannel">None</constant>
+        <constant name="gpPwm1_conditions4_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gppwm1_dutyIfError" units="%">0</constant>
+        <constant name="gpPwm1_gpPwmFrequency" units="Hz">0</constant>
+        <constant name="gpPwm1_gpPwmLoad">Map</constant>
+        <constant name="gpPwm1_io_gpPwmInputPin">NONE</constant>
+        <constant name="gpPwm1_io_gpPwmPin">NONE</constant>
+        <constant name="gpPwm1_io_gpPwmPinMode">default</constant>
+        <constant name="gppwm1_loadAxis">TPS</constant>
+        <constant name="gppwm1_loadBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm1_offBelowDuty" units="%">0</constant>
+        <constant name="gppwm1_onAboveDuty" units="%">0</constant>
+        <constant name="gppwm1_pin">NONE</constant>
+        <constant name="gppwm1_pwmFrequency" units="hz">0</constant>
+        <constant name="gppwm1_rpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm1_table">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwm1LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm1RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm1SwitchCondition">No</constant>
+        <constant name="gpPwm2_conditions1_belowOrAbove">Below</constant>
+        <constant name="gpPwm2_conditions1_gpPwmChannel">None</constant>
+        <constant name="gpPwm2_conditions1_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm2_conditions2_belowOrAbove">Below</constant>
+        <constant name="gpPwm2_conditions2_gpPwmChannel">None</constant>
+        <constant name="gpPwm2_conditions2_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm2_conditions3_belowOrAbove">Below</constant>
+        <constant name="gpPwm2_conditions3_gpPwmChannel">None</constant>
+        <constant name="gpPwm2_conditions3_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm2_conditions4_belowOrAbove">Below</constant>
+        <constant name="gpPwm2_conditions4_gpPwmChannel">None</constant>
+        <constant name="gpPwm2_conditions4_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gppwm2_dutyIfError" units="%">0</constant>
+        <constant name="gpPwm2_gpPwmFrequency" units="Hz">0</constant>
+        <constant name="gpPwm2_gpPwmLoad">Map</constant>
+        <constant name="gpPwm2_io_gpPwmInputPin">NONE</constant>
+        <constant name="gpPwm2_io_gpPwmPin">NONE</constant>
+        <constant name="gpPwm2_io_gpPwmPinMode">default</constant>
+        <constant name="gppwm2_loadAxis">TPS</constant>
+        <constant name="gppwm2_loadBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm2_offBelowDuty" units="%">0</constant>
+        <constant name="gppwm2_onAboveDuty" units="%">0</constant>
+        <constant name="gppwm2_pin">NONE</constant>
+        <constant name="gppwm2_pwmFrequency" units="hz">0</constant>
+        <constant name="gppwm2_rpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm2_table">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwm2LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm2RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm2SwitchCondition">No</constant>
+        <constant name="gpPwm3_conditions1_belowOrAbove">Below</constant>
+        <constant name="gpPwm3_conditions1_gpPwmChannel">None</constant>
+        <constant name="gpPwm3_conditions1_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm3_conditions2_belowOrAbove">Below</constant>
+        <constant name="gpPwm3_conditions2_gpPwmChannel">None</constant>
+        <constant name="gpPwm3_conditions2_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm3_conditions3_belowOrAbove">Below</constant>
+        <constant name="gpPwm3_conditions3_gpPwmChannel">None</constant>
+        <constant name="gpPwm3_conditions3_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm3_conditions4_belowOrAbove">Below</constant>
+        <constant name="gpPwm3_conditions4_gpPwmChannel">None</constant>
+        <constant name="gpPwm3_conditions4_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gppwm3_dutyIfError" units="%">0</constant>
+        <constant name="gpPwm3_gpPwmFrequency" units="Hz">0</constant>
+        <constant name="gpPwm3_gpPwmLoad">Map</constant>
+        <constant name="gpPwm3_io_gpPwmInputPin">NONE</constant>
+        <constant name="gpPwm3_io_gpPwmPin">NONE</constant>
+        <constant name="gpPwm3_io_gpPwmPinMode">default</constant>
+        <constant name="gppwm3_loadAxis">TPS</constant>
+        <constant name="gppwm3_loadBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm3_offBelowDuty" units="%">0</constant>
+        <constant name="gppwm3_onAboveDuty" units="%">0</constant>
+        <constant name="gppwm3_pin">NONE</constant>
+        <constant name="gppwm3_pwmFrequency" units="hz">0</constant>
+        <constant name="gppwm3_rpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm3_table">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwm3LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm3RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm3SwitchCondition">No</constant>
+        <constant name="gpPwm4_conditions1_belowOrAbove">Below</constant>
+        <constant name="gpPwm4_conditions1_gpPwmChannel">None</constant>
+        <constant name="gpPwm4_conditions1_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm4_conditions2_belowOrAbove">Below</constant>
+        <constant name="gpPwm4_conditions2_gpPwmChannel">None</constant>
+        <constant name="gpPwm4_conditions2_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm4_conditions3_belowOrAbove">Below</constant>
+        <constant name="gpPwm4_conditions3_gpPwmChannel">None</constant>
+        <constant name="gpPwm4_conditions3_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gpPwm4_conditions4_belowOrAbove">Below</constant>
+        <constant name="gpPwm4_conditions4_gpPwmChannel">None</constant>
+        <constant name="gpPwm4_conditions4_gpPwmConditionValue" units="1">0.0</constant>
+        <constant name="gppwm4_dutyIfError" units="%">0</constant>
+        <constant name="gpPwm4_gpPwmFrequency" units="Hz">0</constant>
+        <constant name="gpPwm4_gpPwmLoad">Map</constant>
+        <constant name="gpPwm4_io_gpPwmInputPin">NONE</constant>
+        <constant name="gpPwm4_io_gpPwmPin">NONE</constant>
+        <constant name="gpPwm4_io_gpPwmPinMode">default</constant>
+        <constant name="gppwm4_loadAxis">TPS</constant>
+        <constant name="gppwm4_loadBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm4_offBelowDuty" units="%">0</constant>
+        <constant name="gppwm4_onAboveDuty" units="%">0</constant>
+        <constant name="gppwm4_pin">NONE</constant>
+        <constant name="gppwm4_pwmFrequency" units="hz">0</constant>
+        <constant name="gppwm4_rpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="gppwm4_table">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwm4LoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm4RpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="gpPwm4SwitchCondition">No</constant>
+        <constant name="gpPwmTable1">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwmTable2">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwmTable3">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gpPwmTable4">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="gps_rx_pin">NONE</constant>
+        <constant name="gps_tx_pin">NONE</constant>
+        <constant name="hardCutRpmRange" units="rpm">0</constant>
+        <constant name="hasFrequencyReportingMapSensor">No</constant>
+        <constant name="HD44780_db4">NONE</constant>
+        <constant name="HD44780_db5">NONE</constant>
+        <constant name="HD44780_db6">NONE</constant>
+        <constant name="HD44780_db7">NONE</constant>
+        <constant name="HD44780_e">NONE</constant>
+        <constant name="HD44780_rs">NONE</constant>
+        <constant name="HD44780height" units="index">0</constant>
+        <constant name="HD44780width" units="index">0</constant>
+        <constant name="high_fuel_pressure_sensor_1">PA0</constant>
+        <constant name="high_fuel_pressure_sensor_2">PA0</constant>
+        <constant name="hip9011CsPin">NONE</constant>
+        <constant name="hip9011CsPinMode">default</constant>
+        <constant name="hip9011IntHoldPin">NONE</constant>
+        <constant name="hip9011IntHoldPinMode">default</constant>
+        <constant name="hip9011PrescalerAndSDO" units="integer">0</constant>
+        <constant name="hip9011SpiDevice">Off</constant>
+        <constant name="hipOutputChannel">PA0</constant>
+        <constant name="iacByTpsTaper" units="percent">0</constant>
+        <constant name="iacCoasting">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="iacCoastingBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="iacPidMultLoadBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="iacPidMultRpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="iacPidMultTable">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="iat_adcChannel">PA0</constant>
+        <constant name="iat_bias_resistor" units="Ohm">0.0</constant>
+        <constant name="iat_resistance_1" units="Ohm">0.0</constant>
+        <constant name="iat_resistance_2" units="Ohm">0.0</constant>
+        <constant name="iat_resistance_3" units="Ohm">0.0</constant>
+        <constant name="iat_tempC_1" units="*C">0.0</constant>
+        <constant name="iat_tempC_2" units="*C">0.0</constant>
+        <constant name="iat_tempC_3" units="*C">0.0</constant>
+        <constant name="iatFuelCorr">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="iatFuelCorrBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="idle_solenoidFrequency" units="Hz">0</constant>
+        <constant name="idle_solenoidPin">NONE</constant>
+        <constant name="idle_solenoidPinMode">default</constant>
+        <constant name="idle_stepperDirectionPin">NONE</constant>
+        <constant name="idle_stepperStepPin">NONE</constant>
+        <constant name="idleAdvance">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="idleAdvanceBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="idleIncrementalPidCic">No</constant>
+        <constant name="idleMode">Closed Loop</constant>
+        <constant name="idlePidActivationTime" units="seconds">0.0</constant>
+        <constant name="idlePidDeactivationTpsThreshold" units="%">0</constant>
+        <constant name="idlePidFalloffDeltaRpm" units="RPM">0</constant>
+        <constant name="idlePidRpmDeadZone" units="1">0</constant>
+        <constant name="idlePidRpmUpperLimit" units="1">0</constant>
+        <constant name="idleRpmPid2_dFactor" units="1">0.0</constant>
+        <constant name="idleRpmPid2_iFactor" units="1">0.0</constant>
+        <constant name="idleRpmPid2_maxValue" units="1">0</constant>
+        <constant name="idleRpmPid2_minValue" units="1">0</constant>
+        <constant name="idleRpmPid2_offset" units="1">0</constant>
+        <constant name="idleRpmPid2_periodMs" units="ms">0</constant>
+        <constant name="idleRpmPid2_pFactor" units="1">0.0</constant>
+        <constant name="idleRpmPid_dFactor" units="1">0.0</constant>
+        <constant name="idleRpmPid_iFactor" units="1">0.0</constant>
+        <constant name="idlerpmpid_iTermMax" units="1">0</constant>
+        <constant name="idlerpmpid_iTermMin" units="1">0</constant>
+        <constant name="idleRpmPid_maxValue" units="1">0</constant>
+        <constant name="idleRpmPid_minValue" units="1">0</constant>
+        <constant name="idleRpmPid_offset" units="1">0</constant>
+        <constant name="idleRpmPid_periodMs" units="ms">0</constant>
+        <constant name="idleRpmPid_pFactor" units="1">0.0</constant>
+        <constant name="idleStepperReactionTime" units="ms">0.0</constant>
+        <constant name="idleStepperTotalSteps" units="count">0</constant>
+        <constant name="idleTimingPid_dFactor" units="1">0.0</constant>
+        <constant name="idleTimingPid_iFactor" units="1">0.0</constant>
+        <constant name="idleTimingPid_maxValue" units="1">0</constant>
+        <constant name="idleTimingPid_minValue" units="1">0</constant>
+        <constant name="idleTimingPid_offset" units="1">0</constant>
+        <constant name="idleTimingPid_periodMs" units="ms">0</constant>
+        <constant name="idleTimingPid_pFactor" units="1">0.0</constant>
+        <constant name="idleTimingPidDeadZone" units="RPM">0</constant>
+        <constant name="idleTimingPidWorkZone" units="RPM">0</constant>
+        <constant name="idleVe">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="idleVeBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionDwellForCrankingMs" units="ms">0.0</constant>
+        <constant name="ignitionIatCorrLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionIatCorrRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionIatCorrTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="ignitionLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionMode">One coil</constant>
+        <constant name="ignitionOffset" units="RPM">0.0</constant>
+        <constant name="ignitionPinMode">default</constant>
+        <constant name="ignitionPins1">NONE</constant>
+        <constant name="ignitionPins10">NONE</constant>
+        <constant name="ignitionPins11">NONE</constant>
+        <constant name="ignitionPins12">NONE</constant>
+        <constant name="ignitionPins2">NONE</constant>
+        <constant name="ignitionPins3">NONE</constant>
+        <constant name="ignitionPins4">NONE</constant>
+        <constant name="ignitionPins5">NONE</constant>
+        <constant name="ignitionPins6">NONE</constant>
+        <constant name="ignitionPins7">NONE</constant>
+        <constant name="ignitionPins8">NONE</constant>
+        <constant name="ignitionPins9">NONE</constant>
+        <constant name="ignitionRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="ignitionTpsBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="ignitionTpsTable">
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="ignMathCalculateAtIndex" units="index">0</constant>
+        <constant name="injectionMode">Simultaneous</constant>
+        <constant name="injectionPhase">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="injectionPinMode">default</constant>
+        <constant name="injectionPins1">NONE</constant>
+        <constant name="injectionPins10">NONE</constant>
+        <constant name="injectionPins11">NONE</constant>
+        <constant name="injectionPins12">NONE</constant>
+        <constant name="injectionPins2">NONE</constant>
+        <constant name="injectionPins3">NONE</constant>
+        <constant name="injectionPins4">NONE</constant>
+        <constant name="injectionPins5">NONE</constant>
+        <constant name="injectionPins6">NONE</constant>
+        <constant name="injectionPins7">NONE</constant>
+        <constant name="injectionPins8">NONE</constant>
+        <constant name="injectionPins9">NONE</constant>
+        <constant name="injector_battLagCorr">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="injector_battLagCorrBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="injector_flow" units="cm3/min">0.0</constant>
+        <constant name="injPhaseLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="injPhaseRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="invertPrimaryTriggerSignal">Falling</constant>
+        <constant name="invertSecondaryTriggerSignal">Falling</constant>
+        <constant name="is_enabled_spi_1">No</constant>
+        <constant name="is_enabled_spi_2">No</constant>
+        <constant name="is_enabled_spi_3">No</constant>
+        <constant name="is_enabled_spi_4">No</constant>
+        <constant name="isAlternatorControlEnabled">No</constant>
+        <constant name="isBoostControlEnabled">No</constant>
+        <constant name="isCJ125Enabled">No</constant>
+        <constant name="isCJ125Verbose">false</constant>
+        <constant name="isCylinderCleanupEnabled">No</constant>
+        <constant name="isDoubleSolenoidIdle">No</constant>
+        <constant name="isEngineChartEnabled">No</constant>
+        <constant name="isEngineControlEnabled">No</constant>
+        <constant name="isFastAdcEnabled">No</constant>
+        <constant name="isFasterEngineSpinUpEnabled">No</constant>
+        <constant name="isGpPwm1Enabled">No</constant>
+        <constant name="isGpPwm2Enabled">No</constant>
+        <constant name="isGpPwm3Enabled">No</constant>
+        <constant name="isGpPwm4Enabled">No</constant>
+        <constant name="isHip9011Enabled">No</constant>
+        <constant name="isIgnitionEnabled">No</constant>
+        <constant name="isInjectionEnabled">No</constant>
+        <constant name="isManualSpinningMode">No</constant>
+        <constant name="isMapAveragingEnabled">No</constant>
+        <constant name="isSdCardEnabled">No</constant>
+        <constant name="issue_294_26">false</constant>
+        <constant name="issue_294_27">false</constant>
+        <constant name="issue_294_28">false</constant>
+        <constant name="issue_294_29">false</constant>
+        <constant name="issue_294_30">false</constant>
+        <constant name="issue_294_31">nada_example</constant>
+        <constant name="issue_294_unused">false</constant>
+        <constant name="isTunerStudioEnabled">No</constant>
+        <constant name="isVerboseAlternator">No</constant>
+        <constant name="isVerboseAuxPid1">No</constant>
+        <constant name="isVerboseAuxPid2">No</constant>
+        <constant name="isVerboseAuxPid3">No</constant>
+        <constant name="isVerboseAuxPid4">No</constant>
+        <constant name="isVerboseETB">No</constant>
+        <constant name="isVerboseIAC">No</constant>
+        <constant name="isVvtControlEnabled">No</constant>
+        <constant name="isWaveAnalyzerEnabled">No</constant>
+        <constant name="joystickAPin">NONE</constant>
+        <constant name="joystickBPin">NONE</constant>
+        <constant name="joystickCenterPin">NONE</constant>
+        <constant name="joystickCPin">NONE</constant>
+        <constant name="joystickDPin">NONE</constant>
+        <constant name="knockBandCustom" units="kHz">0.0</constant>
+        <constant name="knockDetectionWindowEnd" units="angle">0.0</constant>
+        <constant name="knockDetectionWindowStart" units="angle">0.0</constant>
+        <constant name="knockNoise">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="knockNoiseRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="knockVThreshold" units="V">0.0</constant>
+        <constant name="launchActivateDelay" units="Sec">0.0</constant>
+        <constant name="launchActivatePin">NONE</constant>
+        <constant name="launchActivationMode">Switch Input</constant>
+        <constant name="launchBoostDuty" units="%">0</constant>
+        <constant name="launchControlEnabled">No</constant>
+        <constant name="launchDisableBySpeed">No</constant>
+        <constant name="launchFuelAdded" units="%">0</constant>
+        <constant name="launchFuelCutEnable">No</constant>
+        <constant name="launchRpm" units="rpm">0</constant>
+        <constant name="launchRpmTreshold" units="RPM">0</constant>
+        <constant name="launchSmoothRetard">No</constant>
+        <constant name="launchSparkCutEnable">No</constant>
+        <constant name="launchSpeedTreshold" units="Kph">0</constant>
+        <constant name="launchTimingRetard" units="deg">0</constant>
+        <constant name="launchTimingRpmRange" units="RPM">0</constant>
+        <constant name="launchTpsTreshold" units="%">0</constant>
+        <constant name="LIS302DLCsPin">NONE</constant>
+        <constant name="logFormat">native</constant>
+        <constant name="logicAnalyzerPins1">NONE</constant>
+        <constant name="logicAnalyzerPins2">NONE</constant>
+        <constant name="logicAnalyzerPins3">NONE</constant>
+        <constant name="logicAnalyzerPins4">NONE</constant>
+        <constant name="mafAdcChannel">PA0</constant>
+        <constant name="mafDecoding">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="mafDecodingBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="mafSensorType">v0</constant>
+        <constant name="mainRelayPin">NONE</constant>
+        <constant name="mainRelayPinMode">default</constant>
+        <constant name="malfunctionIndicatorPin">NONE</constant>
+        <constant name="malfunctionIndicatorPinMode">default</constant>
+        <constant name="manIdlePosition" units="%">0.0</constant>
+        <constant name="map_samplingAngle">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="map_samplingAngleBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="map_samplingWindow">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="map_samplingWindowBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="map_sensor_highValue" units="kpa">0.0</constant>
+        <constant name="map_sensor_hwChannel">PA0</constant>
+        <constant name="map_sensor_lowValue" units="kpa">0.0</constant>
+        <constant name="map_sensor_type">Custom</constant>
+        <constant name="mapAccelTaperBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="mapAccelTaperMult">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="mapAveragingSchedulingAtIndex" units="index">0</constant>
+        <constant name="mapErrorDetectionTooHigh" units="kPa">0.0</constant>
+        <constant name="mapErrorDetectionTooLow" units="kPa">0.0</constant>
+        <constant name="mapFrequency0Kpa" units="Hz">0.0</constant>
+        <constant name="mapFrequency100Kpa" units="Hz">0.0</constant>
+        <constant name="mapHighValueVoltage" units="v">0.0</constant>
+        <constant name="mapLowValueVoltage" units="v">0.0</constant>
+        <constant name="mapMinBufferLength" units="count">0</constant>
+        <constant name="max31855_cs1">NONE</constant>
+        <constant name="max31855_cs2">NONE</constant>
+        <constant name="max31855_cs3">NONE</constant>
+        <constant name="max31855_cs4">NONE</constant>
+        <constant name="max31855_cs5">NONE</constant>
+        <constant name="max31855_cs6">NONE</constant>
+        <constant name="max31855_cs7">NONE</constant>
+        <constant name="max31855_cs8">NONE</constant>
+        <constant name="max31855spiDevice">Off</constant>
+        <constant name="maxKnockSubDeg" units="Deg">0.0</constant>
+        <constant name="mc33816_cs">NONE</constant>
+        <constant name="mc33816_driven">NONE</constant>
+        <constant name="mc33816_flag0">NONE</constant>
+        <constant name="mc33816_rstb">NONE</constant>
+        <constant name="mc33816spiDevice">Off</constant>
+        <constant name="mc33972_cs">NONE</constant>
+        <constant name="mc33972_csPinMode">default</constant>
+        <constant name="mc33972spiDevice">Off</constant>
+        <constant name="mc33_hvolt" units="v">0</constant>
+        <constant name="measureMapOnlyInOneCylinder">No</constant>
+        <constant name="multisparkDwell" units="ms">0</constant>
+        <constant name="multisparkEnable">No</constant>
+        <constant name="multisparkMaxExtraSparkCount" units="count">0</constant>
+        <constant name="multisparkMaxRpm" units="rpm">0</constant>
+        <constant name="multisparkMaxSparkingAngle" units="deg">0</constant>
+        <constant name="multisparkSparkDuration" units="ms">0</constant>
+        <constant name="narrowToWideOxygen">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="narrowToWideOxygenBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="noAccelAfterHardLimitPeriodSecs" units="Seconds">0.0</constant>
+        <constant name="o2heaterPin">NONE</constant>
+        <constant name="o2heaterPinModeTodO">default</constant>
+        <constant name="oilPressure_hwChannel">PA0</constant>
+        <constant name="oilPressure_v1" units="volts">0.0</constant>
+        <constant name="oilPressure_v2" units="volts">0.0</constant>
+        <constant name="oilPressure_value1" units="kPa">0.0</constant>
+        <constant name="oilPressure_value2" units="kPa">0.0</constant>
+        <constant name="onOffAlternatorLogic">No</constant>
+        <constant name="overrideCrankingIacSetting">No</constant>
+        <constant name="pauseEtbControl">No</constant>
+        <constant name="pedalToTpsPedalBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="pedalToTpsRpmBins">
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+</constant>
+        <constant name="pedalToTpsTable">
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+	 0 0 0 0 0 0 0 0
+</constant>
+        <constant name="pidExtraForLowRpm" units="%">0</constant>
+        <constant name="postCrankingDurationSec" units="seconds">0.0</constant>
+        <constant name="postCrankingFactor" units="mult">0.0</constant>
+        <constant name="primeInjFalloffTemperature" units="*C">0</constant>
+        <constant name="primingSquirtDurationMs" units="*C">0.0</constant>
+        <constant name="rollingLaunchEnabled">No</constant>
+        <constant name="rpmHardLimit" units="rpm">0</constant>
+        <constant name="runningLedPin">NONE</constant>
+        <constant name="sdCardCsPin">NONE</constant>
+        <constant name="sdCardPeriodMs" units="ms">0</constant>
+        <constant name="sdCardSpiDevice">Off</constant>
+        <constant name="secondSolenoidPin">NONE</constant>
+        <constant name="secondTriggerChannelEnabled">No</constant>
+        <constant name="sensorChartFrequency" units="index">0</constant>
+        <constant name="sensorChartMode">none</constant>
+        <constant name="sensorSnifferRpmThreshold" units="RPM">0</constant>
+        <constant name="sensorType">VR</constant>
+        <constant name="servoOutputPins1">NONE</constant>
+        <constant name="servoOutputPins2">NONE</constant>
+        <constant name="servoOutputPins3">NONE</constant>
+        <constant name="servoOutputPins4">NONE</constant>
+        <constant name="servoOutputPins5">NONE</constant>
+        <constant name="servoOutputPins6">NONE</constant>
+        <constant name="servoOutputPins7">NONE</constant>
+        <constant name="servoOutputPins8">NONE</constant>
+        <constant name="setEtbDuty" units="%">0</constant>
+        <constant name="setEtbErrorRpm">No</constant>
+        <constant name="showSdCardWarning">No</constant>
+        <constant name="silentTriggerError">No</constant>
+        <constant name="slowAdcAlpha" units="%">0.0</constant>
+        <constant name="sparkDwellRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="sparkDwellValues">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="spi1MisoMode">default</constant>
+        <constant name="spi1misoPin">NONE</constant>
+        <constant name="spi1MosiMode">default</constant>
+        <constant name="spi1mosiPin">NONE</constant>
+        <constant name="spi1SckMode">default</constant>
+        <constant name="spi1sckPin">NONE</constant>
+        <constant name="spi2MisoMode">default</constant>
+        <constant name="spi2misoPin">NONE</constant>
+        <constant name="spi2MosiMode">default</constant>
+        <constant name="spi2mosiPin">NONE</constant>
+        <constant name="spi2SckMode">default</constant>
+        <constant name="spi2sckPin">NONE</constant>
+        <constant name="spi3MisoMode">default</constant>
+        <constant name="spi3misoPin">NONE</constant>
+        <constant name="spi3MosiMode">default</constant>
+        <constant name="spi3mosiPin">NONE</constant>
+        <constant name="spi3SckMode">default</constant>
+        <constant name="spi3sckPin">NONE</constant>
+        <constant name="startCrankingDuration" units="Seconds">0</constant>
+        <constant name="starterControlPin">NONE</constant>
+        <constant name="starterRelayDisableMode">default</constant>
+        <constant name="starterRelayDisablePin">NONE</constant>
+        <constant name="startOfCrankingPrimingPulse" units="ms">0.0</constant>
+        <constant name="startStopButtonMode">Default</constant>
+        <constant name="startStopButtonPin">NONE</constant>
+        <constant name="startUpFuelPumpDuration" units="seconds">0</constant>
+        <constant name="stepperDirectionPinMode">default</constant>
+        <constant name="stepperEnablePin">NONE</constant>
+        <constant name="stepperEnablePinMode">default</constant>
+        <constant name="stepperForceParkingEveryRestart">No</constant>
+        <constant name="stepperParkingExtraSteps" units="%">0</constant>
+        <constant name="stft_cellCfgs1_maxAdd" units="%">0</constant>
+        <constant name="stft_cellCfgs1_maxRemove" units="%">0</constant>
+        <constant name="stft_cellCfgs1_timeConstant" units="sec">0</constant>
+        <constant name="stft_cellCfgs2_maxAdd" units="%">0</constant>
+        <constant name="stft_cellCfgs2_maxRemove" units="%">0</constant>
+        <constant name="stft_cellCfgs2_timeConstant" units="sec">0</constant>
+        <constant name="stft_cellCfgs3_maxAdd" units="%">0</constant>
+        <constant name="stft_cellCfgs3_maxRemove" units="%">0</constant>
+        <constant name="stft_cellCfgs3_timeConstant" units="sec">0</constant>
+        <constant name="stft_cellCfgs4_maxAdd" units="%">0</constant>
+        <constant name="stft_cellCfgs4_maxRemove" units="%">0</constant>
+        <constant name="stft_cellCfgs4_timeConstant" units="sec">0</constant>
+        <constant name="stft_deadband" units="%">0</constant>
+        <constant name="stft_maxAfr" units="afr">0</constant>
+        <constant name="stft_maxIdleRegionRpm" units="RPM">0</constant>
+        <constant name="stft_maxOverrunLoad" units="load">0</constant>
+        <constant name="stft_minAfr" units="afr">0</constant>
+        <constant name="stft_minClt" units="C">0</constant>
+        <constant name="stft_minPowerLoad" units="load">0</constant>
+        <constant name="stft_startupDelay" units="seconds">0</constant>
+        <constant name="stftIgnoreErrorMagnitude">false</constant>
+        <constant name="storageMode">Auto</constant>
+        <constant name="syncMode">Trigger 2</constant>
+        <constant name="tachOutputPin">NONE</constant>
+        <constant name="tachOutputPinMode">default</constant>
+        <constant name="tachPulseDuractionMs" units="ms">0.0</constant>
+        <constant name="tachPulseDurationAsDutyCycle">No</constant>
+        <constant name="tachPulsePerRev" units="Pulse">0</constant>
+        <constant name="tachPulseTriggerIndex" units="index">0</constant>
+        <constant name="targetVBatt" units="Volts">0.0</constant>
+        <constant name="tChargeAirCoefMax" units="Max tCharge Coeff.">0.0</constant>
+        <constant name="tChargeAirCoefMin" units="Min tCharge Coeff.">0.0</constant>
+        <constant name="tChargeAirDecrLimit" units="tChange Decrement Limit, deg/sec">0.0</constant>
+        <constant name="tChargeAirFlowMax" units="Max Air Flow, kg/h">0.0</constant>
+        <constant name="tChargeAirIncrLimit" units="tChange Increment Limit, deg/sec">0.0</constant>
+        <constant name="tChargeMaxRpmMaxTps" units="mult">0.0</constant>
+        <constant name="tChargeMaxRpmMinTps" units="mult">0.0</constant>
+        <constant name="tChargeMinRpmMaxTps" units="mult">0.0</constant>
+        <constant name="tChargeMinRpmMinTps" units="mult">0.0</constant>
+        <constant name="tChargeMode">RPM+TPS (Default)</constant>
+        <constant name="tcuDownshiftButtonPin">NONE</constant>
+        <constant name="tcuUpshiftButtonPin">NONE</constant>
+        <constant name="test557pin">NONE</constant>
+        <constant name="throttlePedalPositionAdcChannel">PA0</constant>
+        <constant name="throttlePedalPositionSecondAdcChannel">PA0</constant>
+        <constant name="throttlePedalSecondaryUpVoltage" units="voltage">0.0</constant>
+        <constant name="throttlePedalSecondaryWOTVoltage" units="voltage">0.0</constant>
+        <constant name="throttlePedalUpPin">NONE</constant>
+        <constant name="throttlePedalUpPinMode">Default</constant>
+        <constant name="throttlePedalUpVoltage" units="voltage">0.0</constant>
+        <constant name="throttlePedalWOTVoltage" units="voltage">0.0</constant>
+        <constant name="timing_offset_cylinder1" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder10" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder11" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder12" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder2" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder3" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder4" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder5" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder6" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder7" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder8" units="Val">0.0</constant>
+        <constant name="timing_offset_cylinder9" units="Val">0.0</constant>
+        <constant name="timingAdditive"></constant>
+        <constant name="timingMode">dynamic</constant>
+        <constant name="timingMultiplier"></constant>
+        <constant name="tle6240_cs">NONE</constant>
+        <constant name="tle6240_csPinMode">default</constant>
+        <constant name="tle6240spiDevice">Off</constant>
+        <constant name="tle8888_cs">NONE</constant>
+        <constant name="tle8888_csPinMode">default</constant>
+        <constant name="tle8888mode">Auto</constant>
+        <constant name="tle8888spiDevice">Off</constant>
+        <constant name="todoClutchDownPinInverted">No</constant>
+        <constant name="todoClutchUpPinInverted">No</constant>
+        <constant name="tps1_1AdcChannel">PA0</constant>
+        <constant name="tps1_2AdcChannel">PA0</constant>
+        <constant name="tps1SecondaryMax" units="ADC">0</constant>
+        <constant name="tps1SecondaryMin" units="ADC">0</constant>
+        <constant name="tps2_1AdcChannel">PA0</constant>
+        <constant name="tps2_2AdcChannel">PA0</constant>
+        <constant name="tps2Max" units="ADC">0</constant>
+        <constant name="tps2Min" units="ADC">0</constant>
+        <constant name="tps2SecondaryMax" units="ADC">0</constant>
+        <constant name="tps2SecondaryMin" units="ADC">0</constant>
+        <constant name="tpsAccelEnrichmentThreshold" units="% TPS">0.0</constant>
+        <constant name="tpsAccelFractionDivisor" units="%">0.0</constant>
+        <constant name="tpsAccelFractionPeriod" units="Engine Cycles">0</constant>
+        <constant name="tpsAccelLength" units="Engine Cycles">0</constant>
+        <constant name="tpsDecelEnleanmentMultiplier" units="%">0.0</constant>
+        <constant name="tpsDecelEnleanmentThreshold" units="Engine Cycles">0.0</constant>
+        <constant name="tpsErrorDetectionTooHigh" units="%">0</constant>
+        <constant name="tpsErrorDetectionTooLow" units="%">0</constant>
+        <constant name="tpsMax" units="ADC">0</constant>
+        <constant name="tpsMin" units="ADC">0</constant>
+        <constant name="tpsTpsAccelFromRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="tpsTpsAccelTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="tpsTpsAccelToRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="trigger_customSkippedToothCount" units="number">0</constant>
+        <constant name="trigger_customTotalToothCount" units="number">0</constant>
+        <constant name="trigger_todoRemoveMeOneDay0">false</constant>
+        <constant name="trigger_todoRemoveMeOneDay1">false</constant>
+        <constant name="trigger_type">custom toothed wheel</constant>
+        <constant name="trigger_unusedBit_4_10">false</constant>
+        <constant name="trigger_unusedBit_4_11">false</constant>
+        <constant name="trigger_unusedBit_4_12">false</constant>
+        <constant name="trigger_unusedBit_4_13">false</constant>
+        <constant name="trigger_unusedBit_4_14">false</constant>
+        <constant name="trigger_unusedBit_4_15">false</constant>
+        <constant name="trigger_unusedBit_4_16">false</constant>
+        <constant name="trigger_unusedBit_4_17">false</constant>
+        <constant name="trigger_unusedBit_4_18">false</constant>
+        <constant name="trigger_unusedBit_4_19">false</constant>
+        <constant name="trigger_unusedBit_4_20">false</constant>
+        <constant name="trigger_unusedBit_4_21">false</constant>
+        <constant name="trigger_unusedBit_4_22">false</constant>
+        <constant name="trigger_unusedBit_4_23">false</constant>
+        <constant name="trigger_unusedBit_4_24">false</constant>
+        <constant name="trigger_unusedBit_4_25">false</constant>
+        <constant name="trigger_unusedBit_4_26">false</constant>
+        <constant name="trigger_unusedBit_4_27">false</constant>
+        <constant name="trigger_unusedBit_4_28">false</constant>
+        <constant name="trigger_unusedBit_4_29">false</constant>
+        <constant name="trigger_unusedBit_4_3">false</constant>
+        <constant name="trigger_unusedBit_4_30">false</constant>
+        <constant name="trigger_unusedBit_4_31">false</constant>
+        <constant name="trigger_unusedBit_4_4">false</constant>
+        <constant name="trigger_unusedBit_4_5">false</constant>
+        <constant name="trigger_unusedBit_4_6">false</constant>
+        <constant name="trigger_unusedBit_4_7">false</constant>
+        <constant name="trigger_unusedBit_4_8">false</constant>
+        <constant name="trigger_unusedBit_4_9">false</constant>
+        <constant name="trigger_useOnlyFirstChannel">No</constant>
+        <constant name="triggerCompCenterVolt" units="V">0</constant>
+        <constant name="triggerCompHystMax" units="V">0</constant>
+        <constant name="triggerCompHystMin" units="V">0</constant>
+        <constant name="triggerCompSensorSatRpm" units="RPM">0</constant>
+        <constant name="triggerErrorPin">NONE</constant>
+        <constant name="triggerErrorPinMode">default</constant>
+        <constant name="triggerInputPins1">NONE</constant>
+        <constant name="triggerInputPins2">NONE</constant>
+        <constant name="triggerInputPins3">NONE</constant>
+        <constant name="triggerSimulatorFrequency" units="Rpm">0</constant>
+        <constant name="triggerSimulatorPinModes1">default</constant>
+        <constant name="triggerSimulatorPinModes2">default</constant>
+        <constant name="triggerSimulatorPinModes3">default</constant>
+        <constant name="triggerSimulatorPins1">NONE</constant>
+        <constant name="triggerSimulatorPins2">NONE</constant>
+        <constant name="triggerSimulatorPins3">NONE</constant>
+        <constant name="tunerStudioSerialSpeed" units="BPs">0</constant>
+        <constant name="twoWireBatchIgnition">No</constant>
+        <constant name="twoWireBatchInjection">No</constant>
+        <constant name="uartConsoleSerialSpeed" units="BPs">0</constant>
+        <constant name="unused1476b20">false</constant>
+        <constant name="unused44577">false</constant>
+        <constant name="unused76b0">false</constant>
+        <constant name="unusedBit2">false</constant>
+        <constant name="unusedBit3">false</constant>
+        <constant name="unusedBit4">false</constant>
+        <constant name="unusedBit4_1476">false</constant>
+        <constant name="unusedBit_251_19">false</constant>
+        <constant name="unusedBit_251_24">false</constant>
+        <constant name="unusedBit_251_25">false</constant>
+        <constant name="unusedBit_251_26">false</constant>
+        <constant name="unusedBit_251_27">false</constant>
+        <constant name="unusedBit_251_28">false</constant>
+        <constant name="unusedBit_251_29">false</constant>
+        <constant name="unusedBit_34_31">false</constant>
+        <constant name="useAdvanceCorrectionsForCranking">No</constant>
+        <constant name="useConstantDwellDuringCranking">No</constant>
+        <constant name="useETBforIdleControl">No</constant>
+        <constant name="useFixedBaroCorrFromMap">No</constant>
+        <constant name="useFSIO10ForServo3">No</constant>
+        <constant name="useFSIO11ForServo4">No</constant>
+        <constant name="useFSIO12ForIdleOffset">No</constant>
+        <constant name="useFSIO12ForServo5">No</constant>
+        <constant name="useFSIO13ForIdleMinValue">No</constant>
+        <constant name="useFSIO15ForIdleRpmAdjustment">No</constant>
+        <constant name="useFSIO16ForTimingAdjustment">No</constant>
+        <constant name="useFSIO4ForSeriousEngineWarning">No</constant>
+        <constant name="useFSIO5ForCriticalIssueEngineStop">No</constant>
+        <constant name="useFSIO6ForRevLimiter">No</constant>
+        <constant name="useFSIO8ForServo1">No</constant>
+        <constant name="useFSIO9ForServo2">No</constant>
+        <constant name="useHbridges">No</constant>
+        <constant name="useIacPidMultTable">No</constant>
+        <constant name="useIacTableForCoasting">No</constant>
+        <constant name="useIdleTimingPidControl">No</constant>
+        <constant name="useInstantRpmForIdle">No</constant>
+        <constant name="useLaunchActivateDelay">No</constant>
+        <constant name="useLcdScreen">No</constant>
+        <constant name="useLinearCltSensor">No</constant>
+        <constant name="useLinearIatSensor">No</constant>
+        <constant name="useNoiselessTriggerDecoder">No</constant>
+        <constant name="useOnlyRisingEdgeForTrigger">Rising Edge</constant>
+        <constant name="useRunningMathForCranking">Fixed</constant>
+        <constant name="useSecondEtb">No</constant>
+        <constant name="useSeparateAdvanceForCranking">No</constant>
+        <constant name="useSeparateAdvanceForIdle">No</constant>
+        <constant name="useSeparateVeForIdle">No</constant>
+        <constant name="useSerialPort">No</constant>
+        <constant name="useSolenoidIdle">No</constant>
+        <constant name="useStepperIdle">No</constant>
+        <constant name="useTLE8888_cranking_hack">No</constant>
+        <constant name="useTpicAdvancedMode">No</constant>
+        <constant name="useTPSAdvanceTable">No</constant>
+        <constant name="useTPSBasedVeTable">No</constant>
+        <constant name="vbattAdcChannel">PA0</constant>
+        <constant name="vbattDividerCoeff" units="coef">0.0</constant>
+        <constant name="vehicleSpeedCoef" units="coef">0.0</constant>
+        <constant name="vehicleSpeedSensorInputPin">NONE</constant>
+        <constant name="veLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="verboseCanBaseAddress" units="1">0</constant>
+        <constant name="verboseTLE8888">No</constant>
+        <constant name="verboseTriggerSynchDetails">No</constant>
+        <constant name="veRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="veTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="vRefAdcChannel">PA0</constant>
+        <constant name="vvt_maxVvtDeviation" units="Angle">0</constant>
+        <constant name="vvt_minVvtTemperature" units="*C">0.0</constant>
+        <constant name="vvt_vvtControlPin">NONE</constant>
+        <constant name="vvt_vvtControlPinMode">default</constant>
+        <constant name="vvt_vvtLoadAxis">TPS</constant>
+        <constant name="vvt_vvtPid_dFactor" units="1">0.0</constant>
+        <constant name="vvt_vvtPid_iFactor" units="1">0.0</constant>
+        <constant name="vvt_vvtPid_maxValue" units="1">0</constant>
+        <constant name="vvt_vvtPid_minValue" units="1">0</constant>
+        <constant name="vvt_vvtPid_offset" units="1">0</constant>
+        <constant name="vvt_vvtPid_periodMs" units="ms">0</constant>
+        <constant name="vvt_vvtPid_pFactor" units="1">0.0</constant>
+        <constant name="vvt_vvtPwmFrequency" units="Hz">0</constant>
+        <constant name="vvt_vvtType">On/Off</constant>
+        <constant name="vvtCamSensorUseRise">No</constant>
+        <constant name="vvtLoadBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="vvtMode">Inactive</constant>
+        <constant name="vvtOffset" units="value">0.0</constant>
+        <constant name="vvtRpmBins">
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+	 0.0
+</constant>
+        <constant name="vvtTable">
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+</constant>
+        <constant name="vvtToothMaxAngle" units="1">0.0</constant>
+        <constant name="vvtToothMinAngle" units="1">0.0</constant>
+        <constant name="warningLedPin">NONE</constant>
+        <constant name="warningPeriod" units="seconds">0</constant>
+        <constant name="wboHeaterPin">NONE</constant>
+        <constant name="wwaeBeta" units="Fraction">0.0</constant>
+        <constant name="wwaeTau" units="Seconds">0.0</constant>
+    </page>
+    <settings/>
+    <userComments/>
+    <versionInfo firmwareInfo="rusEFI+2020" nPages="1" signature="MS Ext" version="5.0"/>
+</msq>

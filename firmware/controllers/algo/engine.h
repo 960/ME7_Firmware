@@ -16,7 +16,7 @@
 #include "accel_enrichment.h"
 #include "trigger_central.h"
 #include "local_version_holder.h"
-
+#include "board.h"
 #if EFI_SIGNAL_EXECUTOR_ONE_TIMER
 // PROD real firmware uses this implementation
 #include "single_timer_executor.h"
@@ -24,17 +24,13 @@
 #if EFI_SIGNAL_EXECUTOR_SLEEP
 #include "signal_executor_sleep.h"
 #endif /* EFI_SIGNAL_EXECUTOR_SLEEP */
-#if EFI_UNIT_TEST
-#include "global_execution_queue.h"
-#endif /* EFI_UNIT_TEST */
 
 #define FAST_CALLBACK_PERIOD_MS 5
 
 class RpmCalculator;
+class AirmassModelBase;
 
-#define MAF_DECODING_CACHE_SIZE 256
 
-#define MAF_DECODING_CACHE_MULT (MAF_DECODING_CACHE_SIZE / 5.0)
 
 /**
  * I am not sure if this needs to be configurable.
@@ -49,22 +45,24 @@ class RpmCalculator;
 
 class IEtbController;
 
+
 class Engine : public TriggerStateListener {
 public:
 	explicit Engine(persistent_config_s *config);
 	Engine();
 
-	IEtbController *etbControllers[ETB_COUNT];
+	IEtbController *etbControllers[ETB_COUNT] = {nullptr};
 
 	cyclic_buffer<int> triggerErrorDetection;
 
-#if EFI_SHAFT_POSITION_INPUT
+
+
+
 	void OnTriggerStateDecodingError();
 	void OnTriggerStateProperState(efitick_t nowNt) override;
 	void OnTriggerSyncronization(bool wasSynchronized) override;
 	void OnTriggerInvalidIndex(int currentIndex) override;
 	void OnTriggerSynchronizationLost() override;
-#endif
 
 	void setConfig(persistent_config_s *config);
 	injection_mode_e getCurrentInjectionMode(DECLARE_ENGINE_PARAMETER_SIGNATURE);
@@ -73,34 +71,84 @@ public:
 	LocalVersionHolder auxParametersVersion;
 	operation_mode_e getOperationMode(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
-	AuxActor auxValves[AUX_DIGITAL_VALVE_COUNT][2];
 
-#if EFI_UNIT_TEST
-	bool needTdcCallback = true;
-#endif /* EFI_UNIT_TEST */
 
-	/**
+#if EFI_LAUNCH_CONTROL
+
+	bool tpsCondition = false;
+	bool rpmCondition = false;
+	bool activateSwitchCondition = false;
+	bool coolantCondition = false;
+	bool launchActivatePinState = false;
+	bool isLaunchCondition = false;
+#endif /* EFI_LAUNCH_CONTROL */
+	bool antiLagPinState = false;
+	bool isAntilagCondition = false;
+
+
+	bool rpmCutIndicator = false;
+	bool vvtPinState = false;
+
+	bool is_enabled_spi_1 = false;
+	bool is_enabled_spi_2 = false;
+	bool is_enabled_spi_3 = false;
+	bool is_enabled_spi_4 = false;
+	brain_pin_e pinSpi1Mosi = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi1Miso = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi1Sck = GPIO_UNASSIGNED;
+
+	brain_pin_e pinSpi2Mosi = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi2Miso = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi2Sck = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi3Mosi = GPIO_UNASSIGNED;
+
+	brain_pin_e pinSpi3Miso = GPIO_UNASSIGNED;
+	brain_pin_e pinSpi3Sck = GPIO_UNASSIGNED;
+
+	brain_pin_e cj125CsPin = GPIO_UNASSIGNED;
+	output_pin_e cj125ModePin = GPIO_UNASSIGNED;
+	output_pin_e cj125ModePin2 = GPIO_UNASSIGNED;
+	pin_output_mode_e cj125ModePinMode = OM_DEFAULT;
+
+
+	brain_pin_e tle8888_cs = GPIO_UNASSIGNED;
+
+	spi_device_e cj125SpiDevice = SPI_NONE;
+	spi_device_e tle8888spiDevice = SPI_NONE;
+	spi_device_e mc33816spiDevice = SPI_NONE;
+
+	pin_output_mode_e cj125CsPinMode = OM_DEFAULT;
+	pin_output_mode_e tle8888_csPinMode = OM_DEFAULT;
+
+	brain_pin_e mc33816_cs = GPIO_UNASSIGNED;
+	brain_pin_e mc33816_rstb = GPIO_UNASSIGNED;
+	brain_pin_e mc33816_driven = GPIO_UNASSIGNED;
+	brain_pin_e mc33816_flag0 = GPIO_UNASSIGNED;
+	brain_pin_e wboHeaterPin = GPIO_UNASSIGNED;
+	adc_channel_e cj125ua = EFI_ADC_NONE;
+	adc_channel_e cj125ur = EFI_ADC_NONE;
+
+	bool cj125isUaDivided = false;
+	bool cj125isUrDivided = false;
+
+	void setHardCodedPins(DECLARE_ENGINE_PARAMETER_SIGNATURE);
+
+
+
+/**
 	 * if 2nd TPS is not configured we do not run 2nd ETB
 	 */
 	int etbActualCount = 0;
-    int deviationErrorRpm = 2000;
+
 	/**
 	 * By the way 32-bit value should hold at least 400 hours of events at 6K RPM x 12 events per revolution
 	 */
 	int globalSparkIdCounter = 0;
 
-	// this is useful at least for real hardware integration testing - maybe a proper solution would be to simply
-	// GND input pins instead of leaving them floating
-	bool hwTriggerInputEnabled = true;
-	bool applyLaunchControlRetard = false;
-	bool applyLaunchExtraFuel = false;
 
 
 #if !EFI_PROD_CODE
 	float mockMapValue = 0;
-	// for historical reasons we have options to mock TPS on different layers :(
-	int mockTpsAdcValue = 0;
-	float mockTpsValue = NAN;
 #endif
 
 	int getGlobalConfigurationVersion(void) const;
@@ -123,12 +171,10 @@ public:
 	TestExecutor executor;
 #endif
 
-#if EFI_ENGINE_CONTROL
+
 	FuelSchedule injectionEvents;
 	IgnitionEventList ignitionEvents;
-#endif /* EFI_ENGINE_CONTROL */
 
-	WallFuel wallFuel[INJECTION_PIN_COUNT];
 	bool needToStopEngine(efitick_t nowNt) const;
 	bool etbAutoTune = false;
 	/**
@@ -140,21 +186,14 @@ public:
 	/**
 	 * this is based on isEngineChartEnabled and engineSnifferRpmThreshold settings
 	 */
-	bool isEngineChartEnabled = false;
+
 	/**
-	 * this is based on sensorChartMode and sensorSnifferRpmThreshold settings
+	 * based on current RPM and enableAlternatorControl setting
 	 */
-	sensor_chart_e sensorChartMode = SC_OFF;
-	/**
-	 * based on current RPM and isAlternatorControlEnabled setting
-	 */
-	bool isAlternatorControlEnabled = false;
+	bool enableAlternatorControl = false;
 
 	bool isCltBroken = false;
 	bool slowCallBackWasInvoked = false;
-	bool isLaunchCondition = false;
-	bool limitedSpark = false;
-	bool limitedFuel = false;
 
 	/**
 	 * remote telemetry: if not zero, time to stop flashing 'CALL FROM PIT STOP' light
@@ -181,6 +220,11 @@ public:
 	 */
 	efitick_t stopEngineRequestTimeNt = 0;
 
+
+	bool startStopState = false;
+	efitick_t startStopStateLastPushTime = 0;
+	int startStopStateToggleCounter = 0;
+
 	/**
 	 * This counter is incremented every time user adjusts ECU parameters online (either via rusEfi console or other
 	 * tuning software)
@@ -191,7 +235,7 @@ public:
 	 * always 360 or 720, never zero
 	 */
 	angle_t engineCycle;
-	angle_t launchAdvance = 0;
+
 	LoadAccelEnrichment engineLoadAccelEnrichment;
 	TpsAccelEnrichment tpsAccelEnrichment;
 
@@ -209,30 +253,26 @@ public:
 	 */
 	floatms_t actualLastInjection = 0;
 
+	// Standard cylinder air charge - 100% VE at standard temperature, grams per cylinder
+	float standardAirCharge = 0;
+
 	void periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	void periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	void updateSlowSensors(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-	void initializeTriggerWaveform(Logging *logger DECLARE_ENGINE_PARAMETER_SUFFIX);
-	bool setLaunchBoostDuty = false;
+	void initializeTriggerWaveform( DECLARE_ENGINE_PARAMETER_SUFFIX);
+
 	bool clutchUpState = false;
 	bool clutchDownState = false;
 	bool brakePedalState = false;
-	bool launchActivatePinState = false;
-	bool gpPwm1InputPinState = false;
-	bool gpPwm2InputPinState = false;
-	bool gpPwm3InputPinState = false;
-	bool gpPwm4InputPinState = false;
 
-	bool deviationRpmLimit = false;
-	bool rpmHardCut = false;
 	// todo: extract some helper which would contain boolean state and most recent toggle time?
 	bool acSwitchState = false;
 	efitimeus_t acSwitchLastChangeTime = 0;
 
 	bool isRunningPwmTest = false;
 
+	int getRpmHardLimit(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
-	FsioState fsioState;
 
 	/**
 	 * Are we experiencing knock right now?
@@ -260,6 +300,8 @@ public:
 	 */
 	bool isTestMode = false;
 
+	bool directSelfStimulation = false;
+
 	void resetEngineSnifferIfInTestMode();
 
 	/**
@@ -284,7 +326,6 @@ public:
 	EngineState engineState;
 	SensorsState sensors;
 	efitick_t lastTriggerToothEventTimeNt = 0;
-
 
 
 	/**
@@ -320,10 +361,10 @@ public:
 	 */
 	bool isInShutdownMode() const;
 
-	monitoring_timestamps_s m;
-
 	void knockLogic(float knockVolts DECLARE_ENGINE_PARAMETER_SUFFIX);
 	void printKnockState(void);
+
+	AirmassModelBase* mockAirmassModel = nullptr;
 
 private:
 	/**
@@ -337,7 +378,7 @@ private:
 };
 
 void prepareShapes(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-void applyNonPersistentConfiguration(Logging * logger DECLARE_ENGINE_PARAMETER_SUFFIX);
+void applyNonPersistentConfiguration(DECLARE_ENGINE_PARAMETER_SUFFIX);
 void prepareOutputSignals(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
 void validateConfiguration(DECLARE_ENGINE_PARAMETER_SIGNATURE);

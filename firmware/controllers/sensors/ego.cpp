@@ -43,9 +43,10 @@ static const float maxAfrDeviation = 5.0f;	// 9.7..19.7
 static const int minAvgSize = (EGO_AVG_BUF_SIZE / 2);	// ~0.6 sec for 20ms period of 'fast' callback, and it matches a lag time of most narrow EGOs
 static const int maxAvgSize = (EGO_AVG_BUF_SIZE - 1);	// the whole buffer
 
+#ifdef EFI_NARROW_EGO_AVERAGING
 // we store the last measured AFR value to predict the current averaging window size
 static float lastAfr = stoichAfr;
-
+#endif
 
 void initEgoAveraging(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// Our averaging is intended for use only with Narrow EGOs.
@@ -95,7 +96,7 @@ void initEgoAveraging(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 #endif
 
 bool hasAfrSensor(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	if (CONFIG(enableAemXSeries)) {
+	if (CONFIG(enableAemXSeries) || CONFIG(enableInnovateLC2)) {
 		return true;
 	}
 
@@ -108,12 +109,18 @@ bool hasAfrSensor(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 }
 
 extern float aemXSeriesLambda;
+extern float InnovateLC2AFR;
 
 float getAfr(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 #if EFI_CAN_SUPPORT
 	if (CONFIG(enableAemXSeries)) {
 		return aemXSeriesLambda * 14.7f;
 	}
+#endif
+
+#if EFI_AUX_SERIAL
+	if (CONFIG(enableInnovateLC2))
+		return InnovateLC2AFR;
 #endif
 
 #if EFI_CJ125 && HAL_USE_SPI
@@ -179,7 +186,7 @@ static void initEgoSensor(afr_sensor_s *sensor, ego_sensor_e type) {
 		sensor->value2 = 14;
 		break;
 	default:
-		firmwareError(CUSTOM_EGO_TYPE, "Unexpected EGO %d", type);
+		warning(CUSTOM_EGO_TYPE, "Unexpected EGO %d", type);
 		break;
 	}
 }

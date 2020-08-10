@@ -15,11 +15,7 @@
 #include "mpu_util.h"
 #include "gpio_ext.h"
 #include "pin_repository.h"
-#include "drivers/gpio/tle6240.h"
-#include "drivers/gpio/mc33972.h"
-#include "drivers/gpio/mc33810.h"
-#include "drivers/gpio/tle8888.h"
-
+EXTERN_ENGINE;
 EXTERN_CONFIG;
 static OutputPin tle8888Cs;
 static OutputPin tle6240Cs;
@@ -121,21 +117,15 @@ struct tle8888_config tle8888_cfg = {
 	},
 	.reset =  {.port = NULL,	.pad = 0},
 	.direct_io = {
-//		[0] = {.port = NULL,	.pad = 0,	.output =  5},
-//		[1] = {.port = NULL,	.pad = 0,	.output =  6},
-//		[2] = {.port = NULL,	.pad = 0,	.output = 21},
-//		[3] = {.port = NULL,	.pad = 0,	.output = 15},
-//		[3] = {.port = GPIOE,	.pad = 7,	.output = 22},
-
-
-/*
 		[0] = {.port = NULL,	.pad = 0,	.output = 9},
 		[1] = {.port = NULL,	.pad = 0,	.output = 10},
 		[2] = {.port = NULL,	.pad = 0,	.output = 11},
 		[3] = {.port = NULL,	.pad = 0,	.output = 12},
-*/
+
 	},
-	.hallMode = false,
+	.ign_en =  {.port = NULL,	.pad = 0},
+	.inj_en =  {.port = NULL,	.pad = 0},
+	.mode = TL_AUTO,
 };
 #endif
 
@@ -174,15 +164,15 @@ void initSmartGpio() {
 		gpiochip_use_gpio_base(MC33972_INPUTS);
 
 #if (BOARD_TLE8888_COUNT > 0)
-	if (engineConfiguration->tle8888_cs != GPIO_UNASSIGNED) {
+	if (engine->tle8888_cs != GPIO_UNASSIGNED) {
 		// SPI pins are enabled in initSpiModules()
 
 		// todo: reuse initSpiCs method?
-		tle8888_cfg.spi_config.ssport = getHwPort("tle8888 CS", engineConfiguration->tle8888_cs);
-		tle8888_cfg.spi_config.sspad = getHwPin("tle8888 CS", engineConfiguration->tle8888_cs);
-		tle8888_cfg.spi_bus = getSpiDevice(engineConfiguration->tle8888spiDevice);
+		tle8888_cfg.spi_config.ssport = getHwPort("tle8888 CS", engine->tle8888_cs);
+		tle8888_cfg.spi_config.sspad = getHwPin("tle8888 CS", engine->tle8888_cs);
+		tle8888_cfg.spi_bus = getSpiDevice(engine->tle8888spiDevice);
 
-		tle8888_cfg.hallMode = engineConfiguration->useTLE8888_hall_mode;
+		tle8888_cfg.mode = engineConfiguration->tle8888mode;
 
 		/* spi_bus == null checked in _add function */
 		ret = tle8888_add(0, &tle8888_cfg);
@@ -205,7 +195,7 @@ void initSmartGpio() {
 #if (BOARD_EXT_GPIOCHIPS > 0)
 void stopSmartCsPins() {
 #if (BOARD_TLE8888_COUNT > 0)
-	brain_pin_markUnused(activeConfiguration.tle8888_cs);
+	brain_pin_markUnused(engine->tle8888_cs);
 #endif /* BOARD_TLE8888_COUNT */
 #if (BOARD_TLE6240_COUNT > 0)
 	brain_pin_markUnused(activeConfiguration.tle6240_cs);
@@ -217,8 +207,8 @@ void stopSmartCsPins() {
 
 void startSmartCsPins() {
 #if (BOARD_TLE8888_COUNT > 0)
-	tle8888Cs.initPin("tle8888 CS", engineConfiguration->tle8888_cs,
-				&engineConfiguration->tle8888_csPinMode);
+	tle8888Cs.initPin("tle8888 CS", engine->tle8888_cs,
+				&engine->tle8888_csPinMode);
 	tle8888Cs.setValue(true);
 #endif /* BOARD_TLE8888_COUNT */
 #if (BOARD_TLE6240_COUNT > 0)

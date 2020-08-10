@@ -4,8 +4,8 @@
  * @date Jul 6, 2014
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
-#ifndef TABLE_HELPER_H_
-#define TABLE_HELPER_H_
+
+#pragma once
 
 #include <math.h>
 #include "error_handling.h"
@@ -17,7 +17,7 @@
 
 class ValueProvider3D {
 public:
-	virtual float getValue(float xRpm, float y) = 0;
+	virtual float getValue(float xRpm, float y) const = 0;
 };
 
 
@@ -30,7 +30,7 @@ public:
 	explicit Map3D(const char*name);
 	Map3D(const char*name, float multiplier);
 	void init(vType table[RPM_BIN_SIZE][LOAD_BIN_SIZE], const kType loadBins[LOAD_BIN_SIZE], const kType rpmBins[RPM_BIN_SIZE]);
-	float getValue(float xRpm, float y);
+	float getValue(float xRpm, float y) const override;
 	void setAll(vType value);
 	vType *pointers[LOAD_BIN_SIZE];
 private:
@@ -97,7 +97,7 @@ void Map3D<RPM_BIN_SIZE, LOAD_BIN_SIZE, vType, kType>::init(vType table[RPM_BIN_
 }
 
 template<int RPM_BIN_SIZE, int LOAD_BIN_SIZE, typename vType, typename kType>
-float Map3D<RPM_BIN_SIZE, LOAD_BIN_SIZE, vType, kType>::getValue(float xRpm, float y) {
+float Map3D<RPM_BIN_SIZE, LOAD_BIN_SIZE, vType, kType>::getValue(float xRpm, float y) const {
 	efiAssert(CUSTOM_ERR_ASSERT, initialized, "map not initialized", NAN);
 	if (cisnan(y)) {
 		warning(CUSTOM_PARAM_RANGE, "%s: y is NaN", name);
@@ -147,14 +147,9 @@ void copy2DTable(const vType source[LOAD_BIN_SIZE][RPM_BIN_SIZE], vType destinat
  * AFR value is packed into uint8_t with a multiplier of 10
  */
 #define AFR_STORAGE_MULT 10
-/**
- * TPS-based Advance value is packed into int16_t with a multiplier of 100
- */
-#define ADVANCE_TPS_STORAGE_MULT 100
 
 typedef Map3D<FUEL_RPM_COUNT, FUEL_LOAD_COUNT, uint8_t, float> afr_Map3D_t;
 typedef Map3D<IGN_RPM_COUNT, IGN_LOAD_COUNT, float, float> ign_Map3D_t;
-typedef Map3D<IGN_RPM_COUNT, IGN_TPS_COUNT, int16_t, float> ign_tps_Map3D_t;
 typedef Map3D<FUEL_RPM_COUNT, FUEL_LOAD_COUNT, float, float> fuel_Map3D_t;
 typedef Map3D<BARO_CORR_SIZE, BARO_CORR_SIZE, float, float> baroCorr_Map3D_t;
 typedef Map3D<PEDAL_TO_TPS_SIZE, PEDAL_TO_TPS_SIZE, uint8_t, uint8_t> pedal2tps_t;
@@ -163,10 +158,8 @@ typedef Map3D<BOOST_RPM_COUNT, BOOST_LOAD_COUNT, uint8_t, uint8_t> boostClosedLo
 typedef Map3D<VVT_RPM_COUNT, VVT_LOAD_COUNT, float, float> vvt_Map3D_t;
 
 typedef Map3D<IAC_PID_MULT_SIZE, IAC_PID_MULT_SIZE, uint8_t, uint8_t> iacPidMultiplier_t;
-typedef Map3D<GP_PWM_RPM_COUNT, GP_PWM_LOAD_COUNT, uint8_t, uint8_t> gpPwm1_Map3D_t;
-typedef Map3D<GP_PWM_RPM_COUNT, GP_PWM_LOAD_COUNT, uint8_t, uint8_t> gpPwm2_Map3D_t;
-typedef Map3D<GP_PWM_RPM_COUNT, GP_PWM_LOAD_COUNT, uint8_t, uint8_t> gpPwm3_Map3D_t;
-typedef Map3D<GP_PWM_RPM_COUNT, GP_PWM_LOAD_COUNT, uint8_t, uint8_t> gpPwm4_Map3D_t;
+typedef Map3D<GPPWM_RPM_COUNT, GPPWM_LOAD_COUNT, uint8_t, uint8_t> gppwm_Map3D_t;
+
 void setRpmBin(float array[], int size, float idleRpm, float topRpm);
 
 /**
@@ -192,5 +185,3 @@ void setArrayValues(TValue (&array)[TSize], TValue value) {
 }
 
 void setRpmTableBin(float array[], int size);
-
-#endif /* TABLE_HELPER_H_ */

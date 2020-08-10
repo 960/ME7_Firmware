@@ -22,13 +22,10 @@
 
 EXTERN_ENGINE;
 
-#if EFI_ENGINE_CONTROL
+
 #include "main_trigger_callback.h"
-#endif /* EFI_ENGINE_CONTROL */
 
-static LoggingWithStorage logger("io_pins");
 
-extern EnginePins enginePins;
 
 bool efiReadPin(brain_pin_e pin) {
 	if (brain_pin_is_onchip(pin))

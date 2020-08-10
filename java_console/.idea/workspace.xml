@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e50911ad-dd54-4ba1-913f-56985cbe87d9" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../firmware/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/clean_compile_two_versions.bat" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/clean_compile_two_versions.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/!gen_config.bat" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/!gen_config.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/auto_generated_enums.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/auto_generated_enums.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/auto_generated_enums.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/auto_generated_enums.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/engine_configuration_generated_structures.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/engine_configuration_generated_structures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/rusefi_generated.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/boards/kinetis/config/controllers/algo/rusefi_generated.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/GY6_139QMB.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/GY6_139QMB.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/bmw_e34.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/bmw_e34.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/bmw_m73.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/bmw_m73.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/bmw_m73_mre.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/chevrolet_c20_1973.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/chevrolet_c20_1973.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/chevrolet_camaro_4.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/chevrolet_camaro_4.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/citroenBerlingoTU3JP.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/citroenBerlingoTU3JP.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/custom_engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/engines/custom_engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/custom_engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/engines/custom_engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/daihatsu.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/daihatsu.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_neon.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_neon.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_ram.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_ram.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_stratus.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/dodge_stratus.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/engine_template.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/engine_template.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/engines.mk" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/engines/engines.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_1995_inline_6.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_1995_inline_6.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_aspire.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_aspire.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_festiva.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_festiva.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_fiesta.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/ford_fiesta.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/honda_600.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/honda_600.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/honda_accord.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/honda_accord.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/lada_kalina.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/lada_kalina.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_626.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_626.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_1_6.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_1_6.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_base_maps.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_custom_hunchback.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_na8.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_na8.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_nb.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_nb.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_vvt.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mazda_miata_vvt.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/me7pnp.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/me7pnp.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mitsubishi.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/mitsubishi.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/nissan_primera.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/nissan_primera.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/readme.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/rover_v8.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/rover_v8.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/sachs.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/sachs.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/subaru.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/subaru.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/suzuki_vitara.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/suzuki_vitara.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/test_engine.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/test_engine.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/toyota_jzs147.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/toyota_jzs147.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/vw.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/vw.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/vw_b6.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/vw_b6.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/zil130.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/engines/zil130.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/stm32f4ems/efifeatures.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/stm32f4ems/efifeatures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/config/stm32f7ems/efifeatures.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/config/stm32f7ems/efifeatures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/console/binary/tunerstudio.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/console/binary/tunerstudio.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/console/binary/tunerstudio_outputs.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/console/binary/tunerstudio_outputs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/actuators/boost_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/actuators/boost_control.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/actuators/electronic_throttle.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/actuators/electronic_throttle.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/actuators/electronic_throttle.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/actuators/electronic_throttle.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/advance_map.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/advance_map.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/auto_generated_enums.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/auto_generated_enums.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/auto_generated_enums.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/auto_generated_enums.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/engine2.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/engine2.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/engine_configuration.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/engine_configuration.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/fuel_math.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/fuel_math.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/fuel_math.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/fuel_math.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/launch_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/launch_control.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/launch_control.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/launch_control.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/obd_error_codes.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/obd_error_codes.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/rusefi_enums.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/rusefi_enums.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/algo/rusefi_types.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/algo/rusefi_types.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/bench_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/bench_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/controllers.mk" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/controllers.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/core/common_headers.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/core/common_headers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/core/error_handling.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/core/error_handling.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/engine_controller.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/engine_controller.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/engine_cycle/aux_valves.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/engine_cycle/aux_valves.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/engine_cycle/main_trigger_callback.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/engine_cycle/main_trigger_callback.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/flash_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/flash_main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/gauges/tachometer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/gauges/tachometer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/engine_configuration_generated_structures.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/engine_configuration_generated_structures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_enums_generated.def" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_enums_generated.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_getters.def" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_getters.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_names.def" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_names.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_strings.def" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/fsio_strings.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/pid_state_generated.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/pid_state_generated.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/generated/rusefi_generated.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/generated/rusefi_generated.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/sensors/map.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/sensors/map.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/system/efi_gpio.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/system/efi_gpio.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/system/efi_gpio.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/system/efi_gpio.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/controllers/trigger/trigger_central.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/controllers/trigger/trigger_central.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/gen_config.bat" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/gen_config.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/gen_config_board.bat" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/gen_config_board.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/adc_inputs.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/adc_inputs.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/drivers/gpio/tle8888.c" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/drivers/gpio/tle8888.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/hardware.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/hardware.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/mc33816.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/mc33816.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/mc33816.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/mc33816.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/mc33816_data.c" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/mc33816_data.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/mc33816_memory_map.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/mc33816_memory_map.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/mmc_card.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/mmc_card.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/sensors/cj125_logic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/sensors/cj125_logic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/serial_over_usb/usbcfg.c" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/serial_over_usb/usbcfg.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/hw_layer/smart_gpio.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/hw_layer/smart_gpio.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/integration/rusefi_config.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/integration/rusefi_config.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/rusefi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/rusefi.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/rusefi.mk" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/rusefi.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi.input" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi.input" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_frankenso.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_frankenso.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_kinetis.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_kinetis.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_microrusefi.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_microrusefi.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_prometheus.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_prometheus.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_proteus.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/tunerstudio/rusefi_proteus.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firmware/util/containers/table_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/../firmware/util/containers/table_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hardware/rusefi_lib" beforeDir="false" afterPath="$PROJECT_DIR$/../hardware/rusefi_lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/Msq.java" beforeDir="false" afterPath="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/Msq.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/src/com/rusefi/config/generated/Fields.java" beforeDir="false" afterPath="$PROJECT_DIR$/models/src/com/rusefi/config/generated/Fields.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rusefi.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rusefi.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/com/rusefi/autodetect/SerialAutoChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/com/rusefi/autodetect/SerialAutoChecker.java" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/out/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DefaultGradleProjectSettings">
+    <option name="testRunner" value="GRADLE" />
+    <option name="delegatedBuild" value="true" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/romraider/src/com/romraider/xml/DOMRomUnmarshaller.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="71">
+              <caret line="137" column="66" selection-start-line="137" selection-start-column="66" selection-end-line="137" selection-end-column="66" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="12" column="19" selection-start-line="12" selection-start-column="19" selection-end-line="12" selection-end-column="19" />
+              <folding>
+                <element signature="e#261#262#0" expanded="true" />
+                <element signature="e#310#311#0" expanded="true" />
+                <element signature="e#446#447#0" expanded="true" />
+                <element signature="e#481#482#0" expanded="true" />
+                <element signature="e#612#613#0" expanded="true" />
+                <element signature="e#654#655#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/Msq.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="23" column="48" lean-forward="true" selection-start-line="23" selection-start-column="48" selection-end-line="23" selection-end-column="48" />
+              <folding>
+                <element signature="e#661#662#0" expanded="true" />
+                <element signature="e#721#722#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/PortHolder.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1069">
+              <caret line="77" column="56" lean-forward="true" selection-start-line="77" selection-start-column="56" selection-end-line="77" selection-end-column="56" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/SerialConnector.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="60" selection-start-line="60" selection-end-line="60" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/LinkManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="125">
+              <caret line="176" selection-start-line="176" selection-end-line="176" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/CommandQueue.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="32">
+              <caret line="44" selection-start-line="44" selection-end-line="44" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk1.8.0_152/src.zip!/java/util/concurrent/ThreadPoolExecutor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="100">
+              <caret line="623" selection-start-line="623" selection-end-line="623" />
+              <folding>
+                <element signature="e#25341#25342#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk1.8.0_152/src.zip!/java/lang/Thread.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="108">
+              <caret line="747" selection-start-line="747" selection-end-line="747" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/SerialIoStreamJSerialComm.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="189">
+              <caret line="87" selection-start-line="87" selection-end-line="87" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>packet 47</find>
+      <find>TS_SIG</find>
+      <find>SIGNATURE</find>
+      <find>signature</find>
+      <find>0x</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/ui/src/com/rusefi/autodetect/SerialAutoChecker.java" />
+        <option value="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java" />
+        <option value="$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/Msq.java" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="5" />
+    <option name="y" value="20" />
+    <option name="width" value="1900" />
+    <option name="height" value="969" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="inifile" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="inifile" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="inifile" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="com" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="inifile" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="com" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="inifile" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="com" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="xml" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="binaryprotocol" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="serial" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="tcp" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="romraider" type="462c0819:PsiDirectoryNode" />
+              <item name="xml" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="autodetect" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="rusefi" type="462c0819:PsiDirectoryNode" />
+              <item name="maintenance" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="lang" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="util" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="java_console" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="util" type="462c0819:PsiDirectoryNode" />
+              <item name="concurrent" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.Launcher" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e50911ad-dd54-4ba1-913f-56985cbe87d9" name="Default Changelist" comment="" />
+      <created>1591625829091</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1591625829091</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-7" y="-7" width="1390" height="747" extended-state="6" />
+    <layout>
+      <window_info id="Image Layers" />
+      <window_info id="Designer" />
+      <window_info id="UI Designer" />
+      <window_info id="Capture Tool" />
+      <window_info id="Favorites" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" weight="0.32879046" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32879046" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32879046" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39863715" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Palette" />
+      <window_info anchor="right" id="Theme Preview" />
+      <window_info anchor="right" id="Maven" />
+      <window_info anchor="right" id="Capture Analysis" />
+      <window_info anchor="right" id="Palette&#9;" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/ui/src/com/rusefi/autodetect/SerialAutoChecker.java</url>
+          <line>53</line>
+          <properties />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java</url>
+          <line>13</line>
+          <properties />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/io/src/com/rusefi/io/tcp/BinaryProtocolServer.java</url>
+          <line>103</line>
+          <properties />
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/romraider/src/com/romraider/xml/DOMRomUnmarshaller.java</url>
+          <line>137</line>
+          <properties />
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/romraider/src/com/romraider/xml/DOMRomUnmarshaller.java</url>
+          <line>138</line>
+          <properties />
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/PortHolder.java</url>
+          <line>79</line>
+          <properties class="com.rusefi.io.serial.PortHolder" method="packAndSend">
+            <option name="EMULATED" value="true" />
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="bp.ioLock" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+    <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <targetFilters>
+        <filter targetName="clean" isVisible="false" />
+        <filter targetName="clean_out_folder" isVisible="false" />
+        <filter targetName="autoupdate_compile" isVisible="false" />
+        <filter targetName="autoupdate_jar" isVisible="false" />
+        <filter targetName="compile" isVisible="false" />
+        <filter targetName="jar" isVisible="false" />
+        <filter targetName="run" isVisible="false" />
+        <filter targetName="simlator_test" isVisible="false" />
+        <filter targetName="realtest" isVisible="false" />
+        <filter targetName="before_IDEA_Build" isVisible="false" />
+      </targetFilters>
+      <expanded value="true" />
+    </buildFile>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/binaryprotocol/BinaryProtocolCommands.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/binaryprotocol/BinaryProtocol.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1496">
+          <caret line="48" column="13" selection-start-line="48" selection-start-column="13" selection-end-line="48" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/IoStream.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-337">
+          <caret line="17" column="17" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_tools/enum_to_string/src/com/rusefi/EnumToString.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="130" column="35" selection-start-line="130" selection-start-column="35" selection-end-line="130" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inifile/inifile.iml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ui/src/com/rusefi/autodetect/SerialAutoChecker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="267">
+          <caret line="63" lean-forward="true" selection-start-line="63" selection-end-line="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/tcp/BinaryProtocolServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="103" column="37" lean-forward="true" selection-start-line="103" selection-start-column="27" selection-end-line="103" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ui/src/com/rusefi/maintenance/EraseChip.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="122">
+          <caret line="16" column="113" selection-start-line="16" selection-start-column="113" selection-end-line="16" selection-end-column="113" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/romraider/src/com/romraider/xml/DOMRomUnmarshaller.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="71">
+          <caret line="137" column="66" selection-start-line="137" selection-start-column="66" selection-end-line="137" selection-end-column="66" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_152/src.zip!/java/lang/Thread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="747" selection-start-line="747" selection-end-line="747" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/SerialIoStreamJSerialComm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="87" selection-start-line="87" selection-end-line="87" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_152/src.zip!/java/util/concurrent/ThreadPoolExecutor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="623" selection-start-line="623" selection-end-line="623" />
+          <folding>
+            <element signature="e#25341#25342#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/VersionInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="12" column="19" selection-start-line="12" selection-start-column="19" selection-end-line="12" selection-end-column="19" />
+          <folding>
+            <element signature="e#261#262#0" expanded="true" />
+            <element signature="e#310#311#0" expanded="true" />
+            <element signature="e#446#447#0" expanded="true" />
+            <element signature="e#481#482#0" expanded="true" />
+            <element signature="e#612#613#0" expanded="true" />
+            <element signature="e#654#655#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inifile/src/com/rusefi/tune/xml/Msq.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="23" column="48" lean-forward="true" selection-start-line="23" selection-start-column="48" selection-end-line="23" selection-end-column="48" />
+          <folding>
+            <element signature="e#661#662#0" expanded="true" />
+            <element signature="e#721#722#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/SerialConnector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="60" selection-start-line="60" selection-end-line="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/LinkManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="176" selection-start-line="176" selection-end-line="176" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/CommandQueue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="44" selection-start-line="44" selection-end-line="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/io/src/com/rusefi/io/serial/PortHolder.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1069">
+          <caret line="77" column="56" lean-forward="true" selection-start-line="77" selection-start-column="56" selection-end-line="77" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

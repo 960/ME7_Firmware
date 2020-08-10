@@ -1,0 +1,96 @@
+See also https://git-scm.com/downloads
+
+=========================================
+Save password locally? Try
+git config credential.helper store
+
+=========================================
+New remote tag:
+
+git tag -a TAGNAME -m "tag TAGNAME"
+git push origin TAGNAME
+
+
+=========================================
+New remote branch:
+
+git checkout -b BRANCHNAME
+git push -u origin BRANCHNAME
+
+git checkout -b 2019.01.14_release_1.19.1
+git push -u origin 2019.01.14_release_1.19.1
+
+new remote branch from another branch:
+git checkout -b stable_19.1.rusefi stable_19.1.x
+git push -u origin stable_19.1.rusefi
+
+
+=========================================
+Download submodules:
+
+git submodule update --init
+
+=========================================
+Refresh submodules:
+
+git submodule update --recursive --remote
+
+=========================================
+
+Generate diff of specific commit
+
+   git diff COMMIT^ COMMIT
+(this generates diff between previous to COMMIT and COMMIT)
+=========================================
+
+Diff between two branches
+
+git diff origin/stable_17.6.x origin/stable_17.6.rusefi
+git diff origin/stable_18.2.x origin/stable_18.2.rusefi --ignore-space-at-eol
+=========================================
+
+https://help.github.com/articles/configuring-a-remote-for-a-fork/
+
+git remote -v
+git remote add upstream https://github.com/ChibiOS/ChibiOS.git
+ or
+git remote add upstream https://github.com/RomRaider/RomRaider
+git remote -v
+
+See also git_scripts/git_add_upstream.bat
+
+=========================================
+Cherry-pick from fork
+git remote add mck1117 https://github.com/mck1117/rusefi
+git fetch mck1117
+git cherry-pick 0b004bb2af9c16a79225bd875f0046392993d957
+git push
+
+=========================================
+https://help.github.com/articles/syncing-a-fork/
+git fetch upstream
+git merge upstream/stable_18.2.x
+ or
+git merge upstream/master
+git push
+
+
+http://stackoverflow.com/questions/9646167/clean-up-a-fork-and-restart-it-from-the-upstream
+
+See also git_scripts/git_reset_to_upstream.bat
+
+=========================================
+https://stackoverflow.com/questions/19279490/can-i-fork-another-persons-repo-twice-into-my-own-account
+
+git clone http://github.com/RomRaider/RomRaider RomRaider_copy_2
+cd RomRaider_copy_2
+git remote remove origin
+git remote add origin https://github.com/rusefi/RomRaider_copy_2.git
+git push -u origin master
+
+=============================
+rusEfi .git folder take about 500M on disk. Is it possible to reduce this size?
+
+A proper answer is to split or re-create rusefi repo, but in the meantime:
+
+See git_gc.bat

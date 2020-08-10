@@ -64,6 +64,9 @@
 		EXTERN_CONFIG \
 		extern EnginePins enginePins \
 
+// See also DECLARE_ENGINE_PTR
+// See also INJECT_ENGINE_REFERENCE
+
 
 // Use this macro to declare a function which only takes magic references
 #define DECLARE_ENGINE_PARAMETER_SIGNATURE void
@@ -89,3 +92,11 @@
 #define EXPECTED_REMAINING_STACK 128
 
 #endif /* __cplusplus */
+
+/*
+ * Stack debugging
+ * See also getMaxUsedStack()
+ */
+EXTERNC int getRemainingStack(thread_t *otp);
+int CountFreeStackSpace(const void* wabase);
+void validateStack(const char*msg, obd_code_e code, int stackUnusedSize);

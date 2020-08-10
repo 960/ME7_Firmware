@@ -8,7 +8,7 @@
 
 #include "engine_configuration.h"
 
-void initMapDecoder(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX);
+void initMapDecoder( DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 /**
  * @return Raw MAP sensor value right now

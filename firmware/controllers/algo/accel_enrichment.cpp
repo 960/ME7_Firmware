@@ -29,15 +29,13 @@
 #include "engine_math.h"
 #include "perf_trace.h"
 #if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
+#include "tunerstudio_outputs.h"
 #endif /* EFI_TUNER_STUDIO */
 
-EXTERN_ENGINE
-;
+EXTERN_ENGINE;
 
 tps_tps_Map3D_t tpsTpsMap("tpsTps");
 
-static Logging *logger = nullptr;
 
 void WallFuel::resetWF() {
 	wallFuel = 0;
@@ -92,8 +90,8 @@ floatms_t WallFuel::adjust(floatms_t desiredFuel DECLARE_ENGINE_PARAMETER_SUFFIX
 
 	// if tau is really small, we get div/0.
 	// you probably meant to disable wwae.
-	DISPLAY_STATE(wall_fuel)
-	float tau = CONFIG(DISPLAY_CONFIG(wwaeTau));
+
+	float tau = CONFIG(wwaeTau);
 	if (tau < 0.01f) {
 		return desiredFuel;
 	}
@@ -105,7 +103,7 @@ floatms_t WallFuel::adjust(floatms_t desiredFuel DECLARE_ENGINE_PARAMETER_SUFFIX
 	}
 
 	float alpha = expf_taylor(-120 / (rpm * tau));
-	float beta = CONFIG(DISPLAY_CONFIG(wwaeBeta));
+	float beta = CONFIG(wwaeBeta);
 
 	// If beta is larger than alpha, the system is underdamped.
 	// For reasonable values {tau, beta}, this should only be possible
@@ -128,11 +126,9 @@ floatms_t WallFuel::adjust(floatms_t desiredFuel DECLARE_ENGINE_PARAMETER_SUFFIX
 	// remainder on walls from last time + new from this time
 	float fuelFilmMassNext = alpha * fuelFilmMass + beta * M_cmd;
 
-	DISPLAY_TEXT(Current_Wall_Fuel_Film);
-	DISPLAY_FIELD(wallFuel) = fuelFilmMassNext;
-	DISPLAY_TEXT(Fuel correction);
-	DISPLAY_FIELD(wallFuelCorrection) = M_cmd - desiredFuel;
-	DISPLAY_TEXT(ms);
+
+
+
 	return M_cmd;
 }
 
@@ -183,19 +179,19 @@ floatms_t TpsAccelEnrichment::getTpsEnrichment(DECLARE_ENGINE_PARAMETER_SIGNATUR
 	float valueFromTable = tpsTpsMap.getValue(tpsFrom, tpsTo);
 
 	floatms_t extraFuel;
-	if (deltaTps > engineConfiguration->tpsAccelEnrichmentThreshold) {
+	if (deltaTps > engineConfiguration->maxDeltaTps) {
 		extraFuel = valueFromTable;
-	} else if (deltaTps < -engineConfiguration->tpsDecelEnleanmentThreshold) {
-		extraFuel = deltaTps * engineConfiguration->tpsDecelEnleanmentMultiplier;
+	} else if (deltaTps < -engineConfiguration->maxDeltaTpsEnlean) {
+		extraFuel = deltaTps * engineConfiguration->tpsTpsEnleanFactor;
 	} else {
 		extraFuel = 0;
 	}
 
 	// Fractional enrichment (fuel portions are accumulated and split between several engine cycles.
 	// This is a crude imitation of carburetor's acceleration pump.
-	if (CONFIG(tpsAccelFractionPeriod) > 1 || CONFIG(tpsAccelFractionDivisor) > 1.0f) {
+	if (CONFIG(tpsAccelFractionCycles) > 1 || CONFIG(tpsAccelFractionDivisor) > 1.0f) {
 		// make sure both values are non-zero
-		float periodF = (float)maxI(CONFIG(tpsAccelFractionPeriod), 1);
+		float periodF = (float)maxI(CONFIG(tpsAccelFractionCycles), 1);
 		float divisor = maxF(CONFIG(tpsAccelFractionDivisor), 1.0f);
 
 		// if current extra fuel portion is not "strong" enough, then we keep up the "pump pressure" with the accumulated portion
@@ -236,25 +232,25 @@ float LoadAccelEnrichment::getEngineLoadEnrichment(DECLARE_ENGINE_PARAMETER_SIGN
 
 	float result = 0;
 	int distance = 0;
-	float taper = 0;
-	if (d > engineConfiguration->engineLoadAccelEnrichmentThreshold) {
+	float decay = 0;
+	if (d > engineConfiguration->loadBasedAeMaxEnrich) {
 
 		distance = cb.currentIndex - index;
 		if (distance <= 0) // checking if indexes are out of order due to circular buffer nature
 			distance += minI(cb.getCount(), cb.getSize());
 
-		taper = interpolate2d("accel", distance, engineConfiguration->mapAccelTaperBins, engineConfiguration->mapAccelTaperMult);
+		decay = interpolate2d("accel", distance, config->loadBasedAeDecayBins, config->loadBasedAeDecayMult);
 
-		result = taper * d * engineConfiguration->engineLoadAccelEnrichmentMultiplier;
-	} else if (d < -engineConfiguration->engineLoadDecelEnleanmentThreshold) {
-		result = d * engineConfiguration->engineLoadAccelEnrichmentMultiplier;
+		result = decay * d * engineConfiguration->loadBasedAeMult;
+	} else if (d < -engineConfiguration->loadBasedAeMaxEnleanment) {
+		result = d * engineConfiguration->loadBasedAeMult;
 	}
 
 	if (engineConfiguration->debugMode == DBG_EL_ACCEL) {
 #if EFI_TUNER_STUDIO
 		tsOutputChannels.debugIntField1 = distance;
 		tsOutputChannels.debugFloatField1 = result;
-		tsOutputChannels.debugFloatField2 = taper;
+		tsOutputChannels.debugFloatField2 = decay;
 #endif /* EFI_TUNER_STUDIO */
 	}
 	return result;
@@ -286,8 +282,7 @@ void AccelEnrichment::onNewValue(float currentValue DECLARE_ENGINE_PARAMETER_SUF
 }
 
 void TpsAccelEnrichment::onEngineCycleTps(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	// we update values in handleFuel() directly
-	//onNewValue(getTPS(PASS_ENGINE_PARAMETER_SIGNATURE) PASS_ENGINE_PARAMETER_SUFFIX);
+	// we update values in handleFuel() directly by calling onNewValue()
 
 	onUpdateInvocationCounter++;
 
@@ -312,12 +307,12 @@ void TpsAccelEnrichment::onEngineCycleTps(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 			accumulatedValue = 0;
 
 		// reset the counter
-		cycleCnt = CONFIG(tpsAccelFractionPeriod);
+		cycleCnt = CONFIG(tpsAccelFractionCycles);
 	}
 }
 
 void LoadAccelEnrichment::onEngineCycle(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	onNewValue(getEngineLoadT(PASS_ENGINE_PARAMETER_SIGNATURE) PASS_ENGINE_PARAMETER_SUFFIX);
+	onNewValue(getFuelingLoad(PASS_ENGINE_PARAMETER_SIGNATURE) PASS_ENGINE_PARAMETER_SUFFIX);
 }
 
 AccelEnrichment::AccelEnrichment() {
@@ -325,73 +320,48 @@ AccelEnrichment::AccelEnrichment() {
 	cb.setSize(4);
 }
 
-#if ! EFI_UNIT_TEST
-
-static void accelInfo() {
-	if (!logger) {
-		return;
-	}
-//	scheduleMsg(logger, "EL accel length=%d", mapInstance.cb.getSize());
-	scheduleMsg(logger, "EL accel th=%.2f/mult=%.2f", engineConfiguration->engineLoadAccelEnrichmentThreshold, engineConfiguration->engineLoadAccelEnrichmentMultiplier);
-	scheduleMsg(logger, "EL decel th=%.2f/mult=%.2f", engineConfiguration->engineLoadDecelEnleanmentThreshold, engineConfiguration->engineLoadDecelEnleanmentMultiplier);
-
-//	scheduleMsg(logger, "TPS accel length=%d", tpsInstance.cb.getSize());
-	scheduleMsg(logger, "TPS accel th=%.2f/mult=%.2f", engineConfiguration->tpsAccelEnrichmentThreshold, -1);
-
-	scheduleMsg(logger, "beta=%.2f/tau=%.2f", engineConfiguration->wwaeBeta, engineConfiguration->wwaeTau);
-}
-
 void setEngineLoadAccelThr(float value) {
-	engineConfiguration->engineLoadAccelEnrichmentThreshold = value;
-	accelInfo();
+	engineConfiguration->loadBasedAeMaxEnrich = value;
 }
 
 void setEngineLoadAccelMult(float value) {
-	engineConfiguration->engineLoadAccelEnrichmentMultiplier = value;
-	accelInfo();
+	engineConfiguration->loadBasedAeMult = value;
 }
 
 void setTpsAccelThr(float value) {
-	engineConfiguration->tpsAccelEnrichmentThreshold = value;
-	accelInfo();
+	engineConfiguration->maxDeltaTps = value;
 }
 
 void setTpsDecelThr(float value) {
-	engineConfiguration->tpsDecelEnleanmentThreshold = value;
-	accelInfo();
+	engineConfiguration->maxDeltaTpsEnlean = value;
 }
 
 void setTpsDecelMult(float value) {
-	engineConfiguration->tpsDecelEnleanmentMultiplier = value;
-	accelInfo();
+	engineConfiguration->tpsTpsEnleanFactor = value;
 }
 
 void setDecelThr(float value) {
-	engineConfiguration->engineLoadDecelEnleanmentThreshold = value;
-	accelInfo();
+	engineConfiguration->loadBasedAeMaxEnleanment = value;
 }
 
 void setDecelMult(float value) {
 	engineConfiguration->engineLoadDecelEnleanmentMultiplier = value;
-	accelInfo();
 }
 
 void setTpsAccelLen(int length) {
 	if (length < 1) {
-		scheduleMsg(logger, "Length should be positive");
+
 		return;
 	}
 	engine->tpsAccelEnrichment.setLength(length);
-	accelInfo();
 }
 
 void setEngineLoadAccelLen(int length) {
 	if (length < 1) {
-		scheduleMsg(logger, "Length should be positive");
+
 		return;
 	}
 	engine->engineLoadAccelEnrichment.setLength(length);
-	accelInfo();
 }
 
 void updateAccelParameters() {
@@ -399,18 +369,9 @@ void updateAccelParameters() {
 	setTpsAccelLen(engineConfiguration->tpsAccelLength);
 }
 
-#endif /* ! EFI_UNIT_TEST */
-
-
-void initAccelEnrichment(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	logger = sharedLogger;
+void initAccelEnrichment( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	tpsTpsMap.init(config->tpsTpsAccelTable, config->tpsTpsAccelFromRpmBins, config->tpsTpsAccelToRpmBins);
 
-#if ! EFI_UNIT_TEST
-
-	addConsoleAction("accelinfo", accelInfo);
-
 	updateAccelParameters();
-#endif /* ! EFI_UNIT_TEST */
 }
 

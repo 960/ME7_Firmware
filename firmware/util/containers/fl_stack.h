@@ -6,8 +6,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef FL_STACK_H_
-#define FL_STACK_H_
+#pragma once
 
 #include "global.h"
 
@@ -58,7 +57,7 @@ bool FLStack<T, MAXSIZE>::remove(T value) {
 template<typename T, int MAXSIZE>
 void FLStack<T, MAXSIZE>::push(T value) {
 	if (currentSize >= MAXSIZE) {
-		firmwareError(ERROR_FL_STACK_OVERFLOW, "FLstack overflow");
+		warning(ERROR_FL_STACK_OVERFLOW, "FLstack overflow");
 		return;
 		//warning()
 	}
@@ -68,7 +67,7 @@ void FLStack<T, MAXSIZE>::push(T value) {
 template<typename T, int MAXSIZE>
 T FLStack<T, MAXSIZE>::pop() {
 	if (currentSize == 0) {
-		firmwareError(CUSTOM_FLSTACK, "FLStack is empty");
+		warning(CUSTOM_FLSTACK, "FLStack is empty");
 	}
 	return values[--currentSize];
 }
@@ -122,5 +121,3 @@ Type * ArrayList<Type, Dimention>::add(void) {
 	efiAssert(CUSTOM_ERR_ASSERT, size < Dimention, "add() too many elements", (Type *)NULL);
 	return &elements[size++];
 }
-
-#endif /* FL_STACK_H_ */

@@ -11,8 +11,11 @@
 #include "global.h"
 #include "os_access.h"
 #include "pwm_generator_logic.h"
-#include "pwm_generator.h"
 #include "perf_trace.h"
+
+#if EFI_PROD_CODE
+#include "mpu_util.h"
+#endif
 
 /**
  * We need to limit the number of iterations in order to avoid precision loss while calculating
@@ -67,22 +70,27 @@ void SimplePwm::setSimplePwmDutyCycle(float dutyCycle) {
 		return;
 	}
 	if (cisnan(dutyCycle)) {
-		warning(CUSTOM_DUTY_INVALID, "spwd:dutyCycle %.2f", dutyCycle);
 		return;
 	} else if (dutyCycle < 0) {
-		warning(CUSTOM_DUTY_TOO_LOW, "spwd:dutyCycle %.2f", dutyCycle);
 		dutyCycle = 0;
 	} else if (dutyCycle > 1) {
-		warning(CUSTOM_DUTY_TOO_HIGH, "spwd:dutyCycle %.2f", dutyCycle);
 		dutyCycle = 1;
 	}
-	if (dutyCycle == 0.0f && stateChangeCallback != NULL) {
-		/**
-		 * set the pin low just to be super sure
-		 * this custom handling of zero value comes from CJ125 heater code
-		 * TODO: is this really needed? cover by unit test?
-		 */
+
+#if EFI_PROD_CODE
+	if (hardPwm) {
+		hardPwm->setDuty(dutyCycle);
+		return;
+	}
+#endif
+
+	// Handle zero and full duty cycle.  This will cause the PWM output to behave like a plain digital output.
+	if (dutyCycle == 0.0f && stateChangeCallback) {
+		// Manually fire falling edge
 		stateChangeCallback(0, arg);
+	} else if (dutyCycle == 1.0f && stateChangeCallback) {
+		// Manually fire rising edge
+		stateChangeCallback(1, arg);
 	}
 
 	if (dutyCycle < ZERO_PWM_THRESHOLD) {
@@ -104,9 +112,6 @@ static efitick_t getNextSwitchTimeNt(PwmConfig *state) {
 	// we handle PM_ZERO and PM_FULL separately
 	float switchTime = state->mode == PM_NORMAL ? state->multiChannelStateSequence.getSwitchTime(state->safe.phaseIndex) : 1;
 	float periodNt = state->safe.periodNt;
-#if DEBUG_PWM
-	scheduleMsg(&logger, "iteration=%d switchTime=%.2f period=%.2f", iteration, switchTime, period);
-#endif /* DEBUG_PWM */
 
 	/**
 	 * Once 'iteration' gets relatively high, we might lose calculation precision here.
@@ -114,9 +119,7 @@ static efitick_t getNextSwitchTimeNt(PwmConfig *state) {
 	 */
 	efitick_t timeToSwitchNt = (efitick_t) ((iteration + switchTime) * periodNt);
 
-#if DEBUG_PWM
-	scheduleMsg(&logger, "start=%d timeToSwitch=%d", state->safe.start, timeToSwitch);
-#endif /* DEBUG_PWM */
+
 	return state->safe.startNt + timeToSwitchNt;
 }
 
@@ -139,7 +142,7 @@ void PwmConfig::stop() {
 void PwmConfig::handleCycleStart() {
 	if (safe.phaseIndex != 0) {
 		// https://github.com/rusefi/rusefi/issues/1030
-		firmwareError(CUSTOM_PWM_CYCLE_START, "handleCycleStart %d", safe.phaseIndex);
+		warning(CUSTOM_PWM_CYCLE_START, "handleCycleStart %d", safe.phaseIndex);
 		return;
 	}
 
@@ -154,9 +157,7 @@ void PwmConfig::handleCycleStart() {
 			safe.startNt = getTimeNowNt();
 			safe.iteration = 0;
 			safe.periodNt = periodNt;
-#if DEBUG_PWM
-			scheduleMsg(&logger, "state reset start=%d iteration=%d", state->safe.start, state->safe.iteration);
-#endif
+
 		}
 }
 
@@ -170,10 +171,6 @@ efitick_t PwmConfig::togglePwmState() {
 		return 0;
 	}
 
-#if DEBUG_PWM
-	scheduleMsg(&logger, "togglePwmState phaseIndex=%d iteration=%d", safe.phaseIndex, safe.iteration);
-	scheduleMsg(&logger, "period=%.2f safe.period=%.2f", period, safe.periodNt);
-#endif
 
 	if (cisnan(periodNt)) {
 		/**
@@ -210,9 +207,7 @@ efitick_t PwmConfig::togglePwmState() {
 	}
 
 	efitick_t nextSwitchTimeNt = getNextSwitchTimeNt(this);
-#if DEBUG_PWM
-	scheduleMsg(&logger, "%s: nextSwitchTime %d", state->name, nextSwitchTime);
-#endif /* DEBUG_PWM */
+
 	// signed value is needed here
 //	int64_t timeToSwitch = nextSwitchTimeUs - getTimeNowUs();
 //	if (timeToSwitch < 1) {
@@ -233,11 +228,7 @@ efitick_t PwmConfig::togglePwmState() {
 		safe.phaseIndex = 0; // restart
 		safe.iteration++;
 	}
-#if EFI_UNIT_TEST
-	printf("PWM: nextSwitchTimeNt=%d phaseIndex=%d iteration=%d\r\n", nextSwitchTimeNt,
-			safe.phaseIndex,
-			safe.iteration);
-#endif /* EFI_UNIT_TEST */
+
 	return nextSwitchTimeNt;
 }
 
@@ -258,7 +249,7 @@ static void timerCallback(PwmConfig *state) {
 		return;
 	}
 	if (state->executor == nullptr) {
-		firmwareError(CUSTOM_NULL_EXECUTOR, "exec on %s", state->name);
+		warning(CUSTOM_NULL_EXECUTOR, "exec on %s", state->name);
 		return;
 	}
 
@@ -284,7 +275,7 @@ void copyPwmParameters(PwmConfig *state, int phaseCount, float const *switchTime
 		}
 	}
 	if (state->mode == PM_NORMAL) {
-		state->multiChannelStateSequence.checkSwitchTimes(phaseCount);
+		state->multiChannelStateSequence.checkSwitchTimes(phaseCount, 1);
 	}
 }
 
@@ -303,11 +294,11 @@ void PwmConfig::weComplexInit(const char *msg, ExecutorInterface *executor,
 
 	efiAssertVoid(CUSTOM_ERR_6582, periodNt != 0, "period is not initialized");
 	if (phaseCount == 0) {
-		firmwareError(CUSTOM_ERR_PWM_1, "signal length cannot be zero");
+		warning(CUSTOM_ERR_PWM_1, "signal length cannot be zero");
 		return;
 	}
 	if (phaseCount > PWM_PHASE_MAX_COUNT) {
-		firmwareError(CUSTOM_ERR_PWM_2, "too many phases in PWM");
+		warning(CUSTOM_ERR_PWM_2, "too many phases in PWM");
 		return;
 	}
 	efiAssertVoid(CUSTOM_ERR_6583, waveCount > 0, "waveCount should be positive");
@@ -359,6 +350,23 @@ void startSimplePwmExt(SimplePwm *state, const char *msg,
 	startSimplePwm(state, msg, executor, output, frequency, dutyCycle, stateChangeCallback);
 }
 
+void startSimplePwmHard(SimplePwm *state, const char *msg,
+		ExecutorInterface *executor,
+		brain_pin_e brainPin, OutputPin *output, float frequency,
+		float dutyCycle) {
+#if EFI_PROD_CODE && HAL_USE_PWM
+	auto hardPwm = hardware_pwm::tryInitPin(msg, brainPin, frequency, dutyCycle);
+
+	if (hardPwm) {
+		state->hardPwm = hardPwm;
+	} else {
+#endif
+		startSimplePwmExt(state, msg, executor, brainPin, output, frequency, dutyCycle);
+#if EFI_PROD_CODE && HAL_USE_PWM
+	}
+#endif
+}
+
 /**
  * This method controls the actual hardware pins
  *
@@ -373,4 +381,3 @@ void applyPinState(int stateIndex, PwmConfig *state) /* pwm_gen_callback */ {
 		output->setValue(value);
 	}
 }
-

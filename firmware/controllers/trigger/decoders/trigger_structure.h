@@ -14,7 +14,7 @@
 #define FOUR_STROKE_ENGINE_CYCLE 720
 
 #if EFI_ENABLE_ASSERTS
-#define assertAngleRange(angle, msg, code) if (angle > 10000000 || angle < -10000000) { firmwareError(code, "angle range %s %.2f", msg, angle);angle = 0;}
+#define assertAngleRange(angle, msg, code) if (angle > 10000000 || angle < -10000000) { warning(code, "angle range %s %.2f", msg, angle);angle = 0;}
 #else
 #define assertAngleRange(angle, msg, code) {}
 #endif
@@ -26,7 +26,7 @@
 #define fixAngle2(angle, msg, code, engineCycle)			   	    	    \
 	{																		\
    	    if (cisnan(angle)) {                                                \
-		   firmwareError(CUSTOM_ERR_ANGLE, "aNaN%s", msg);                  \
+		   warning(CUSTOM_ERR_ANGLE, "aNaN%s", msg);                  		\
 		   angle = 0;                                                       \
 	    }                                                                   \
 		assertAngleRange(angle, msg, code);	   					            \
@@ -75,7 +75,7 @@ class TriggerState;
 class TriggerWaveform {
 public:
 	TriggerWaveform();
-	void initializeTriggerWaveform(Logging *logger, operation_mode_e ambiguousOperationMode,
+	void initializeTriggerWaveform(operation_mode_e ambiguousOperationMode,
 			bool useOnlyRisingEdgeForTrigger, const trigger_config_s *triggerConfig);
 	void findTriggerPosition(event_trigger_position_s *position,
 			angle_t angle DEFINE_CONFIG_PARAM(angle_t, globalTriggerAngleOffset));
@@ -184,12 +184,6 @@ public:
 	 */
 	uint32_t expectedEventCount[PWM_PHASE_MAX_WAVE_PER_PWM];
 
-#if EFI_UNIT_TEST
-	/**
-	 * These signals are used for trigger export only
-	 */
-	int triggerSignals[PWM_PHASE_MAX_COUNT];
-#endif
 
 	MultiChannelStateSequence wave;
 
@@ -222,9 +216,15 @@ public:
 	/* 0..1 angle range */
 	void addEvent(angle_t angle, trigger_wheel_e const channelIndex, trigger_value_e const state);
 	/* 0..720 angle range
-	 * Deprecated?
+	 * Deprecated!
 	 */
 	void addEvent720(angle_t angle, trigger_wheel_e const channelIndex, trigger_value_e const state);
+
+	/**
+	 * This version of 'addEvent...' family considers the angle duration of operationMode in this trigger
+	 * For example, 0..180 for FOUR_STROKE_SYMMETRICAL_CRANK_SENSOR
+	 */
+	void addEventAngle(angle_t angle, trigger_wheel_e const channelIndex, trigger_value_e const state);
 
 	/* 0..720 angle range
 	 * Deprecated?
@@ -253,6 +253,8 @@ public:
 	 * See eventAngles array
 	 */
 	angle_t getAngle(int phaseIndex) const;
+
+	angle_t getCycleDuration() const;
 
 	/**
 	 * index of synchronization event within TriggerWaveform
@@ -283,9 +285,6 @@ private:
 	 * this is part of performance optimization
 	 */
 	operation_mode_e operationMode;
-
-
-	angle_t getCycleDuration() const;
 };
 
 void setToothedWheelConfiguration(TriggerWaveform *s, int total, int skipped, operation_mode_e operationMode);

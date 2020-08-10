@@ -153,7 +153,7 @@ void rpmShaftPositionCallback(trigger_event_e ckpSignalType, uint32_t index DECL
 /**
  * @brief   Initialize RPM calculator
  */
-void initRpmCalculator(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX);
+void initRpmCalculator( DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 float getCrankshaftAngleNt(efitick_t timeNt DECLARE_ENGINE_PARAMETER_SUFFIX);
 

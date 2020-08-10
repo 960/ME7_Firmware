@@ -1,5 +1,5 @@
 /*
- * os_access.h
+ * @file os_access.h
  *
  * OS access is not part of global.h in order to help separate synchronous code from asynchronous
  *
@@ -7,8 +7,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef OS_ACCESS_H_
-#define OS_ACCESS_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C"
@@ -25,12 +24,4 @@ extern "C"
 
 #include "io_pins.h"
 
-/*
- * Stack debugging
- * See also getMaxUsedStack()
- */
-EXTERNC int getRemainingStack(thread_t *otp);
-
 #define HAS_OS_ACCESS
-
-#endif /* OS_ACCESS_H_ */

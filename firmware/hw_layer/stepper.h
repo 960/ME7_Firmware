@@ -4,8 +4,8 @@
  * @date Dec 24, 2014
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
-#ifndef STEPPER_H_
-#define STEPPER_H_
+
+#pragma once
 
 #include "global.h"
 #include "efi_gpio.h"
@@ -40,11 +40,26 @@ private:
 	pin_output_mode_e directionPinMode, stepPinMode, enablePinMode;
 };
 
+class DcMotor;
+
+class DualHBridgeStepper final : public StepperHw {
+public:
+    void initialize(DcMotor* motorPhaseA, DcMotor* motorPhaseB, float reactionTime);
+
+    void step(bool positive) override;
+
+private:
+    DcMotor* m_motorPhaseA = nullptr;
+    DcMotor* m_motorPhaseB = nullptr;
+
+    uint8_t m_phase = 0;
+};
+
 class StepperMotor final : private ThreadController<UTILITY_THREAD_STACK_SIZE> {
 public:
 	StepperMotor();
 
-	void initialize(StepperHw *hardware, int totalSteps, Logging *sharedLogger);
+	void initialize(StepperHw *hardware, int totalSteps);
 
 	void setTargetPosition(int targetPosition);
 	int getTargetPosition() const;
@@ -61,4 +76,3 @@ private:
 	int m_targetPosition = 0;
 };
 
-#endif /* STEPPER_H_ */

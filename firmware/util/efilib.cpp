@@ -10,7 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include "efilib.h"
-#include "datalogging.h"
+
 #include "histogram.h"
 #include "error_handling.h"
 
@@ -36,7 +36,7 @@ float efiFloor(float value, float precision) {
 float efiRound(float value, float precision) {
 	efiAssert(CUSTOM_ERR_ASSERT, precision != 0, "zero precision", NAN);
 	float a = rintf (value / precision);
-	return a * precision;
+	return fixNegativeZero(a * precision);
 }
 
 float absF(float value) {
@@ -59,8 +59,12 @@ float minF(float i1, float i2) {
 	return i1 < i2 ? i1 : i2;
 }
 
+float clampF(float min, float clamp, float max) {
+	return maxF(min, minF(clamp, max));
+}
+
 uint32_t efiStrlen(const char *param) {
-	register const char *s;
+	const char *s;
 	for (s = param; *s; ++s)
 		;
 	return (s - param);
@@ -233,7 +237,7 @@ float atoff(const char *param) {
 	char *string = todofixthismesswithcopy;
 	if (indexOf(string, 'n') != -1 || indexOf(string, 'N') != -1) {
 #if ! EFI_SIMULATOR
-		print("NAN from [%s]\r\n", string);
+
 #endif
 		return (float) NAN;
 	}
@@ -303,21 +307,21 @@ bool strEqual(const char *str1, const char *str2) {
 /**
  * @brief This function knows how to print a histogram_s summary
  */
-void printHistogram(Logging *logging, histogram_s *histogram) {
+void printHistogram(histogram_s *histogram) {
 #if EFI_HISTOGRAMS && ! EFI_UNIT_TEST
 	int report[5];
 	int len = hsReport(histogram, report);
 
-	resetLogging(logging);
-	appendMsgPrefix(logging);
-	appendPrintf(logging, "histogram %s *", histogram->name);
+	resetLog();
+	appendMsgPrefix();
+	appendPrintf("histogram %s *", histogram->name);
 	for (int i = 0; i < len; i++)
-	appendPrintf(logging, "%d ", report[i]);
-	appendPrintf(logging, "*");
-	appendMsgPostfix(logging);
-	scheduleLogging(logging);
+	appendPrintf("%d ", report[i]);
+	appendPrintf("*");
+	appendMsgPostfix();
+	scheduleLog();
 #else
-	UNUSED(logging);
+
 	UNUSED(histogram);
 	
 #endif /* EFI_HISTOGRAMS */

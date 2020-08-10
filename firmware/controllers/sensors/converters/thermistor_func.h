@@ -2,7 +2,7 @@
  * @author Matthew Kennedy, (c) 2019
  * 
  * A function to convert resistance to thermistor temperature (NTC). Uses the
- * Steinhart-Hart equation to prevent having to compute many logarithms at runtime.
+ * Steinhart-Hart equation to avoid having to compute many logarithms at runtime.
  */
 
 #pragma once
@@ -16,9 +16,11 @@ public:
 
 	void configure(thermistor_conf_s &cfg);
 
+
+
 private:
 	// Steinhart-Hart coefficients
-	float m_a;
-	float m_b;
-	float m_c;
+	float m_a = 0;
+	float m_b = 0;
+	float m_c = 0;
 };

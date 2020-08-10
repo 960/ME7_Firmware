@@ -1,10 +1,7 @@
 #include "global.h"
 #include "rusefi_enums.h"
 #include "rusefi_hw_enums.h"
-// was generated automatically by rusEfi tool  from rusefi_hw_enums.h
-// was generated automatically by rusEfi tool  from rusefi_enums.h
-// by enum2string.jar tool
-// on Tue Mar 03 00:48:15 CET 2020
+// was generated automatically by rusEfi tool  from rusefi_hw_enums.h // was generated automatically by rusEfi tool  from rusefi_enums.h // by enum2string.jar tool on Wed Jul 29 15:37:22 EDT 2020
 // see also gen_config_and_enums.bat
 
 
@@ -77,12 +74,6 @@ case EFI_ADC_ERROR:
   return "EFI_ADC_ERROR";
 case EFI_ADC_NONE:
   return "EFI_ADC_NONE";
-#if EFI_UNIT_TEST
-case TEST_MAF_CHANNEL:
-case TEST_CLT_CHANNEL:
-case TEST_IAT_CHANNEL:
-  return "EFI_TEST";
-#endif /* EFI_UNIT_TEST */
   }
  return NULL;
 }
@@ -99,30 +90,57 @@ case Force_4_bytes_size_adc_channel_mode:
   }
  return NULL;
 }
-const char *getAir_pressure_sensor_type_e(air_pressure_sensor_type_e value){
+const char *getAntiLagActivationMode_e(antiLagActivationMode_e value){
 switch(value) {
-case Force_4_bytes_size_cranking_map_type:
-  return "Force_4_bytes_size_cranking_map_type";
-case MT_CUSTOM:
-  return "MT_CUSTOM";
-case MT_DENSO183:
-  return "MT_DENSO183";
-case MT_DODGE_NEON_2003:
-  return "MT_DODGE_NEON_2003";
-case MT_GM_3_BAR:
-  return "MT_GM_3_BAR";
-case MT_HONDA3BAR:
-  return "MT_HONDA3BAR";
-case MT_MPX4100:
-  return "MT_MPX4100";
-case MT_MPX4250:
-  return "MT_MPX4250";
-case MT_MPX4250A:
-  return "MT_MPX4250A";
-case MT_SUBY_DENSO:
-  return "MT_SUBY_DENSO";
-case MT_TOYOTA_89420_02010:
-  return "MT_TOYOTA_89420_02010";
+case ALWAYS_ON_ANTILAG:
+  return "ALWAYS_ON_ANTILAG";
+case Force_4bytes_size_antiLagActivationMode_e:
+  return "Force_4bytes_size_antiLagActivationMode_e";
+case SWITCH_INPUT_ANTILAG:
+  return "SWITCH_INPUT_ANTILAG";
+  }
+ return NULL;
+}
+const char *getAntiLagAirSupply_e(antiLagAirSupply_e value){
+switch(value) {
+case E_THROTTLE:
+  return "E_THROTTLE";
+case Force_4bytes_size_antiLagAirSupply_e:
+  return "Force_4bytes_size_antiLagAirSupply_e";
+case IDLE_VALVE:
+  return "IDLE_VALVE";
+case SOLENOID:
+  return "SOLENOID";
+  }
+ return NULL;
+}
+const char *getBoostType_e(boostType_e value){
+switch(value) {
+case CLOSED_LOOP:
+  return "CLOSED_LOOP";
+case Force_4bytes_size_boostType_e:
+  return "Force_4bytes_size_boostType_e";
+case OPEN_LOOP:
+  return "OPEN_LOOP";
+  }
+ return NULL;
+}
+const char *getBrain_pin_diag_e(brain_pin_diag_e value){
+switch(value) {
+case PIN_DRIVER_OVERTEMP:
+  return "PIN_DRIVER_OVERTEMP";
+case PIN_INVALID:
+  return "PIN_INVALID";
+case PIN_OK:
+  return "PIN_OK";
+case PIN_OPEN:
+  return "PIN_OPEN";
+case PIN_OVERLOAD:
+  return "PIN_OVERLOAD";
+case PIN_SHORT_TO_BAT:
+  return "PIN_SHORT_TO_BAT";
+case PIN_SHORT_TO_GND:
+  return "PIN_SHORT_TO_GND";
   }
  return NULL;
 }
@@ -485,31 +503,50 @@ case TLE8888_PIN_9:
   }
  return NULL;
 }
-const char *getCan_device_mode_e(can_device_mode_e value){
+const char *getCan_baudrate_e(can_baudrate_e value){
 switch(value) {
-case CD_OFF:
-  return "CD_OFF";
-case CD_USE_CAN1:
-  return "CD_USE_CAN1";
-case CD_USE_CAN2:
-  return "CD_USE_CAN2";
-case Internal_ForceMyEnumIntSize_can_device_mode:
-  return "Internal_ForceMyEnumIntSize_can_device_mode";
+case B100KBPS:
+  return "B100KBPS";
+case B1MBPS:
+  return "B1MBPS";
+case B250KBPS:
+  return "B250KBPS";
+case B500KBPS:
+  return "B500KBPS";
   }
  return NULL;
 }
 const char *getCan_nbc_e(can_nbc_e value){
 switch(value) {
+case CAN_BUS_BMW_E90:
+  return "CAN_BUS_BMW_E90";
 case CAN_BUS_MAZDA_RX8:
   return "CAN_BUS_MAZDA_RX8";
 case CAN_BUS_NBC_BMW:
   return "CAN_BUS_NBC_BMW";
 case CAN_BUS_NBC_FIAT:
   return "CAN_BUS_NBC_FIAT";
+case CAN_BUS_NBC_NONE:
+  return "CAN_BUS_NBC_NONE";
 case CAN_BUS_NBC_VAG:
   return "CAN_BUS_NBC_VAG";
+case CAN_BUS_W202_C180:
+  return "CAN_BUS_W202_C180";
 case Internal_ForceMyEnumIntSize_can_nbc:
   return "Internal_ForceMyEnumIntSize_can_nbc";
+  }
+ return NULL;
+}
+const char *getCan_vss_nbc_e(can_vss_nbc_e value){
+switch(value) {
+case BMW_e46:
+  return "BMW_e46";
+case Force_4_bytes_size_can_vss_nbc_e:
+  return "Force_4_bytes_size_can_vss_nbc_e";
+case VAG:
+  return "VAG";
+case W202:
+  return "W202";
   }
  return NULL;
 }
@@ -539,8 +576,12 @@ case Force_4_bytes_size_cranking_ignition_mode:
 }
 const char *getDebug_mode_e(debug_mode_e value){
 switch(value) {
+case DBG_16:
+  return "DBG_16";
 case DBG_2:
   return "DBG_2";
+case DBG_34:
+  return "DBG_34";
 case DBG_ALTERNATOR_PID:
   return "DBG_ALTERNATOR_PID";
 case DBG_ANALOG_INPUTS:
@@ -549,8 +590,6 @@ case DBG_ANALOG_INPUTS2:
   return "DBG_ANALOG_INPUTS2";
 case DBG_AUX_PID_1:
   return "DBG_AUX_PID_1";
-case DBG_AUX_TEMPERATURE:
-  return "DBG_AUX_TEMPERATURE";
 case DBG_AUX_VALVES:
   return "DBG_AUX_VALVES";
 case DBG_BENCH_TEST:
@@ -561,6 +600,8 @@ case DBG_CAN:
   return "DBG_CAN";
 case DBG_CJ125:
   return "DBG_CJ125";
+case DBG_COMPOSITE_LOG:
+  return "DBG_COMPOSITE_LOG";
 case DBG_CRANKING_DETAILS:
   return "DBG_CRANKING_DETAILS";
 case DBG_DWELL_METRIC:
@@ -571,6 +612,8 @@ case DBG_ELECTRONIC_THROTTLE_PID:
   return "DBG_ELECTRONIC_THROTTLE_PID";
 case DBG_EL_ACCEL:
   return "DBG_EL_ACCEL";
+case DBG_ETB_AUTOTUNE:
+  return "DBG_ETB_AUTOTUNE";
 case DBG_ETB_LOGIC:
   return "DBG_ETB_LOGIC";
 case DBG_EXECUTOR:
@@ -601,6 +644,8 @@ case DBG_SD_CARD:
   return "DBG_SD_CARD";
 case DBG_SR5_PROTOCOL:
   return "DBG_SR5_PROTOCOL";
+case DBG_START_STOP:
+  return "DBG_START_STOP";
 case DBG_STATUS:
   return "DBG_STATUS";
 case DBG_TLE8888:
@@ -609,27 +654,12 @@ case DBG_TPS_ACCEL:
   return "DBG_TPS_ACCEL";
 case DBG_TRIGGER_COUNTERS:
   return "DBG_TRIGGER_COUNTERS";
-case DBG_TRIGGER_SYNC:
-  return "DBG_TRIGGER_SYNC";
 case DBG_VEHICLE_SPEED_SENSOR:
   return "DBG_VEHICLE_SPEED_SENSOR";
 case DBG_VVT:
   return "DBG_VVT";
 case Force_4_bytes_size_debug_mode_e:
   return "Force_4_bytes_size_debug_mode_e";
-  }
- return NULL;
-}
-const char *getDisplay_mode_e(display_mode_e value){
-switch(value) {
-case DM_HD44780:
-  return "DM_HD44780";
-case DM_HD44780_OVER_PCF8574:
-  return "DM_HD44780_OVER_PCF8574";
-case DM_NONE:
-  return "DM_NONE";
-case Force_4_bytes_size_display_mode:
-  return "Force_4_bytes_size_display_mode";
   }
  return NULL;
 }
@@ -641,6 +671,8 @@ case ES_AEM:
   return "ES_AEM";
 case ES_BPSX_D1:
   return "ES_BPSX_D1";
+case ES_CJ125:
+  return "ES_CJ125";
 case ES_Custom:
   return "ES_Custom";
 case ES_Innovate_MTX_L:
@@ -658,161 +690,12 @@ const char *getEngine_load_mode_e(engine_load_mode_e value){
 switch(value) {
 case Force_4_bytes_size_engine_load_mode:
   return "Force_4_bytes_size_engine_load_mode";
-case LM_ALPHA_N:
-  return "LM_ALPHA_N";
-case LM_MAP:
-  return "LM_MAP";
-case LM_PLAIN_MAF:
-  return "LM_PLAIN_MAF";
+case LM_ALPHA_N_2:
+  return "LM_ALPHA_N_2";
 case LM_REAL_MAF:
   return "LM_REAL_MAF";
 case LM_SPEED_DENSITY:
   return "LM_SPEED_DENSITY";
-  }
- return NULL;
-}
-const char *getEngine_type_e(engine_type_e value){
-switch(value) {
-case AUDI_AAN:
-  return "AUDI_AAN";
-case BMW_E34:
-  return "BMW_E34";
-case BMW_M73_F:
-  return "BMW_M73_F";
-case BMW_M73_M:
-  return "BMW_M73_M";
-case BMW_M73_PROTEUS:
-  return "BMW_M73_PROTEUS";
-case CAMARO_4:
-  return "CAMARO_4";
-case CHEVY_C20_1973:
-  return "CHEVY_C20_1973";
-case CITROEN_TU3JP:
-  return "CITROEN_TU3JP";
-case DAIHATSU:
-  return "DAIHATSU";
-case DEFAULT_FRANKENSO:
-  return "DEFAULT_FRANKENSO";
-case DODGE_NEON_1995:
-  return "DODGE_NEON_1995";
-case DODGE_NEON_2003_CAM:
-  return "DODGE_NEON_2003_CAM";
-case DODGE_NEON_2003_CRANK:
-  return "DODGE_NEON_2003_CRANK";
-case DODGE_RAM:
-  return "DODGE_RAM";
-case DODGE_STRATUS:
-  return "DODGE_STRATUS";
-case ETB_BENCH_ENGINE:
-  return "ETB_BENCH_ENGINE";
-case FORD_ASPIRE_1996:
-  return "FORD_ASPIRE_1996";
-case FORD_ESCORT_GT:
-  return "FORD_ESCORT_GT";
-case FORD_FIESTA:
-  return "FORD_FIESTA";
-case FORD_INLINE_6_1995:
-  return "FORD_INLINE_6_1995";
-case FRANKENSO_QA_ENGINE:
-  return "FRANKENSO_QA_ENGINE";
-case Force_4_bytes_size_engine_type:
-  return "Force_4_bytes_size_engine_type";
-case GY6_139QMB:
-  return "GY6_139QMB";
-case HONDA_600:
-  return "HONDA_600";
-case HONDA_ACCORD_1_24_SHIFTED:
-  return "HONDA_ACCORD_1_24_SHIFTED";
-case HONDA_ACCORD_CD:
-  return "HONDA_ACCORD_CD";
-case HONDA_ACCORD_CD_DIP:
-  return "HONDA_ACCORD_CD_DIP";
-case HONDA_ACCORD_CD_TWO_WIRES:
-  return "HONDA_ACCORD_CD_TWO_WIRES";
-case ISSUE_898:
-  return "ISSUE_898";
-case LADA_KALINA:
-  return "LADA_KALINA";
-case MAZDA_626:
-  return "MAZDA_626";
-case MAZDA_MIATA_2003:
-  return "MAZDA_MIATA_2003";
-case MAZDA_MIATA_2003_BOARD_TEST:
-  return "MAZDA_MIATA_2003_BOARD_TEST";
-case MAZDA_MIATA_2003_NA_RAIL:
-  return "MAZDA_MIATA_2003_NA_RAIL";
-case MAZDA_MIATA_NA8:
-  return "MAZDA_MIATA_NA8";
-case MAZDA_MIATA_NB1:
-  return "MAZDA_MIATA_NB1";
-case MIATA_1990:
-  return "MIATA_1990";
-case MIATA_1994_DEVIATOR:
-  return "MIATA_1994_DEVIATOR";
-case MIATA_1996:
-  return "MIATA_1996";
-case MIATA_NA6_MAP:
-  return "MIATA_NA6_MAP";
-case MIATA_NA6_VAF:
-  return "MIATA_NA6_VAF";
-case MICRO_RUS_EFI:
-  return "MICRO_RUS_EFI";
-case MINIMAL_PINS:
-  return "MINIMAL_PINS";
-case MITSU_4G93:
-  return "MITSU_4G93";
-case MRE_BOARD_TEST:
-  return "MRE_BOARD_TEST";
-case MRE_MIATA_NA6:
-  return "MRE_MIATA_NA6";
-case MRE_MIATA_NB2:
-  return "MRE_MIATA_NB2";
-case MRE_MIATA_NB2_MTB:
-  return "MRE_MIATA_NB2_MTB";
-case NISSAN_PRIMERA:
-  return "NISSAN_PRIMERA";
-case PROMETHEUS_DEFAULTS:
-  return "PROMETHEUS_DEFAULTS";
-case PROTEUS:
-  return "PROTEUS";
-case ROVER_V8:
-  return "ROVER_V8";
-case SACHS:
-  return "SACHS";
-case SUBARUEJ20G_DEFAULTS:
-  return "SUBARUEJ20G_DEFAULTS";
-case SUBARU_2003_WRX:
-  return "SUBARU_2003_WRX";
-case SUZUKI_VITARA:
-  return "SUZUKI_VITARA";
-case TEST_33816:
-  return "TEST_33816";
-case TEST_CIVIC_4_0_BOTH:
-  return "TEST_CIVIC_4_0_BOTH";
-case TEST_CIVIC_4_0_RISE:
-  return "TEST_CIVIC_4_0_RISE";
-case TEST_ENGINE:
-  return "TEST_ENGINE";
-case TEST_ENGINE_VVT:
-  return "TEST_ENGINE_VVT";
-case TEST_ISSUE_366_BOTH:
-  return "TEST_ISSUE_366_BOTH";
-case TEST_ISSUE_366_RISE:
-  return "TEST_ISSUE_366_RISE";
-case TLE8888_BENCH_ENGINE:
-  return "TLE8888_BENCH_ENGINE";
-case TOYOTA_2JZ_GTE_VVTi:
-  return "TOYOTA_2JZ_GTE_VVTi";
-case TOYOTA_JZS147:
-  return "TOYOTA_JZS147";
-case VAG_18_TURBO:
-  return "VAG_18_TURBO";
-case VW_ABA:
-  return "VW_ABA";
-case VW_B6:
-  return "VW_B6";
-case ZIL_130:
-  return "ZIL_130";
   }
  return NULL;
 }
@@ -828,75 +711,34 @@ case GEAR_4:
   return "GEAR_4";
 case NEUTRAL:
   return "NEUTRAL";
+case REVERSE:
+  return "REVERSE";
   }
  return NULL;
 }
-const char *getGpPwm1Load_e(gpPwm1Load_e value){
+const char *getGppwm_channel_e(gppwm_channel_e value){
 switch(value) {
-case Force_4bytes_size_gpPwm1Load_e:
-  return "Force_4bytes_size_gpPwm1Load_e";
-case GP1_LOAD_CLT:
-  return "GP1_LOAD_CLT";
-case GP1_LOAD_MAP:
-  return "GP1_LOAD_MAP";
-case GP1_LOAD_TPS:
-  return "GP1_LOAD_TPS";
+case GPPWM_Clt:
+  return "GPPWM_Clt";
+case GPPWM_FuelLoad:
+  return "GPPWM_FuelLoad";
+case GPPWM_Iat:
+  return "GPPWM_Iat";
+case GPPWM_IgnLoad:
+  return "GPPWM_IgnLoad";
+case GPPWM_Map:
+  return "GPPWM_Map";
+case GPPWM_Tps:
+  return "GPPWM_Tps";
   }
  return NULL;
 }
-const char *getGpPwm2Load_e(gpPwm2Load_e value){
+const char *getGppwm_compare_mode_e(gppwm_compare_mode_e value){
 switch(value) {
-case Force_4bytes_size_gpPwm2Load_e:
-  return "Force_4bytes_size_gpPwm2Load_e";
-case GP2_LOAD_CLT:
-  return "GP2_LOAD_CLT";
-case GP2_LOAD_MAP:
-  return "GP2_LOAD_MAP";
-case GP2_LOAD_TPS:
-  return "GP2_LOAD_TPS";
-  }
- return NULL;
-}
-const char *getGpPwm3Load_e(gpPwm3Load_e value){
-switch(value) {
-case Force_4bytes_size_gpPwm3Load_e:
-  return "Force_4bytes_size_gpPwm3Load_e";
-case GP3_LOAD_CLT:
-  return "GP3_LOAD_CLT";
-case GP3_LOAD_MAP:
-  return "GP3_LOAD_MAP";
-case GP3_LOAD_TPS:
-  return "GP3_LOAD_TPS";
-  }
- return NULL;
-}
-const char *getGpPwm4Load_e(gpPwm4Load_e value){
-switch(value) {
-case Force_4bytes_size_gpPwm4Load_e:
-  return "Force_4bytes_size_gpPwm4Load_e";
-case GP4_LOAD_CLT:
-  return "GP4_LOAD_CLT";
-case GP4_LOAD_MAP:
-  return "GP4_LOAD_MAP";
-case GP4_LOAD_TPS:
-  return "GP4_LOAD_TPS";
-  }
- return NULL;
-}
-const char *getHip_state_e(hip_state_e value){
-switch(value) {
-case IS_INTEGRATING:
-  return "IS_INTEGRATING";
-case IS_SENDING_SPI_COMMAND:
-  return "IS_SENDING_SPI_COMMAND";
-case NOT_READY:
-  return "NOT_READY";
-case READY_TO_INTEGRATE:
-  return "READY_TO_INTEGRATE";
-case WAITING_FOR_ADC_TO_SKIP:
-  return "WAITING_FOR_ADC_TO_SKIP";
-case WAITING_FOR_RESULT_ADC:
-  return "WAITING_FOR_RESULT_ADC";
+case GPPWM_GreaterThan:
+  return "GPPWM_GreaterThan";
+case GPPWM_LessThan:
+  return "GPPWM_LessThan";
   }
  return NULL;
 }
@@ -913,8 +755,6 @@ case IM_MANUAL:
 }
 const char *getIdle_state_e(idle_state_e value){
 switch(value) {
-case ADJUSTING:
-  return "ADJUSTING";
 case BLIP:
   return "BLIP";
 case Force_4bytes_size_idle_state_e:
@@ -925,8 +765,6 @@ case PID_UPPER:
   return "PID_UPPER";
 case PID_VALUE:
   return "PID_VALUE";
-case PWM_PRETTY_CLOSE:
-  return "PWM_PRETTY_CLOSE";
 case RPM_DEAD_ZONE:
   return "RPM_DEAD_ZONE";
 case TPS_THRESHOLD:
@@ -977,17 +815,6 @@ case SWITCH_INPUT_LAUNCH:
   }
  return NULL;
 }
-const char *getLog_format_e(log_format_e value){
-switch(value) {
-case Force_4_bytes_size_log_format:
-  return "Force_4_bytes_size_log_format";
-case LF_NATIVE:
-  return "LF_NATIVE";
-case LM_MLV:
-  return "LM_MLV";
-  }
- return NULL;
-}
 const char *getMaf_sensor_type_e(maf_sensor_type_e value){
 switch(value) {
 case Bosch0280218004:
@@ -1024,6 +851,8 @@ case FOUR_STROKE_CRANK_SENSOR:
   return "FOUR_STROKE_CRANK_SENSOR";
 case FOUR_STROKE_SYMMETRICAL_CRANK_SENSOR:
   return "FOUR_STROKE_SYMMETRICAL_CRANK_SENSOR";
+case FOUR_STROKE_THREE_TIMES_CRANK_SENSOR:
+  return "FOUR_STROKE_THREE_TIMES_CRANK_SENSOR";
 case Force_4_bytes_size_operation_mode_e:
   return "Force_4_bytes_size_operation_mode_e";
 case OM_NONE:
@@ -1067,25 +896,6 @@ case OM_OPENDRAIN:
   return "OM_OPENDRAIN";
 case OM_OPENDRAIN_INVERTED:
   return "OM_OPENDRAIN_INVERTED";
-  }
- return NULL;
-}
-const char *getSensor_chart_e(sensor_chart_e value){
-switch(value) {
-case Internal_ForceMyEnumIntSize_sensor_chart:
-  return "Internal_ForceMyEnumIntSize_sensor_chart";
-case SC_AUX_FAST1:
-  return "SC_AUX_FAST1";
-case SC_DETAILED_RPM:
-  return "SC_DETAILED_RPM";
-case SC_MAP:
-  return "SC_MAP";
-case SC_OFF:
-  return "SC_OFF";
-case SC_RPM_ACCEL:
-  return "SC_RPM_ACCEL";
-case SC_TRIGGER:
-  return "SC_TRIGGER";
   }
  return NULL;
 }
@@ -1139,6 +949,60 @@ case TM_FIXED:
   }
  return NULL;
 }
+const char *getTle8888_mode_e(tle8888_mode_e value){
+switch(value) {
+case TL_AUTO:
+  return "TL_AUTO";
+case TL_HALL:
+  return "TL_HALL";
+case TL_MANUAL:
+  return "TL_MANUAL";
+case TL_SEMI_AUTO:
+  return "TL_SEMI_AUTO";
+  }
+ return NULL;
+}
+const char *getTle8888detection_voltage_e(tle8888detection_voltage_e value){
+switch(value) {
+case Force_4bytes_size_tle8888detection_voltage_e:
+  return "Force_4bytes_size_tle8888detection_voltage_e";
+case V_150_MV:
+  return "V_150_MV";
+case V_350_MV:
+  return "V_350_MV";
+case V_50_MV:
+  return "V_50_MV";
+case V_550_MV:
+  return "V_550_MV";
+  }
+ return NULL;
+}
+const char *getTle8888filter_e(tle8888filter_e value){
+switch(value) {
+case F_10_US:
+  return "F_10_US";
+case F_1_US:
+  return "F_1_US";
+case F_20_US:
+  return "F_20_US";
+case F_5_US:
+  return "F_5_US";
+case Force_4bytes_size_tle8888filter_e:
+  return "Force_4bytes_size_tle8888filter_e";
+  }
+ return NULL;
+}
+const char *getTle8888vrpeak_time_e(tle8888vrpeak_time_e value){
+switch(value) {
+case Force_4bytes_size_tle8888vrpeak_time_e:
+  return "Force_4bytes_size_tle8888vrpeak_time_e";
+case T_10_US:
+  return "T_10_US";
+case T_250_US:
+  return "T_250_US";
+  }
+ return NULL;
+}
 const char *getTrigger_event_e(trigger_event_e value){
 switch(value) {
 case SHAFT_3RD_FALLING:
@@ -1156,6 +1020,21 @@ case SHAFT_SECONDARY_RISING:
   }
  return NULL;
 }
+const char *getTrigger_filter_e(trigger_filter_e value){
+switch(value) {
+case Force_4bytes_size_trigger_filter_e:
+  return "Force_4bytes_size_trigger_filter_e";
+case TF_LEVEL_1:
+  return "TF_LEVEL_1";
+case TF_LEVEL_2:
+  return "TF_LEVEL_2";
+case TF_LEVEL_3:
+  return "TF_LEVEL_3";
+case TF_NONE:
+  return "TF_NONE";
+  }
+ return NULL;
+}
 const char *getTrigger_type_e(trigger_type_e value){
 switch(value) {
 case Force_4_bytes_size_trigger_type:
@@ -1170,6 +1049,8 @@ case TT_3_1_CAM:
   return "TT_3_1_CAM";
 case TT_60_2_VW:
   return "TT_60_2_VW";
+case TT_BOSCH_QUICK_START:
+  return "TT_BOSCH_QUICK_START";
 case TT_DODGE_NEON_1995:
   return "TT_DODGE_NEON_1995";
 case TT_DODGE_NEON_1995_ONLY_CRANK:
@@ -1204,6 +1085,8 @@ case TT_HONDA_CBR_600:
   return "TT_HONDA_CBR_600";
 case TT_HONDA_CBR_600_CUSTOM:
   return "TT_HONDA_CBR_600_CUSTOM";
+case TT_HONDA_K_12_1:
+  return "TT_HONDA_K_12_1";
 case TT_JEEP_18_2_2_2:
   return "TT_JEEP_18_2_2_2";
 case TT_JEEP_4_CYL:
@@ -1238,14 +1121,22 @@ case TT_ONE_PLUS_ONE:
   return "TT_ONE_PLUS_ONE";
 case TT_ONE_PLUS_TOOTHED_WHEEL_60_2:
   return "TT_ONE_PLUS_TOOTHED_WHEEL_60_2";
+case TT_RENIX_44_2_2:
+  return "TT_RENIX_44_2_2";
+case TT_RENIX_66_2_2_2:
+  return "TT_RENIX_66_2_2_2";
 case TT_ROVER_K:
   return "TT_ROVER_K";
 case TT_SUBARU_7_6:
   return "TT_SUBARU_7_6";
+case TT_SUBARU_SVX:
+  return "TT_SUBARU_SVX";
 case TT_TOOTHED_WHEEL:
   return "TT_TOOTHED_WHEEL";
 case TT_TOOTHED_WHEEL_36_1:
   return "TT_TOOTHED_WHEEL_36_1";
+case TT_TOOTHED_WHEEL_36_2:
+  return "TT_TOOTHED_WHEEL_36_2";
 case TT_TOOTHED_WHEEL_60_2:
   return "TT_TOOTHED_WHEEL_60_2";
 case TT_UNUSED:
@@ -1303,16 +1194,29 @@ case VVT_LOAD_TPS:
   }
  return NULL;
 }
+const char *getVvtType_e(vvtType_e value){
+switch(value) {
+case CLOSED_LOOP_VVT:
+  return "CLOSED_LOOP_VVT";
+case Force_4bytes_size_vvtType_e:
+  return "Force_4bytes_size_vvtType_e";
+case ON_OFF_VVT:
+  return "ON_OFF_VVT";
+  }
+ return NULL;
+}
 const char *getVvt_mode_e(vvt_mode_e value){
 switch(value) {
 case Force_4_bytes_size_vvt_mode:
   return "Force_4_bytes_size_vvt_mode";
 case MIATA_NB2:
   return "MIATA_NB2";
-case VVT_2GZ:
-  return "VVT_2GZ";
+case VVT_2JZ:
+  return "VVT_2JZ";
 case VVT_FIRST_HALF:
   return "VVT_FIRST_HALF";
+case VVT_INACTIVE:
+  return "VVT_INACTIVE";
 case VVT_SECOND_HALF:
   return "VVT_SECOND_HALF";
   }

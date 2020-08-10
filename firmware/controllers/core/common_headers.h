@@ -7,8 +7,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef CONTROLLERS_CORE_COMMON_HEADERS_H_
-#define CONTROLLERS_CORE_COMMON_HEADERS_H_
+#pragma once
 
 #ifdef __cplusplus
 #define EXTERNC extern "C"
@@ -28,9 +27,9 @@
 #include "efitime.h"
 
 #ifdef __cplusplus
-#include "datalogging.h"
-#include "loggingcentral.h"
-#include "cli_registry.h"
+
+
+
 #endif /* __cplusplus */
 
 /**
@@ -105,4 +104,8 @@ extern bool isActiveConfigurationVoid;
 
 #define isPinOrModeChanged(pin, mode) (isConfigurationChanged(pin) || isConfigurationChanged(mode))
 
-#endif /* CONTROLLERS_CORE_COMMON_HEADERS_H_ */
+
+#ifndef FIRMWARE_ID
+#define FIRMWARE_ID "source"
+#endif
+

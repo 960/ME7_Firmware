@@ -19,19 +19,12 @@
 #include "perf_trace.h"
 
 #if EFI_UNIT_TEST
-extern bool verboseMode;
+extern int timeNowUs;
+
 #endif /* EFI_UNIT_TEST */
 
 uint32_t maxSchedulingPrecisionLoss = 0;
 
-EventQueue::EventQueue() {
-	head = nullptr;
-	setLateDelay(100);
-}
-
-bool EventQueue::checkIfPending(scheduling_s *scheduling) {
-	assertNotInListMethodBody(scheduling_s, head, scheduling, nextScheduling_s);
-}
 
 /**
  * @return true if inserted into the head of the list
@@ -47,12 +40,7 @@ bool EventQueue::insertTask(scheduling_s *scheduling, efitime_t timeX, action_s 
 // please note that simulator does not use this code at all - simulator uses signal_executor_sleep
 
 	if (scheduling->isScheduled) {
-#if EFI_UNIT_TEST
-		if (verboseMode) {
-			printf("Already scheduled was %d\r\n", (int)scheduling->momentX);
-			printf("Already scheduled now %d\r\n", (int)timeX);
-		}
-#endif /* EFI_UNIT_TEST */
+
 		return false;
 	}
 
@@ -94,13 +82,14 @@ efitime_t EventQueue::getNextEventTime(efitime_t nowX) const {
 	if (head != NULL) {
 		if (head->momentX <= nowX) {
 			/**
-			 * We are here if action timestamp is in the past
+			 * We are here if action timestamp is in the past. We should rarely be here since this 'getNextEventTime()' is
+			 * always invoked by 'scheduleTimerCallback' which is always invoked right after 'executeAllPendingActions' - but still,
+			 * for events which are really close to each other we would end up here.
 			 *
 			 * looks like we end up here after 'writeconfig' (which freezes the firmware) - we are late
 			 * for the next scheduled event
 			 */
-			efitime_t aBitInTheFuture = nowX + lateDelay;
-			return aBitInTheFuture;
+			return nowX + lateDelay;
 		} else {
 			return head->momentX;
 		}
@@ -122,9 +111,6 @@ int EventQueue::executeAll(efitime_t now) {
 
 	int executionCounter = 0;
 
-#if EFI_UNIT_TEST
-	assertListIsSorted();
-#endif
 
 	while (true) {
 		// Read the head every time - a previously executed event could
@@ -136,11 +122,21 @@ int EventQueue::executeAll(efitime_t now) {
 			break;
 		}
 
-		// Only execute events that occured in the past.
-		// The list is sorted, so as soon as we see an event
-		// in the future, we're done.
-		if (current->momentX > now) {
+		// If the next event is far in the future, we'll reschedule
+		// and execute it next time.
+		// We do this when the next event is close enough that the overhead of
+		// resetting the timer and scheduling an new interrupt is greater than just
+		// waiting for the time to arrive.  On current CPUs, this is reasonable to set
+		// around 10 microseconds.
+		if (current->momentX > now + lateDelay) {
 			break;
+		}
+
+		// near future - spin wait for the event to happen and avoid the
+		// overhead of rescheduling the timer.
+		// yes, that's a busy wait but that's what we need here
+		while (current->momentX > getTimeNowNt()) {
+			UNIT_TEST_BUSY_WAIT_CALLBACK();
 		}
 
 		executionCounter++;
@@ -150,20 +146,12 @@ int EventQueue::executeAll(efitime_t now) {
 		current->nextScheduling_s = nullptr;
 		current->isScheduled = false;
 
-#if EFI_UNIT_TEST
-		printf("QUEUE: execute current=%d param=%d\r\n", (long)current, (long)current->action.getArgument());
-#endif
-
 		// Execute the current element
 		{
 			ScopePerf perf2(PE::EventQueueExecuteCallback);
 			current->action.execute();
 		}
 
-#if EFI_UNIT_TEST
-	// (tests only) Ensure we didn't break anything
-	assertListIsSorted();
-#endif
 	}
 
 	return executionCounter;
@@ -184,10 +172,6 @@ void EventQueue::assertListIsSorted() const {
 	}
 }
 
-void EventQueue::setLateDelay(int value) {
-	lateDelay = value;
-}
-
 scheduling_s * EventQueue::getHead() {
 	return head;
 }
@@ -202,12 +186,23 @@ scheduling_s *EventQueue::getElementAtIndexForUnitText(int index) {
 			return current;
 		index--;
 	}
-#if EFI_UNIT_TEST
-	firmwareError(OBD_PCM_Processor_Fault, "getForUnitText: null");
-#endif /* EFI_UNIT_TEST */
+
 	return NULL;
 }
 
 void EventQueue::clear(void) {
+	// Flush the queue, resetting all scheduling_s as though we'd executed them
+	while(head) {
+		auto x = head;
+		// link next element to head
+		head = x->nextScheduling_s;
+
+		// Reset this element
+		x->momentX = 0;
+		x->isScheduled = false;
+		x->nextScheduling_s = nullptr;
+		x->action = {};
+	}
+
 	head = nullptr;
 }

@@ -2,15 +2,16 @@
  * vvt_control.cpp
  *
  *  Created on: 25. nov. 2019
- *      Author: Ola
+ *     (C) All rights reserved by RUUD BILELEKTRO, NORWAY
  */
 
 #include "global.h"
 #include "vvt_control.h"
 #if EFI_VVT_CONTROL
 #if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
+#include "tunerstudio_outputs.h"
 #endif /* EFI_TUNER_STUDIO */
+#include "sensor.h"
 #include "engine.h"
 #include "tps.h"
 #include "map.h"
@@ -21,10 +22,11 @@
 #include "engine_controller.h"
 #include "periodic_task.h"
 #include "pin_repository.h"
-#include "pwm_generator.h"
+#include "pwm_generator_logic.h"
 #include "pid_auto_tune.h"
 #include "local_version_holder.h"
 #include "thermistors.h"
+#include "engine_math.h"
 #define NO_PIN_PERIOD 500
 
 #if defined(HAS_OS_ACCESS)
@@ -34,7 +36,7 @@
 EXTERN_ENGINE;
 
 
-static pid_s *vvtPidS = &persistentState.persistentConfiguration.engineConfiguration.vvtPid;
+static pid_s *vvtPidS = &persistentState.persistentConfiguration.engineConfiguration.vvt.vvtPid;
 static Pid vvtControlPid(vvtPidS);
 static bool shouldResetPid = false;
 
@@ -48,26 +50,22 @@ static void pidReset(void) {
 	vvtControlPid.reset();
 }
 
-static Logging *logger;
 
 class VVTControl: public PeriodicTimerController {
 public:
+
 OutputPin vvtPin;
 percent_t vvtDuty = 0;
 float targetAngle = 0.0;
 int getPeriodMs()
 	 override {
-		return GET_PERIOD_LIMITED(&engineConfiguration->vvtPid);
-
-				return engineConfiguration->vvtControlPin == GPIO_UNASSIGNED ? NO_PIN_PERIOD : GET_PERIOD_LIMITED(&engineConfiguration->vvtPid);
-
-
-	}
+		return engineConfiguration->vvt.vvtControlPin == GPIO_UNASSIGNED ? NO_PIN_PERIOD : GET_PERIOD_LIMITED(&engineConfiguration->vvt.vvtPid);
+		}
 	void PeriodicTask() override {
 		if (shouldResetPid) {
-					pidReset();
-					shouldResetPid = false;
-				}
+			pidReset();
+			shouldResetPid = false;
+		}
 
 #if EFI_TUNER_STUDIO
 		vvtControlPid.postState(&tsOutputChannels);
@@ -75,135 +73,106 @@ int getPeriodMs()
 
 	float rpm = GET_RPM_VALUE;
 	float mapValue = getMap(PASS_ENGINE_PARAMETER_SIGNATURE);
-	float tps = getTPS(PASS_ENGINE_PARAMETER_SIGNATURE);
-	float coolant = getCoolantTemperature();
+	auto tps = Sensor::get(SensorType::DriverThrottleIntent);
+	auto coolant = Sensor::get(SensorType::Clt);
 
+	 if (GET_RPM() == 0) {
+	    vvtControlPid.reset();
+	    return;
+	 }
 
+	float camAngle = engine->triggerCentral.vvtPosition;
+	float temp = engineConfiguration->vvt.minVvtTemperature;
 
-	//   bool enabledAtEngineRunning = rpm < engineConfiguration->cranking.rpm;
-	 //   	 if (!enabledAtEngineRunning) {
-	  //  		 vvtControlPid.reset();
-	   // 	   				return;
-	   // 	     }
+	if (temp > coolant.Value) {
+		return;
+	}
+	if (engineConfiguration->vvt.vvtType == CLOSED_LOOP_VVT) {
+		if (engineConfiguration->vvt.vvtLoadAxis == VVT_LOAD_TPS) {
+		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value);
+		}
+	else if (engineConfiguration->vvt.vvtLoadAxis == VVT_LOAD_MAP) {
+		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, mapValue);
+		}
+	else if (engineConfiguration->vvt.vvtLoadAxis == VVT_LOAD_CLT) {
+		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, coolant.Value);
+		}
 
+		if (targetAngle > CONFIG(vvt.maxVvtDeviation)) {
+		targetAngle = CONFIG(vvt.maxVvtDeviation);
+		}
 
-		      float temp = engineConfiguration->minVvtTemperature;
-               if (temp > coolant) {
-        		   return;
-        		 }
+		if  (targetAngle < -CONFIG(vvt.maxVvtDeviation)) {
+		targetAngle = -CONFIG(vvt.maxVvtDeviation);
+		}
 
-		      if (engineConfiguration->vvtType == false)  {
+		vvtDuty = vvtControlPid.getOutput(targetAngle, camAngle);
 
+		vvtPwmControl.setSimplePwmDutyCycle(PERCENT_TO_DUTY(vvtDuty));
 
-		      if(engineConfiguration->vvtLoadAxis == VVT_LOAD_TPS) {
-
-		    	  targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps);
-		      }
-
-		      else if(engineConfiguration->vvtLoadAxis == VVT_LOAD_MAP) {
-
-		   		  targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, mapValue);
-
-		   		      }
-
-
-		      else if(engineConfiguration->vvtLoadAxis == VVT_LOAD_CLT) {
-
-		    	 targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, coolant);
-		      }
-		    		   		    	 if(targetAngle > engineConfiguration->maxVvtDeviation) {
-		    		   		    		 targetAngle = engineConfiguration->maxVvtDeviation;
-		    		   		    	  }
-
-		    		   		       float camAngle = engine->triggerCentral.vvtPosition;
-		    		   		       vvtDuty = vvtControlPid.getOutput(targetAngle, camAngle);
-		    		   		    	vvtPwmControl.setSimplePwmDutyCycle(PERCENT_TO_DUTY(vvtDuty));
-
-
-		    		   		    		 if (vvtDuty > 95)
-		    		   		    			vvtDuty = 95;
-		    		   		    		 if (vvtDuty < 5)
-		    		   		    			vvtDuty = 5;
-
+		if (engineConfiguration->debugMode == DBG_VVT) {
 #if EFI_TUNER_STUDIO
-
-	tsOutputChannels.vvtDuty = vvtDuty;
+		tsOutputChannels.debugFloatField3 = vvtDuty;
+		tsOutputChannels.debugFloatField4 = camAngle;
 #endif /* EFI_TUNER_STUDIO */
-		    		   		      }
-
-
+		}
+		}
 
 	}
 };
 
 static VVTControl VVTController;
 
-
 void setVvtPFactor(float value) {
-	engineConfiguration->vvtPid.pFactor = value;
+	engineConfiguration->vvt.vvtPid.pFactor = value;
 	vvtControlPid.reset();
-
 }
-
 void setVvtIFactor(float value) {
-	engineConfiguration->vvtPid.iFactor = value;
+	engineConfiguration->vvt.vvtPid.iFactor = value;
 	vvtControlPid.reset();
 }
-
-
 void setVvtDFactor(float value) {
-	engineConfiguration->vvtPid.dFactor = value;
+	engineConfiguration->vvt.vvtPid.dFactor = value;
 	vvtControlPid.reset();
 }
 void setDefaultVvtParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
-
-
 	engineConfiguration->isVvtControlEnabled = true;
-	engineConfiguration->vvtPwmFrequency = 88;
-	engineConfiguration->vvtPid.offset = 0;
-	engineConfiguration->vvtPid.pFactor = 1;
-	engineConfiguration->vvtPid.periodMs = 100;
-	engineConfiguration->vvtPid.maxValue = 99;
-
-
+	engineConfiguration->vvt.vvtPwmFrequency = 88;
+	engineConfiguration->vvt.vvtPid.offset = 0;
+	engineConfiguration->vvt.vvtPid.pFactor = 1;
+	engineConfiguration->vvt.vvtPid.periodMs = 100;
+	engineConfiguration->vvt.vvtPid.maxValue = 99;
 	setLinearCurve(config->vvtRpmBins, 0, 8000 / RPM_1_BYTE_PACKING_MULT, 1);
 	setLinearCurve(config->vvtLoadBins, 0, 100, 1);
 	for (int loadIndex = 0;loadIndex<VVT_LOAD_COUNT;loadIndex++) {
-			for (int rpmIndex = 0;rpmIndex<VVT_RPM_COUNT;rpmIndex++) {
-				config->vvtTable1[loadIndex][rpmIndex] = config->vvtLoadBins[loadIndex];
-			}
+		for (int rpmIndex = 0;rpmIndex<VVT_RPM_COUNT;rpmIndex++) {
+		config->vvtTable[loadIndex][rpmIndex] = config->vvtLoadBins[loadIndex];
 		}
-}
-
-static void turnVvtPidOn() {
-	if (CONFIG(vvtControlPin) == GPIO_UNASSIGNED){
-		return;
-	} else {
-	startSimplePwmExt(&vvtPwmControl, "vvt", &engine->executor,
-			CONFIG(vvtControlPin), &enginePins.vvtPin,
-			engineConfiguration->vvtPwmFrequency, 0.1,
-			(pwm_gen_callback*) applyPinState);
 	}
 }
-
+static void turnVvtPidOn() {
+	if (CONFIG(vvt.vvtControlPin) == GPIO_UNASSIGNED){
+	return;
+	} else {
+	startSimplePwmHard(&vvtPwmControl, "vvt", &engine->executor,
+	CONFIG(vvt.vvtControlPin), &enginePins.vvtPin,
+	engineConfiguration->vvt.vvtPwmFrequency, 0.1);
+	}
+}
 void startVvtPin(void) {
 	turnVvtPidOn();
-
 }
 void stopVvtPin(void) {
-	brain_pin_markUnused(activeConfiguration.vvtControlPin);
+	brain_pin_markUnused(activeConfiguration.vvt.vvtControlPin);
 }
 void onConfigurationChangeVvtCallback(engine_configuration_s *previousConfiguration) {
-	shouldResetPid = !vvtControlPid.isSame(&previousConfiguration->vvtPid);
+	shouldResetPid = !vvtControlPid.isSame(&previousConfiguration->vvt.vvtPid);
 }
+void initVvtCtrl( DECLARE_ENGINE_PARAMETER_SUFFIX){
 
-void initVvtCtrl(Logging *sharedLogger DECLARE_ENGINE_PARAMETER_SUFFIX){
-	logger = sharedLogger;
-
-	vvtMap.init(config->vvtTable1, config->vvtLoadBins, config->vvtRpmBins);
+	vvtMap.init(config->vvtTable, config->vvtLoadBins, config->vvtRpmBins);
 	vvtControlPid.reset();
 	startVvtPin();
 	VVTController.Start();
-
 }
 #endif

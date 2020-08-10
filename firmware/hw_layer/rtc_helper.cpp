@@ -14,7 +14,7 @@
 #include "rtc_helper.h"
 
 #if EFI_RTC
-static LoggingWithStorage logger("RTC");
+
 static RTCDateTime timespec;
 
 extern bool rtcWorks;
@@ -86,7 +86,7 @@ static void put2(int offset, char *lcd_str, int value) {
  */
 bool dateToStringShort(char *lcd_str) {
 #if EFI_RTC
-	strcpy(lcd_str, "0000_000000\0");
+	strcpy(lcd_str, "000000_000000\0");
 	struct tm timp;
 	date_get_tm(&timp);
 	if (timp.tm_year < 116 || timp.tm_year > 130) {
@@ -94,11 +94,14 @@ bool dateToStringShort(char *lcd_str) {
 		lcd_str[0] = 0;
 		return false;
 	}
-	put2(0, lcd_str, timp.tm_mon + 1); // months since January	0-11
-	put2(2, lcd_str, timp.tm_mday); // day of the month	1-31
-	put2(5, lcd_str, timp.tm_hour); // hours since midnight	0-23
-	put2(7, lcd_str, timp.tm_min);
-	put2(9, lcd_str, timp.tm_sec);
+
+	put2(0, lcd_str, timp.tm_year % 100); // Years since 1900 - format as just the last two digits
+	put2(2, lcd_str, timp.tm_mon + 1);     // months since January	0-11
+	put2(4, lcd_str, timp.tm_mday);        // day of the month	1-31
+
+	put2(7, lcd_str, timp.tm_hour);        // hours since midnight	0-23
+	put2(9, lcd_str, timp.tm_min);        // Minutes
+	put2(11, lcd_str, timp.tm_sec);        // seconds
 
 	return true;
 #else
@@ -136,16 +139,12 @@ void printDateTime(void) {
 	
 	unix_time = GetTimeUnixSec();
 	if (unix_time == -1) {
-		scheduleMsg(&logger, "incorrect time in RTC cell");
+
 	} else {
-		scheduleMsg(&logger, "%D - unix time", unix_time);
+
 		date_get_tm(&timp);
 
-		appendMsgPrefix(&logger);
-		appendPrintf(&logger, "Current RTC localtime is: %04u-%02u-%02u %02u:%02u:%02u w=%d", timp.tm_year + 1900, timp.tm_mon + 1, timp.tm_mday, timp.tm_hour,
-				timp.tm_min, timp.tm_sec, rtcWorks);
-		appendMsgPostfix(&logger);
-		scheduleLogging(&logger);
+
 	}
 }
 
@@ -158,13 +157,13 @@ void setDateTime(const char *strDate) {
 			return;
 		}
 	}
-	scheduleMsg(&logger, "date_set Date parameter %s is wrong\r\n", strDate);
+
 }
 #endif /* EFI_RTC */
 
 void initRtc(void) {
 #if EFI_RTC
 	GetTimeUnixSec(); // this would test RTC, see 'rtcWorks' variable, see #311
-	printMsg(&logger, "initRtc()");
+
 #endif /* EFI_RTC */
 }

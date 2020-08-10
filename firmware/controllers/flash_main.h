@@ -20,9 +20,9 @@ typedef enum {
 	PC_ERROR = 4
 } persisted_configuration_state_e;
 
-persisted_configuration_state_e readConfiguration(Logging * logger);
+persisted_configuration_state_e readConfiguration();
 void readFromFlash(void);
-void initFlash(Logging *sharedLogger);
+void initFlash();
 
 /**
  * Because of hardware-related issues, stm32f4 chip is totally

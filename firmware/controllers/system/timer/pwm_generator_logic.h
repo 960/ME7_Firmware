@@ -112,18 +112,27 @@ private:
 	float periodNt;
 };
 
+struct hardware_pwm;
 
 class SimplePwm : public PwmConfig {
 public:
 	SimplePwm();
 	explicit SimplePwm(const char *name);
-	void setSimplePwmDutyCycle(float dutyCycle);
+	virtual void setSimplePwmDutyCycle(float dutyCycle);
 	pin_state_t pinStates[2];
 	SingleChannelStateSequence sr[1];
 	float _switchTimes[2];
+	hardware_pwm* hardPwm = nullptr;
+
 private:
 	SingleChannelStateSequence waveInstance;
 };
+
+/**
+ * default implementation of pwm_gen_callback which simply toggles the pins
+ *
+ */
+void applyPinState(int stateIndex, PwmConfig* state) /* pwm_gen_callback */;
 
 /**
  * Start a one-channel software PWM driver.
@@ -133,7 +142,7 @@ private:
 void startSimplePwm(SimplePwm *state, const char *msg,
 		ExecutorInterface *executor,
 		OutputPin *output,
-		float frequency, float dutyCycle, pwm_gen_callback *stateChangeCallback);
+		float frequency, float dutyCycle, pwm_gen_callback *stateChangeCallback = (pwm_gen_callback*)applyPinState);
 
 /**
  * initialize GPIO pin and start a one-channel software PWM driver.
@@ -144,7 +153,12 @@ void startSimplePwmExt(SimplePwm *state,
 		const char *msg,
 		ExecutorInterface *executor,
 		brain_pin_e brainPin, OutputPin *output,
-		float frequency, float dutyCycle, pwm_gen_callback *stateChangeCallback);
+		float frequency, float dutyCycle, pwm_gen_callback *stateChangeCallback = (pwm_gen_callback*)applyPinState);
+
+void startSimplePwmHard(SimplePwm *state, const char *msg,
+		ExecutorInterface *executor,
+		brain_pin_e brainPin, OutputPin *output, float frequency,
+		float dutyCycle);
 
 void copyPwmParameters(PwmConfig *state, int phaseCount, float const *switchTimes,
 		int waveCount, pin_state_t *const *pinStates);

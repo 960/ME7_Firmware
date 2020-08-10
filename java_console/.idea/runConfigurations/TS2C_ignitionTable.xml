@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TS2C ignitionTable" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.rusefi.TS2C" />
+    <module name="models" />
+    <option name="PROGRAM_PARAMETERS" value="currenttune.msq ignitionLoadBins ignitionRpmBins ignitionTable" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.rusefi.ui.console.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

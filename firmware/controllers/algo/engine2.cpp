@@ -14,25 +14,23 @@
 #include "fuel_math.h"
 #include "engine_math.h"
 #include "advance_map.h"
-#include "aux_valves.h"
-#include "perf_trace.h"
 
-#if EFI_PROD_CODE
-#include "svnversion.h"
-#endif
+#include "perf_trace.h"
+#include "closed_loop_fuel.h"
+#include "sensor.h"
+
 
 #if ! EFI_UNIT_TEST
 #include "status_loop.h"
 #endif
 
-extern fuel_Map3D_t fuelMap;
+extern fuel_Map3D_t veMap;
 extern afr_Map3D_t afrMap;
 
-EXTERN_ENGINE
-;
+EXTERN_ENGINE;
 
 // this does not look exactly right
-extern LoggingWithStorage engineLogger;
+
 
 WarningCodeState::WarningCodeState() {
 	clear();
@@ -68,7 +66,6 @@ MockAdcState::MockAdcState() {
 #if EFI_ENABLE_MOCK_ADC
 void MockAdcState::setMockVoltage(int hwChannel, float voltage DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	efiAssertVoid(OBD_PCM_Processor_Fault, hwChannel >= 0 && hwChannel < MOCK_ADC_SIZE, "hwChannel out of bounds");
-	scheduleMsg(&engineLogger, "fake voltage: channel %d value %.2f", hwChannel, voltage);
 
 	fakeAdcValues[hwChannel] = voltsToAdc(voltage);
 	hasMockAdc[hwChannel] = true;
@@ -116,34 +113,12 @@ EngineState::EngineState() {
 void EngineState::updateSlowSensors(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// this feeds rusEfi console Live Data
 	engine->engineState.isCrankingState = ENGINE(rpmCalculator).isCranking(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-
-	engine->sensors.iat = getIntakeAirTemperatureM(PASS_ENGINE_PARAMETER_SIGNATURE);
-	engine->sensors.clt = getCoolantTemperatureM(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-	// todo: reduce code duplication with 'getCoolantTemperature'
-	if (engineConfiguration->auxTempSensor1.adcChannel != EFI_ADC_NONE) {
-		engine->sensors.auxTemp1 = getTemperatureC(&engineConfiguration->auxTempSensor1,
-				&engine->engineState.auxTemp1Curve,
-				false PASS_ENGINE_PARAMETER_SUFFIX);
-	}
-	if (engineConfiguration->auxTempSensor2.adcChannel != EFI_ADC_NONE) {
-		engine->sensors.auxTemp2 = getTemperatureC(&engineConfiguration->auxTempSensor2,
-				&engine->engineState.auxTemp2Curve,
-				false PASS_ENGINE_PARAMETER_SUFFIX);
-	}
-
-#if EFI_UNIT_TEST
-	if (!cisnan(engine->sensors.mockClt)) {
-		engine->sensors.clt = engine->sensors.mockClt;
-	}
-#endif
 }
 
 void EngineState::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ScopePerf perf(PE::EngineStatePeriodicFastCallback);
 
-#if EFI_ENGINE_CONTROL
+
 	if (!engine->slowCallBackWasInvoked) {
 		warning(CUSTOM_SLOW_NOT_INVOKED, "Slow not invoked yet");
 	}
@@ -155,9 +130,6 @@ void EngineState::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		timeSinceCranking = nowNt - crankingTime;
 	}
 
-#if EFI_AUX_VALVES
-	updateAuxValves(PASS_ENGINE_PARAMETER_SIGNATURE);
-#endif
 	int rpm = ENGINE(rpmCalculator).getRpm(PASS_ENGINE_PARAMETER_SIGNATURE);
 	sparkDwell = getSparkDwell(rpm PASS_ENGINE_PARAMETER_SUFFIX);
 	dwellAngle = cisnan(rpm) ? NAN :  sparkDwell / getOneDegreeTimeMs(rpm);
@@ -166,9 +138,11 @@ void EngineState::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	}
 
 	// todo: move this into slow callback, no reason for IAT corr to be here
-	running.intakeTemperatureCoefficient = getIatFuelCorrection(getIntakeAirTemperature() PASS_ENGINE_PARAMETER_SUFFIX);
+	running.intakeTemperatureCoefficient = getIatFuelCorrection(PASS_ENGINE_PARAMETER_SIGNATURE);
 	// todo: move this into slow callback, no reason for CLT corr to be here
 	running.coolantTemperatureCoefficient = getCltFuelCorrection(PASS_ENGINE_PARAMETER_SIGNATURE);
+
+	running.pidCorrection = fuelClosedLoopCorrection(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	// update fuel consumption states
 	fuelConsumption.update(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
@@ -176,109 +150,45 @@ void EngineState::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// Fuel cut-off isn't just 0 or 1, it can be tapered
 	fuelCutoffCorrection = getFuelCutOffCorrection(nowNt, rpm PASS_ENGINE_PARAMETER_SUFFIX);
 
-
-	    float afterStartEnrich;
-		float afterstartHoldTime;
-		float afterstartDecayTime;
-		float afterstartDecayFuel;
-		float runTime = running.timeSinceCrankingInSecs;
-		float correction;
-
-		afterStartEnrich = interpolate2d("aseEnrich", getCoolantTemperature(), config->afterstartEnrichBins, config->afterstartEnrich);
-		afterstartHoldTime = interpolate2d("aseHold", getCoolantTemperature(), config->afterstartHoldTimeBins, config->afterstartHoldTime);
-		afterstartDecayTime = interpolate2d("aseDecay", getCoolantTemperature(), config->afterstartDecayTimeBins, config->afterstartDecayTime);
-		afterstartDecayFuel = interpolateClamped(afterstartHoldTime, afterStartEnrich, (afterstartDecayTime + afterstartHoldTime), 1.0f , runTime);
-		running.timeSinceCrankingInSecs = NT2US(timeSinceCranking) / 1000000.0f;
+	running.postCrankingFuelCorrection = getAfterStartEnrichment(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 
-		if (runTime < afterstartHoldTime) {
-			correction = afterStartEnrich;
-		} else {
-			correction = afterstartDecayFuel;
-		}
-		if (runTime > (afterstartHoldTime + afterstartDecayTime)) {
-			correction = 1.0f;
-		}
-		running.postCrankingFuelCorrection = correction;
 
-if (engineConfiguration->multisparkEnable) {
-
-		// Compute multispark configuration
-		int maxSparkCount = engineConfiguration->multisparkMaxExtraSparkCount;
-		int maxMultisparkRpm = engineConfiguration->multisparkMaxRpm;
-
-		angle_t fireSparksForAngle = engineConfiguration->multisparkMaxSparkingAngle;
-		floatus_t additionalSparksUs = 0;
-
-		int floored = 0;
-		float sparksFitInTime = 0;
-		if (rpm <= maxMultisparkRpm && maxSparkCount > 0) {
-			floatus_t multiDelay = engineConfiguration->multisparkSparkDuration;
-			floatus_t multiDwell = engineConfiguration->multisparkDwell;
-
-			multisparkDelayTime = US2NT(multiDelay);
-			multisparkDwellTime = US2NT(multiDwell);
-
-			 additionalSparksUs = ENGINE(rpmCalculator.oneDegreeUs) * fireSparksForAngle;
-			floatus_t oneSparkTime = multiDelay + multiDwell;
-
-			sparksFitInTime = additionalSparksUs / oneSparkTime;
-			floored = sparksFitInTime;
-
-			multisparkCount = minI(floored, maxSparkCount);
-		} else {
-			multisparkCount = 0;
-		}
-
-
-#if EFI_TUNER_STUDIO
- 		tsOutputChannels.multiSparks = multisparkCount;
-#endif /* EFI_TUNER_STUDIO */
-}
-	cltTimingCorrection = getCltTimingCorrection(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-	engineNoiseHipLevel = interpolate2d("knock", rpm, engineConfiguration->knockNoiseRpmBins,
-					engineConfiguration->knockNoise);
-
-	baroCorrection = getBaroCorrection(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-	injectionOffset = getInjectionOffset(rpm PASS_ENGINE_PARAMETER_SUFFIX);
-	float engineLoad = getEngineLoadT(PASS_ENGINE_PARAMETER_SIGNATURE);
-	timingAdvance = getAdvance(rpm, engineLoad PASS_ENGINE_PARAMETER_SUFFIX);
+	multispark.count = getMultiSparkCount(rpm PASS_ENGINE_PARAMETER_SUFFIX);
 
 	if (engineConfiguration->fuelAlgorithm == LM_SPEED_DENSITY) {
-		float tps = getTPS(PASS_ENGINE_PARAMETER_SIGNATURE);
-		updateTChargeK(rpm, tps PASS_ENGINE_PARAMETER_SUFFIX);
+		auto tps = Sensor::get(SensorType::Tps1);
+		updateTChargeK(rpm, tps.value_or(0) PASS_ENGINE_PARAMETER_SUFFIX);
 		float map = getMap(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 		/**
 		 * *0.01 because of https://sourceforge.net/p/rusefi/tickets/153/
 		 */
 
-		if (CONFIG(useTPSBasedVeTable)) {
-			// todo: should we have 'veTpsMap' fuel_Map3D_t variable here?
-			currentRawVE = interpolate3d<float, float>(tps, config->ignitionLoadBins, IGN_LOAD_COUNT, rpm, config->fuelRpmBins, FUEL_RPM_COUNT, fuelMap.pointers);
-		} else {
-			currentRawVE = fuelMap.getValue(rpm, map);
-		}
+			currentRawVE = veMap.getValue(rpm, map);
 
 		// get VE from the separate table for Idle
-		if (CONFIG(useSeparateVeForIdle)) {
+		if (tps.Valid && CONFIG(useSeparateVeForIdle)) {
 			float idleVe = interpolate2d("idleVe", rpm, config->idleVeBins, config->idleVe);
 			// interpolate between idle table and normal (running) table using TPS threshold
-			currentRawVE = interpolateClamped(0.0f, idleVe, CONFIG(idlePidDeactivationTpsThreshold), currentRawVE, tps);
+			currentRawVE = interpolateClamped(0.0f, idleVe, CONFIG(idlePidDeactivationTpsThreshold), currentRawVE, tps.Value);
 		}
-		currentBaroCorrectedVE = baroCorrection * currentRawVE * PERCENT_DIV;
-		targetAFR = afrMap.getValue(rpm, map);
-	} else {
-		baseTableFuel = getBaseTableFuel(rpm, engineLoad);
+		currentBaroCorrectedVE = 1 * currentRawVE * PERCENT_DIV;
 	}
-#endif
+
+	ENGINE(injectionDuration) = getInjectionDuration(rpm PASS_ENGINE_PARAMETER_SUFFIX);
+
+	float fuelLoad = getFuelingLoad(PASS_ENGINE_PARAMETER_SIGNATURE);
+	injectionOffset = getInjectionOffset(rpm, fuelLoad PASS_ENGINE_PARAMETER_SUFFIX);
+
+	float ignitionLoad = getIgnitionLoad(PASS_ENGINE_PARAMETER_SIGNATURE);
+	timingAdvance = getAdvance(rpm, ignitionLoad PASS_ENGINE_PARAMETER_SUFFIX);
+
 }
 
 void EngineState::updateTChargeK(int rpm, float tps DECLARE_ENGINE_PARAMETER_SUFFIX) {
-#if EFI_ENGINE_CONTROL
-	float newTCharge = getTCharge(rpm, tps, getCoolantTemperature(), getIntakeAirTemperature() PASS_ENGINE_PARAMETER_SUFFIX);
+
+	float newTCharge = getTCharge(rpm, tps PASS_ENGINE_PARAMETER_SUFFIX);
 	// convert to microsecs and then to seconds
 	efitick_t curTime = getTimeNowNt();
 	float secsPassed = (float)NT2US(curTime - timeSinceLastTChargeK) / 1000000.0f;
@@ -288,7 +198,7 @@ void EngineState::updateTChargeK(int rpm, float tps DECLARE_ENGINE_PARAMETER_SUF
 		sd.tChargeK = convertCelsiusToKelvin(sd.tCharge);
 		timeSinceLastTChargeK = curTime;
 	}
-#endif
+
 }
 
 SensorsState::SensorsState() {
@@ -309,17 +219,14 @@ void StartupFuelPumping::setPumpsCounter(int newValue) {
 		pumpsCounter = newValue;
 
 		if (pumpsCounter == PUMPS_TO_PRIME) {
-			scheduleMsg(&engineLogger, "let's squirt prime pulse %.2f", pumpsCounter);
 			pumpsCounter = 0;
-		} else {
-			scheduleMsg(&engineLogger, "setPumpsCounter %d", pumpsCounter);
 		}
 	}
 }
 
 void StartupFuelPumping::update(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	if (GET_RPM() == 0) {
-		bool isTpsAbove50 = getTPS(PASS_ENGINE_PARAMETER_SIGNATURE) >= 50;
+		bool isTpsAbove50 = Sensor::get(SensorType::DriverThrottleIntent).value_or(0) >= 50;
 
 		if (this->isTpsAbove50 != isTpsAbove50) {
 			setPumpsCounter(pumpsCounter + 1);
@@ -334,16 +241,4 @@ void StartupFuelPumping::update(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	}
 }
 
-#if EFI_SIMULATOR
-#define VCS_VERSION "123"
-#endif
-
-void printCurrentState(Logging *logging, int seconds, const char *engineTypeName, const char *firmwareBuildId) {
-	logging->appendPrintf("%s%s%d@%s%s %s %d%s", PROTOCOL_VERSION_TAG, DELIMETER,
-			getRusEfiVersion(), VCS_VERSION,
-			firmwareBuildId,
-			engineTypeName,
-			seconds,
-			DELIMETER);
-}
 

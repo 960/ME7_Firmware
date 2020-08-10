@@ -53,14 +53,15 @@ float MultiChannelStateSequence::getSwitchTime(const int index) const {
 	return switchTimes[index];
 }
 
-void MultiChannelStateSequence::checkSwitchTimes(const int size) {
+void MultiChannelStateSequence::checkSwitchTimes(const int size, const float scale) {
 	if (switchTimes[size - 1] != 1) {
-		firmwareError(CUSTOM_ERR_WAVE_1, "last switch time has to be 1 not %.2f", switchTimes[size - 1]);
+		warning(CUSTOM_ERR_WAVE_1, "last switch time has to be 1/%f not %.2f/%f", scale,
+				switchTimes[size - 1], scale * switchTimes[size - 1]);
 		return;
 	}
 	for (int i = 0; i < size - 1; i++) {
 		if (switchTimes[i] >= switchTimes[i + 1]) {
-			firmwareError(CUSTOM_ERR_WAVE_2, "invalid switchTimes @%d: %.2f/%.2f", i, switchTimes[i], switchTimes[i + 1]);
+			warning(CUSTOM_ERR_WAVE_2, "invalid switchTimes @%d: %.2f/%.2f", i, switchTimes[i], switchTimes[i + 1]);
 		}
 	}
 }
@@ -68,7 +69,7 @@ void MultiChannelStateSequence::checkSwitchTimes(const int size) {
 pin_state_t MultiChannelStateSequence::getChannelState(const int channelIndex, const int phaseIndex) const {
 	if (channelIndex >= waveCount) {
 		// todo: would be nice to get this asserting working
-		//firmwareError(OBD_PCM_Processor_Fault, "channel index %d/%d", channelIndex, waveCount);
+		//warning(OBD_PCM_Processor_Fault, "channel index %d/%d", channelIndex, waveCount);
 	}
 	return channels[channelIndex].pinStates[phaseIndex];
 }

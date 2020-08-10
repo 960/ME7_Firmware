@@ -35,7 +35,7 @@ int getSpiPrescaler(spi_speed_e speed, spi_device_e device);
 EXTERNC SPIDriver * getSpiDevice(spi_device_e spiDevice);
 void turnOnSpi(spi_device_e device);
 void lockSpi(spi_device_e device);
-void unlockSpi(void);
+void unlockSpi(spi_device_e device);
 brain_pin_e getMisoPin(spi_device_e device);
 brain_pin_e getMosiPin(spi_device_e device);
 brain_pin_e getSckPin(spi_device_e device);
@@ -47,7 +47,7 @@ brain_pin_e getSckPin(spi_device_e device);
 #if EFI_PROD_CODE
 #include "engine.h"
 void applyNewHardwareSettings(void);
-void initHardware(Logging *logging);
+void initHardware();
 #endif /* EFI_PROD_CODE */
 
 void showBor(void);

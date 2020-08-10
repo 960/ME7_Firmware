@@ -8,8 +8,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef PIN_REPOSITORY_H_
-#define PIN_REPOSITORY_H_
+#pragma once
 
 #include "global.h"
 #include "io_pins.h"
@@ -19,8 +18,11 @@
 
 class PinRepository {
 	public:
+	/**
+	 * Class constructors are a great way to have simple initialization sequence
+	 */
 	PinRepository();
-
+	int totalPinsUsed = 0;
 };
 
 #endif /* __cplusplus */
@@ -57,4 +59,3 @@ void initBrainUsedPins(void);
 const char* & getBrainUsedPin(unsigned int idx);
 #endif
 
-#endif /* PIN_REPOSITORY_H_ */

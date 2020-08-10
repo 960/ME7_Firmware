@@ -10,15 +10,15 @@
 #pragma once
 
 #define EFI_GPIO_HARDWARE TRUE
-
-#define EFI_BOOST_CONTROL TRUE
-#ifndef EFI_FSIO
-#define EFI_FSIO FALSE
-#endif
-#define EFI_ENABLE_ENGINE_WARNING FALSE
-#define EFI_ENABLE_CRITICAL_ENGINE_STOP FALSE
-
 #define EFI_AUXILIARIES TRUE
+#define EFI_BOOST_CONTROL TRUE
+#define EFI_VVT_CONTROL TRUE
+
+#ifndef EFI_LAUNCH_CONTROL
+#define EFI_LAUNCH_CONTROL TRUE
+#endif
+
+#define EFI_FSIO FALSE
 
 #ifndef EFI_CDM_INTEGRATION
 #define EFI_CDM_INTEGRATION FALSE
@@ -28,7 +28,7 @@
 #define EFI_TOOTH_LOGGER TRUE
 #endif
 
-#define EFI_TEXT_LOGGING TRUE
+#define EFI_TEXT_LOG FALSE
 
 #define EFI_PWM_TESTER FALSE
 
@@ -36,7 +36,8 @@
 
 #define HAL_USE_USB_MSD FALSE
 
-
+#define EFI_ENABLE_CRITICAL_ENGINE_STOP FALSE
+#define EFI_ENABLE_ENGINE_WARNING FALSE
 
 #define EFI_USE_CCM TRUE
 
@@ -67,21 +68,19 @@
 #define EFI_LOGIC_ANALYZER FALSE
 #endif
 
-#define HAL_USE_ICU                         FALSE
-
 #ifndef EFI_ICU_INPUTS
-#define EFI_ICU_INPUTS FALSE
+#define EFI_ICU_INPUTS TRUE
 #endif
 
 #ifndef HAL_TRIGGER_USE_PAL
-#define HAL_TRIGGER_USE_PAL TRUE
+#define HAL_TRIGGER_USE_PAL FALSE
 #endif /* HAL_TRIGGER_USE_PAL */
 
 /**
  * TunerStudio support.
  */
 #define EFI_TUNER_STUDIO TRUE
-#define EFI_MAZDA_IDLE FALSE
+
 /**
  * Bluetooth UART setup support.
  */
@@ -90,20 +89,19 @@
 /**
  * TunerStudio debug output
  */
-#define EFI_TUNER_STUDIO_VERBOSE TRUE
+#define EFI_TUNER_STUDIO_VERBOSE FALSE
 
 #define EFI_DEFAILED_LOGGING FALSE
 
 /**
  * Dev console support.
  */
-#define EFI_CLI_SUPPORT TRUE
+#define EFI_CLI_SUPPORT FALSE
 
 #define EFI_RTC TRUE
 
 #define EFI_ALTERNATOR_CONTROL TRUE
 
-#define EFI_AUX_PID FALSE
 
 #define EFI_SIGNAL_EXECUTOR_SLEEP FALSE
 #define EFI_SIGNAL_EXECUTOR_ONE_TIMER TRUE
@@ -131,12 +129,6 @@
  */
 #define EFI_ENGINE_CONTROL TRUE
 
-/**
- * MCP42010 digital potentiometer support. This could be useful if you are stimulating some
- * stock ECU
- */
-
-#define EFI_POTENTIOMETER FALSE
 #ifndef BOARD_TLE6240_COUNT
 #define BOARD_TLE6240_COUNT         0
 #endif
@@ -149,12 +141,6 @@
 #define BOARD_TLE8888_COUNT 	1
 #endif
 
-// todo: move this outside of efifeatures.h
-#define BOARD_EXT_GPIOCHIPS			(BOARD_TLE6240_COUNT + BOARD_MC33972_COUNT + BOARD_TLE8888_COUNT)
-
-// todo: move this outside of efifeatures.h
-#define BOARD_EXT_PINREPOPINS 24
-
 #define EFI_ANALOG_SENSORS TRUE
 
 #ifndef EFI_MAX_31855
@@ -164,6 +150,7 @@
 #define EFI_MCP_3208 FALSE
 
 #ifndef EFI_HIP_9011
+// disabling for now - DMA conflict with SPI1
 #define EFI_HIP_9011 FALSE
 #endif
 
@@ -172,19 +159,23 @@
 #endif
 
 #if !defined(EFI_MEMS)
-#define EFI_MEMS FALSE
+ #define EFI_MEMS FALSE
 #endif
 
 #ifndef EFI_INTERNAL_ADC
 #define EFI_INTERNAL_ADC TRUE
 #endif
 
-#define EFI_NARROW_EGO_AVERAGING TRUE
-#define EFI_LEDS FALSE
+#define EFI_NARROW_EGO_AVERAGING FALSE
+
 #define EFI_DENSO_ADC FALSE
 
 #ifndef EFI_CAN_SUPPORT
 #define EFI_CAN_SUPPORT TRUE
+#endif
+
+#ifndef EFI_AUX_SERIAL
+#define EFI_AUX_SERIAL FALSE
 #endif
 
 #ifndef EFI_HD44780_LCD
@@ -199,8 +190,8 @@
 #define EFI_IDLE_CONTROL TRUE
 #endif
 
-#define EFI_IDLE_PID_CIC FALSE
-#define EFI_AUX_VALVES  FALSE
+#define EFI_IDLE_PID_CIC TRUE
+
 /**
  * Control the main power relay based on measured ignition voltage (Vbatt)
  */
@@ -213,7 +204,7 @@
 #endif
 
 #ifndef EFI_VEHICLE_SPEED
-#define EFI_VEHICLE_SPEED FALSE
+#define EFI_VEHICLE_SPEED TRUE
 #endif
 
 #define EFI_FUEL_PUMP TRUE
@@ -237,7 +228,7 @@
 #define EFI_PROD_CODE TRUE
 
 /**
- * Do we need file logging (like SD card) logic?
+ * Do we need file log (like SD card) logic?
  */
 #ifndef EFI_FILE_LOGGING
 #define EFI_FILE_LOGGING FALSE
@@ -273,7 +264,6 @@
  * Do we need GPS logic?
  */
 #define EFI_UART_GPS FALSE
-//#define EFI_UART_GPS FALSE
 
 #define EFI_SERVO FALSE
 
@@ -283,20 +273,18 @@
 /**
  * Do we need Malfunction Indicator blinking logic?
  */
-#define EFI_MALFUNCTION_INDICATOR TRUE
+#define EFI_MALFUNCTION_INDICATOR FALSE
 //#define EFI_MALFUNCTION_INDICATOR FALSE
 
 #define CONSOLE_MAX_ACTIONS 180
 
-#define EFI_MAP_AVERAGING TRUE
+#define EFI_MAP_AVERAGING FALSE
 //#define EFI_MAP_AVERAGING FALSE
 
 // todo: most of this should become configurable
 
-// todo: switch to continues ADC conversion for slow ADC?
-// https://github.com/rusefi/rusefi/issues/630
 // todo: switch to continues ADC conversion for fast ADC?
-#define EFI_INTERNAL_FAST_ADC_PWM	&PWMD4
+#define EFI_INTERNAL_FAST_ADC_GPT	&GPTD6
 
 #define EFI_SPI1_AF 5
 
@@ -339,7 +327,7 @@
 
 // todo: start using consoleUartDevice? Not sure
 #ifndef EFI_CONSOLE_SERIAL_DEVICE
-#define EFI_CONSOLE_SERIAL_DEVICE (&SD3)
+//#define EFI_CONSOLE_SERIAL_DEVICE (&SD3)
 #endif
 
 /**
@@ -353,7 +341,9 @@
 #define TS_UART_DMA_MODE FALSE
 
 #define TS_UART_DEVICE (&UARTD3)
-#define TS_SERIAL_DEVICE (&SD3)
+//#define TS_SERIAL_DEVICE (&SD3)
+
+#define AUX_SERIAL_DEVICE (&SD6)
 
 // todo: add DMA-mode for Console?
 #if (TS_UART_DMA_MODE || TS_UART_MODE)
@@ -361,18 +351,12 @@
 #endif
 
 // todo: start using consoleSerialTxPin? Not sure
-#ifndef EFI_CONSOLE_TX_PORT
-#define EFI_CONSOLE_TX_PORT GPIOC
-#endif
-#ifndef EFI_CONSOLE_TX_PIN
-#define EFI_CONSOLE_TX_PIN 10
+#ifndef EFI_CONSOLE_TX_BRAIN_PIN
+#define EFI_CONSOLE_TX_BRAIN_PIN GPIOC_10
 #endif
 // todo: start using consoleSerialRxPin? Not sure
-#ifndef EFI_CONSOLE_RX_PORT
-#define EFI_CONSOLE_RX_PORT GPIOC
-#endif
-#ifndef EFI_CONSOLE_RX_PIN
-#define EFI_CONSOLE_RX_PIN 11
+#ifndef EFI_CONSOLE_RX_BRAIN_PIN
+#define EFI_CONSOLE_RX_BRAIN_PIN GPIOC_11
 #endif
 // todo: this should be detected automatically based on pin selection
 #define EFI_CONSOLE_AF 7
@@ -380,8 +364,8 @@
 // todo: this should be detected automatically based on pin selection
 #define TS_SERIAL_AF 7
 
-#ifndef LED_ERROR_BRAIN_PIN
-#define LED_ERROR_BRAIN_PIN GPIOD_14
+#ifndef LED_CRITICAL_ERROR_BRAIN_PIN
+#define LED_CRITICAL_ERROR_BRAIN_PIN GPIOD_14
 #endif
 
 // USART1 -> check defined STM32_SERIAL_USE_USART1
@@ -404,22 +388,3 @@
 #define INTERMEDIATE_LOGGING_BUFFER_SIZE 2000
 
 #define EFI_JOYSTICK FALSE
-
-
-#ifndef EFI_VVT_CONTROL
-#define EFI_VVT_CONTROL TRUE
-#endif
-
-#ifndef EFI_LAUNCH_CONTROL
-#define EFI_LAUNCH_CONTROL TRUE
-#endif
-#define EFI_GPIO_HARDWARE TRUE
-
-#ifndef EFI_BOOST_CONTROL
-#define EFI_BOOST_CONTROL TRUE
-#endif
-
-
-#ifndef EFI_GP_PWM
-#define EFI_GP_PWM TRUE
-#endif

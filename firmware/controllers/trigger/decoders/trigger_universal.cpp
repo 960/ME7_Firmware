@@ -31,7 +31,7 @@ void addSkippedToothTriggerEvents(trigger_wheel_e wheel, TriggerWaveform *s, int
 void initializeSkippedToothTriggerWaveformExt(TriggerWaveform *s, int totalTeethCount, int skippedCount,
 		operation_mode_e operationMode) {
 	if (totalTeethCount <= 0) {
-		warning(CUSTOM_OBD_TRIGGER_WAVEFORM, "totalTeethCount is zero or less: %d", totalTeethCount);
+		firmwareError(CUSTOM_OBD_TRIGGER_WAVEFORM, "Invalid total tooth count for missing tooth decoder: %d", totalTeethCount);
 		s->setShapeDefinitionError(true);
 		return;
 	}
@@ -48,8 +48,7 @@ void initializeSkippedToothTriggerWaveformExt(TriggerWaveform *s, int totalTeeth
 }
 
 
-void configureOnePlusOne(TriggerWaveform *s, operation_mode_e operationMode) {
-	UNUSED(operationMode);
+void configureOnePlusOne(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR);
 
 	s->addEvent720(180, T_PRIMARY, TV_RISE);
@@ -62,8 +61,8 @@ void configureOnePlusOne(TriggerWaveform *s, operation_mode_e operationMode) {
 	s->useOnlyPrimaryForSync = true;
 }
 
-void configureOnePlus60_2(TriggerWaveform *s, operation_mode_e operationMode) {
-	UNUSED(operationMode);
+// todo: open question if we need this trigger
+void configureOnePlus60_2(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR);
 
 	int totalTeethCount = 60;
@@ -81,8 +80,7 @@ void configureOnePlus60_2(TriggerWaveform *s, operation_mode_e operationMode) {
 	s->useOnlyPrimaryForSync = true;
 }
 
-void configure3_1_cam(TriggerWaveform *s, operation_mode_e operationMode) {
-	UNUSED(operationMode);
+void configure3_1_cam(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR);
 
 
@@ -116,4 +114,27 @@ void configure3_1_cam(TriggerWaveform *s, operation_mode_e operationMode) {
 	s->addEvent720(a += crankW, crank, TV_FALL);
 
 	s->isSynchronizationNeeded = false;
+}
+
+void configureQuickStartSenderWheel(TriggerWaveform *s) {
+	s->initialize(FOUR_STROKE_CAM_SENSOR);
+
+	s->useRiseEdge = false;
+	s->gapBothDirections = false;
+
+	int offset = 2 * 20;
+
+	s->setTriggerSynchronizationGap3(0, 2, 3);
+
+	s->addEventAngle(offset + 2 * 0, T_PRIMARY, TV_RISE);
+	s->addEventAngle(offset + 2 * 70, T_PRIMARY, TV_FALL);
+
+	s->addEventAngle(offset + 2 * 90, T_PRIMARY, TV_RISE);
+	s->addEventAngle(offset + 2 * 110, T_PRIMARY, TV_FALL);
+
+	s->addEventAngle(offset + 2 * 180, T_PRIMARY, TV_RISE);
+	s->addEventAngle(offset + 2 * 200, T_PRIMARY, TV_FALL);
+
+	s->addEventAngle(offset + 2 * 270, T_PRIMARY, TV_RISE);
+	s->addEventAngle(offset + 2 * 340, T_PRIMARY, TV_FALL);
 }

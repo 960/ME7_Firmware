@@ -12,11 +12,9 @@
 #include "engine.h"
 #include "digital_input_icu.h"
 #include "pin_repository.h"
+#include "can_vss.h"
 
-EXTERN_ENGINE
-;
-
-static Logging *logger;
+EXTERN_ENGINE;
 
 static efitick_t lastSignalTimeNt = 0;
 static efitick_t vssDiff = 0;
@@ -34,6 +32,11 @@ void setMockVehicleSpeed(float speedKPH) {
 float getVehicleSpeed(void) {
 	if (mockVehicleSpeed != DEFAULT_MOCK_SPEED)
 		return mockVehicleSpeed;
+#if EFI_CAN_SUPPORT
+	if (CONFIG(enableCanVss)) {
+		return getVehicleCanSpeed();
+	}
+#endif	/* EFI_CAN_SUPPORT */	
 	if (!hasVehicleSpeedSensor())
 		return 0;
 	efitick_t nowNt = getTimeNowNt();
@@ -50,17 +53,6 @@ static void vsAnaWidthCallback(void) {
 	lastSignalTimeNt = nowNt;
 }
 
-static void speedInfo(void) {
-	scheduleMsg(logger, "VSS input at %s",
-			hwPortname(CONFIG(vehicleSpeedSensorInputPin)));
-
-	scheduleMsg(logger, "c=%.2f eventCounter=%d speed=%.2f",
-			engineConfiguration->vehicleSpeedCoef,
-			engine->engineState.vssEventCounter,
-			getVehicleSpeed());
-	scheduleMsg(logger, "vss diff %d", vssDiff);
-
-}
 
 bool hasVehicleSpeedSensor() {
 	return CONFIG(vehicleSpeedSensorInputPin) != GPIO_UNASSIGNED;
@@ -69,7 +61,6 @@ bool hasVehicleSpeedSensor() {
 void stopVSSPins(void) {
 	stopDigitalCapture("VSS", activeConfiguration.vehicleSpeedSensorInputPin);
 }
-
 void startVSSPins(void) {
 	if (!hasVehicleSpeedSensor())
 		return;
@@ -79,15 +70,15 @@ void startVSSPins(void) {
 	vehicleSpeedInput->widthListeners.registerCallback((VoidInt) vsAnaWidthCallback, NULL);
 }
 
-void initVehicleSpeed(Logging *l) {
-	logger = l;
-	addConsoleAction("speedinfo", speedInfo);
+void initVehicleSpeed() {
+
 	startVSSPins();
 }
 #else  /* EFI_VEHICLE_SPEED */
 
 float getVehicleSpeed(void) {
+	
 	// no VSS support
-	return 0;
+	return 0;	
 }
 #endif /* EFI_VEHICLE_SPEED */

@@ -4,9 +4,8 @@
  * @date Dec 29, 2012
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
-#ifndef CONSOLE_IO_H_
-#define CONSOLE_IO_H_
 
+#pragma once
 #ifdef __cplusplus
 extern "C"
 {
@@ -19,7 +18,7 @@ extern "C"
 typedef void (*CommandHandler)(char *);
 
 #include "efifeatures.h"
-#include "datalogging.h"
+
 
 #ifdef CONFIG_RESET_SWITCH_PORT
 // this pin is not configurable at runtime so that we have a reliable way to reset configuration
@@ -32,7 +31,7 @@ BaseChannel * getConsoleChannel(void);
 
 void consolePutChar(int x);
 void consoleOutputBuffer(const uint8_t *buf, int size);
-void startConsole(Logging *sharedLogger, CommandHandler console_line_callback_p);
+void startConsole(CommandHandler console_line_callback_p);
 void onDataArrived(void);
 bool isUsbSerial(BaseChannel * channel);
 
@@ -42,4 +41,3 @@ bool isCommandLineConsoleReady(void);
 #define isCommandLineConsoleReady() true
 #endif
 
-#endif /* CONSOLE_IO_H_ */

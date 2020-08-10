@@ -5,8 +5,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef ERROR_HANDLING_H_
-#define ERROR_HANDLING_H_
+#pragma once
 
 #include "global.h"
 #include "obd_error_codes.h"
@@ -15,7 +14,7 @@
 extern "C"
 {
 #endif /* __cplusplus */
-
+#define ERROR_BUFFER_SIZE 120
 /**
  * Something is wrong, but we can live with it: some minor sensor is disconnected
  * or something like that
@@ -24,22 +23,25 @@ extern "C"
  */
 bool warning(obd_code_e code, const char *fmt, ...);
 
-typedef uint8_t fatal_msg_t[200];
+typedef uint8_t critical_msg_t[ERROR_BUFFER_SIZE];
 /**
  * Something really bad had happened - firmware cannot function, we cannot run the engine
+ * We definitely use this critical error approach in case of invalid configuration. If user sets a self-contradicting
+ * configuration we have to just put a hard stop on this.
  *
  * see also warning()
  */
 void firmwareError(obd_code_e code, const char *fmt, ...);
 
+extern bool hasFirmwareErrorFlag;
+
 #define hasFirmwareError() hasFirmwareErrorFlag
 
-// todo: rename to getFatalErrorMessage
+// todo: rename to getCriticalErrorMessage
 char *getFirmwareError(void);
 
-void initErrorHandlingDataStructures(void);
 // todo: rename to getWarningMessage?
-char *getWarning(void);
+char *getWarningMessage(void);
 
 // todo: better place for this shared declaration?
 int getRusEfiVersion(void);
@@ -59,5 +61,3 @@ int getRusEfiVersion(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* ERROR_HANDLING_H_ */

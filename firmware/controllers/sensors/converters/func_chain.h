@@ -22,7 +22,13 @@ class FuncChain<> {
 protected:
 	SensorResult convert(float input) const {
 		// Base case is the identity function
-		return {true, input};
+		return input;
+	}
+
+	void showInfo(float testInputValue) const {
+		// base case does nothing
+
+		(void)testInputValue;
 	}
 };
 
@@ -42,7 +48,7 @@ public:
 		if (currentStep.Valid) {
 			return TBase::convert(currentStep.Value);
 		} else {
-			return {false, 0};
+			return unexpected;
 		}
 	}
 
@@ -57,6 +63,8 @@ public:
 	std::enable_if_t<!std::is_same_v<TGet, TFirst>, TGet &> get() {
 		return TBase::template get<TGet>();
 	}
+
+
 
 private:
 	TFirst m_f;
@@ -76,6 +84,7 @@ public:
 	TGet &get() {
 		return m_fs.template get<TGet>();
 	}
+
 
 private:
 	priv::FuncChain<TFuncs...> m_fs;

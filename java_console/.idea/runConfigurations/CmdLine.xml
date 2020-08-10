@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="CmdLine" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="com.rusefi.CmdLine" />
+    <module name="ui" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.rusefi.ui.console.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Run" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

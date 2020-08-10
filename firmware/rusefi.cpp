@@ -115,34 +115,28 @@
 #include "rusefi.h"
 #include "memstreams.h"
 
-#include "eficonsole.h"
+
 #include "status_loop.h"
 #include "pin_repository.h"
 #include "flash_main.h"
-#include "custom_engine.h"
+
 #include "engine_math.h"
 #include "mpu_util.h"
 
-#if EFI_HD44780_LCD
-#include "lcd_HD44780.h"
-#endif /* EFI_HD44780_LCD */
 
 #if EFI_ENGINE_EMULATOR
 #include "engine_emulator.h"
 #endif /* EFI_ENGINE_EMULATOR */
 
-LoggingWithStorage sharedLogger("main");
+
 
 bool main_loop_started = false;
 
 static char panicMessage[200];
 
-extern bool hasFirmwareErrorFlag;
 
-static virtual_timer_t resetTimer;
 
-EXTERN_ENGINE
-;
+EXTERN_ENGINE;
 
 // todo: move this into a hw-specific file
 void rebootNow(void) {
@@ -153,30 +147,12 @@ void rebootNow(void) {
  * Some configuration changes require full firmware reset.
  * Once day we will write graceful shutdown, but that would be one day.
  */
-static void scheduleReboot(void) {
-	scheduleMsg(&sharedLogger, "Rebooting in 3 seconds...");
-	lockAnyContext();
-	chVTSetI(&resetTimer, TIME_MS2I(3000), (vtfunc_t) rebootNow, NULL);
-	unlockAnyContext();
-}
 
 void runRusEfi(void) {
-	initErrorHandlingDataStructures();
 	efiAssertVoid(CUSTOM_RM_STACK_1, getCurrentRemainingStack() > 512, "init s");
 	assertEngineReference();
 	engine->setConfig(config);
-	initIntermediateLoggingBuffer();
-	addConsoleAction(CMD_REBOOT, scheduleReboot);
-	addConsoleAction(CMD_REBOOT_DFU, jump_to_bootloader);
 
-#if EFI_SHAFT_POSITION_INPUT
-	/**
-	 * This is so early because we want to init logger
-	 * which would be used while finding trigger sync index
-	 * while reading configuration
-	 */
-	initTriggerDecoderLogger(&sharedLogger);
-#endif /* EFI_SHAFT_POSITION_INPUT */
 
 	/**
 	 * we need to initialize table objects before default configuration can set values
@@ -193,7 +169,7 @@ void runRusEfi(void) {
 	 * First thing is reading configuration from flash memory.
 	 * In order to have complete flexibility configuration has to go before anything else.
 	 */
-	readConfiguration(&sharedLogger);
+	readConfiguration();
 #endif /* EFI_INTERNAL_FLASH */
 #ifndef EFI_ACTIVE_CONFIGURATION_IN_FLASH
 	// TODO: need to fix this place!!! should be a version of PASS_ENGINE_PARAMETER_SIGNATURE somehow
@@ -201,35 +177,29 @@ void runRusEfi(void) {
 #endif /* EFI_ACTIVE_CONFIGURATION_IN_FLASH */
 
 	/**
-	 * Next we should initialize serial port console, it's important to know what's going on
-	 */
-	initializeConsole(&sharedLogger);
-
-	/**
 	 * Initialize hardware drivers
 	 */
-	initHardware(&sharedLogger);
+	initHardware();
 
-	initStatusLoop();
+
 	/**
 	 * Now let's initialize actual engine control logic
 	 * todo: should we initialize some? most? controllers before hardware?
 	 */
-	initEngineContoller(&sharedLogger PASS_ENGINE_PARAMETER_SIGNATURE);
+	initEngineContoller(PASS_ENGINE_PARAMETER_SIGNATURE);
 	rememberCurrentConfiguration();
-
+	startStatusThreads();
 #if EFI_PERF_METRICS
-	initTimePerfActions(&sharedLogger);
+	initTimePerfActions();
 #endif
         
 #if EFI_ENGINE_EMULATOR
-	initEngineEmulator(&sharedLogger PASS_ENGINE_PARAMETER_SIGNATURE);
+	initEngineEmulator(PASS_ENGINE_PARAMETER_SIGNATURE);
 #endif
-	startStatusThreads();
 
-	runSchedulingPrecisionTestIfNeeded();
 
-	print("Running main loop\r\n");
+
+
 	main_loop_started = true;
 	/**
 	 * This loop is the closes we have to 'main loop' - but here we only publish the status. The main logic of engine
@@ -238,12 +208,8 @@ void runRusEfi(void) {
 	while (true) {
 		efiAssertVoid(CUSTOM_RM_STACK, getCurrentRemainingStack() > 128, "stack#1");
 
-#if EFI_CLI_SUPPORT && !EFI_UART_ECHO_TEST_MODE
-		// sensor state + all pending messages for our own rusEfi console
-		updateDevConsoleState();
-#endif /* EFI_CLI_SUPPORT */
 
-		chThdSleepMilliseconds(CONFIG(consoleLoopPeriodMs));
+		chThdSleepMilliseconds(200);
 	}
 }
 

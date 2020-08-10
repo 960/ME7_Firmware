@@ -10,7 +10,7 @@ RULESFILE = $(RULESPATH)/rules.mk
 include rusefi_rules.mk
 
 # Define project name here
-PROJECT = rusefi
+PROJECT = firmware
 PROJECT_DIR = .
 
 # Imported source files and paths
@@ -23,10 +23,10 @@ include rusefi.mk
 
 ifeq ($(DEBUG_LEVEL_OPT),)
   # Default to a release build - but leave in debug info.  It doesn't change the hex/bin output.
- # DEBUG_LEVEL_OPT = -O2 -ggdb -g3
+   #  DEBUG_LEVEL_OPT = -O2 -ggdb -g3
   # Comment the above and uncomment the line below if you want to debug the firmware (it's difficult-to-impossible
   # to debug firmware with optimization enabled).
-   DEBUG_LEVEL_OPT = -O0 -ggdb -g3
+    DEBUG_LEVEL_OPT = -O0 -ggdb -g3
 endif
 
 
@@ -80,12 +80,6 @@ ifeq ($(USE_VERBOSE_COMPILE),)
   USE_VERBOSE_COMPILE = no
 endif
 
-# If enabled, this option makes the build process faster by not compiling
-# modules not used in the current configuration.
-ifeq ($(USE_SMART_BUILD),)
-  USE_SMART_BUILD = no
-endif
-
 ifeq ($(USE_BOOTLOADER),)
   USE_BOOTLOADER = no
 endif
@@ -133,6 +127,20 @@ MAKEFLAGS += ${NUMJOBS}
 # Project, sources and paths
 #
 
+BOARDS_DIR = $(PROJECT_DIR)/config/boards
+
+include $(PROJECT_DIR)/config/boards/$(PROJECT_BOARD)/board.mk
+
+# If enabled, this option makes the build process faster by not compiling
+# modules not used in the current configuration.
+# without USE_SMART_BUILD all ChibiOS (including all drivers) are builded. And all drivers includes get included.
+ifeq ($(USE_SMART_BUILD),)
+  USE_SMART_BUILD = yes
+endif
+ifeq ($(CONFDIR),)
+  CONFDIR = $(PROJECT_DIR)/config/stm32f4ems
+endif
+
 # Startup files.
 include $(CPU_STARTUP_DIR)
 # HAL-OSAL files (optional).
@@ -153,8 +161,7 @@ ifeq ($(USE_FATFS),yes)
 include $(PROJECT_DIR)/ext/fatfs.mk
 endif
 
-include $(PROJECT_DIR)/config/boards/$(PROJECT_BOARD)/board.mk
-include $(PROJECT_DIR)/config/engines/engines.mk
+
 include $(PROJECT_DIR)/console/console.mk
 include $(PROJECT_DIR)/controllers/controllers.mk
 include $(PROJECT_DIR)/development/development.mk
@@ -169,7 +176,6 @@ ifeq ($(BOOTLOADERINC),)
   # include default bootloader code
   BOOTLOADERINC= $(PROJECT_DIR)/bootloader/
 endif
-
 
 ifeq ($(USE_BOOTLOADER),yes)
 include $(PROJECT_DIR)/bootloader/bootloader.mk
@@ -187,7 +193,9 @@ CSRC = $(STARTUPSRC) \
 	$(PORTSRC) \
 	$(OSALSRC) \
 	$(HALSRC) \
+	$(HALSRC_CONTRIB) \
 	$(PLATFORMSRC) \
+	$(PLATFORMSRC_CONTRIB) \
 	$(BOARDSRC) \
 	$(BOOTLOADERSRC) \
 	$(CHIBIOS)/os/ex/ST/lis302dl.c \
@@ -196,7 +204,6 @@ CSRC = $(STARTUPSRC) \
 	$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	${HW_MASS_STORAGE_SRC_C} \
 	$(UTILSRC) \
-	$(ENGINES_SRC) \
 	$(CONSOLESRC) \
 	$(DEV_SRC) \
 	$(HW_LAYER_EMS) \
@@ -273,6 +280,7 @@ INCDIR = $(CHIBIOS)/os/license \
 	$(HALINC) \
 	$(HALINC_CONTRIB) \
 	$(PLATFORMINC) \
+	$(PLATFORMINC_CONTRIB) \
 	$(BOARDINC) \
 	$(BOOTLOADERINC) \
 	$(CHCPPINC) \
@@ -286,16 +294,14 @@ INCDIR = $(CHIBIOS)/os/license \
 	ext \
 	ext_algo \
 	console_util \
-	console \
-	$(PROJECT_DIR)/console/binary \
-	$(PROJECT_DIR)/console/fl_binary \
-	$(PROJECT_DIR)/hw_layer \
-	$(PROJECT_DIR)/mass_storage \
-	hw_layer/serial_over_usb \
-	hw_layer/algo \
-	hw_layer/lcd \
+	$(CONSOLE_INC) \
+	$(HW_LAYER_INC) \
+	$(PROJECT_DIR)/hw_layer/mass_storage \
+	$(PROJECT_DIR)/hw_layer/serial_over_usb \
+	$(PROJECT_DIR)/hw_layer/algo \
+	$(PROJECT_DIR)/hw_layer/lcd \
+	$(PROJECT_DIR)/hw_layer/mass_storage \
 	$(HW_SENSORS_INC) \
-	hw_layer/mass_storage \
 	$(HW_INC) \
 	$(HW_LAYER_DRIVERS_INC) \
 	$(UTIL_INC) \

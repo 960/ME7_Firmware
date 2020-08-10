@@ -47,43 +47,24 @@
             </table>
         </table>
 
-
-        <table type="3D" name="Fuel Table" 
+        <table type="3D" name="Volumetric Efficiency"
         category="Fuel"
-        storageaddress="@@fuelTable_offset_hex@@" sizex="@@FUEL_RPM_COUNT@@"
-               sizey="@@FUEL_LOAD_COUNT@@" storagetype="float" endian="big">
+        storageaddress="@@veTable_offset_hex@@"
+               sizex="@@FUEL_RPM_COUNT@@" sizey="@@FUEL_LOAD_COUNT@@" storagetype="float" endian="big">
             <scaling units="Engine Load" expression="x" to_byte="x" format="0.00" fineincrement=".1"
                      coarseincrement="1"/>
-            <table type="X Axis" storageaddress="@@fuelRpmBins_offset_hex@@" storagetype="float" endian="big"
-                   logparam="engine_load">
-                <scaling units="RPM" expression="x" to_byte="x" format="0.00" fineincrement=".1"
-                         coarseincrement="1"/>
-            </table>
-            <table type="Y Axis" storageaddress="@@fuelLoadBins_offset_hex@@" storagetype="float" endian="big"
+            <table type="X Axis" storageaddress="@@veRpmBins_offset_hex@@" storagetype="float" endian="big"
                    logparam="rpm">
-                <scaling units="engine_load" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
+                <scaling units="RPM" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
+            </table>
+            <table type="Y Axis" storageaddress="@@veLoadBins_offset_hex@@" storagetype="float" endian="big"
+                   logparam="engine_load">
+                <scaling units="degree" expression="x" to_byte="x" format="0.00" fineincrement=".1"
+                         coarseincrement="1"/>
             </table>
         </table>
 
-   <table type="3D" name="Fuel Table 2" 
-        category="Fuel"
-        storageaddress="@@fuel2Table_offset_hex@@" sizex="@@FUEL_RPM_COUNT@@"
-               sizey="@@FUEL_LOAD_COUNT@@" storagetype="float" endian="big">
-            <scaling units="Engine Load" expression="x" to_byte="x" format="0.00" fineincrement=".1"
-                     coarseincrement="1"/>
-            <table type="X Axis" storageaddress="@@fuel2RpmBins_offset_hex@@" storagetype="float" endian="big"
-                   logparam="engine_load">
-                <scaling units="RPM" expression="x" to_byte="x" format="0.00" fineincrement=".1"
-                         coarseincrement="1"/>
-            </table>
-            <table type="Y Axis" storageaddress="@@fuel2LoadBins_offset_hex@@" storagetype="float" endian="big"
-                   logparam="rpm">
-                <scaling units="engine_load" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
-            </table>
-        </table>
-
-
-      
+    
 
         <table type="3D" name="Target AFR"
         category="Fuel"
@@ -100,18 +81,6 @@
             </table>
         </table>
 
-        <table type="3D" name="Baro Correction"
-        category="Fuel"
-        storageaddress="@@baroCorrTable_offset_hex@@" sizex="@@BARO_CORR_SIZE@@"
-               sizey="@@BARO_CORR_SIZE@@" storagetype="float" endian="big">
-            <scaling units="Pressure" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
-            <table type="X Axis" storageaddress="@@baroCorrPressureBins_offset_hex@@" storagetype="float" endian="big">
-                <scaling units="kPa" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
-            </table>
-            <table type="Y Axis" storageaddress="@@baroCorrRpmBins_offset_hex@@" storagetype="float" endian="big">
-                <scaling units="RPM" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
-            </table>
-        </table>
 
         <table type="2D" name="Coolant-based Warnup Enrichment"
         category="Fuel"
@@ -124,7 +93,7 @@
             </table>
         </table>
 
-      
+     
 
         <table type="2D" name="Coolant temperature-based extra idle air" storageaddress="@@cltIdleCorr_offset_hex@@"
                sizex="@@CLT_CURVE_SIZE@@" storagetype="float" endian="big">
@@ -135,15 +104,6 @@
             </table>
         </table>
 
-
-        <table type="2D" name="Engine Noise" storageaddress="@@knockNoise_offset_hex@@"
-               sizex="@@ENGINE_NOISE_CURVE_SIZE@@" storagetype="float" endian="big">
-            <scaling units="Volts" expression="x" to_byte="x" format="0.00"
-                     fineincrement=".01" coarseincrement="0.1"/>
-            <table type="X Axis" storageaddress="@@knockNoiseRpmBins_offset_hex@@" storagetype="float" endian="big">
-                <scaling units="RPM" expression="x" to_byte="x" format="0.00" fineincrement=".1" coarseincrement="1"/>
-            </table>
-        </table>
 
         <table type="2D" name="Injector Lag" storageaddress="@@injector_battLagCorr_offset_hex@@"
                sizex="@@VBAT_INJECTOR_CURVE_SIZE@@" storagetype="float" endian="big">

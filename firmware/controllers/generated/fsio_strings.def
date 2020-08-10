@@ -1,14 +1,18 @@
-// this file was generated automatically by rusEfi tool ConfigDefinition.jar based on integration\rusefi_config.txt Sun Mar 08 20:47:27 CET 2020
+// this file was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Thu Jul 02 16:04:07 CEST 2020
 
 // by class com.rusefi.output.FileFsioSettingsConsumer
-	case FSIO_SETTING_BOOSTPID_OFFSET:
-		return "cfg_boostPid_offset";
-	case FSIO_SETTING_BOOSTPID_MINVALUE:
-		return "cfg_boostPid_minValue";
-	case FSIO_SETTING_VVTPID_OFFSET:
-		return "cfg_vvtPid_offset";
-	case FSIO_SETTING_VVTPID_MINVALUE:
-		return "cfg_vvtPid_minValue";
+	case FSIO_SETTING_IDLERPMPID2_OFFSET:
+		return "cfg_idleRpmPid2_offset";
+	case FSIO_SETTING_IDLERPMPID2_MINVALUE:
+		return "cfg_idleRpmPid2_minValue";
+	case FSIO_SETTING_IDLETIMINGPID_OFFSET:
+		return "cfg_idleTimingPid_offset";
+	case FSIO_SETTING_IDLETIMINGPID_MINVALUE:
+		return "cfg_idleTimingPid_minValue";
+	case FSIO_SETTING_IDLERPMPID_OFFSET:
+		return "cfg_idleRpmPid_offset";
+	case FSIO_SETTING_IDLERPMPID_MINVALUE:
+		return "cfg_idleRpmPid_minValue";
 	case FSIO_SETTING_ALTERNATORCONTROL_OFFSET:
 		return "cfg_alternatorControl_offset";
 	case FSIO_SETTING_ALTERNATORCONTROL_MINVALUE:
@@ -17,25 +21,11 @@
 		return "cfg_etb_offset";
 	case FSIO_SETTING_ETB_MINVALUE:
 		return "cfg_etb_minValue";
-	case FSIO_SETTING_IDLERPMPID_OFFSET:
-		return "cfg_idleRpmPid_offset";
-	case FSIO_SETTING_IDLERPMPID_MINVALUE:
-		return "cfg_idleRpmPid_minValue";
-	case FSIO_SETTING_FUELCLOSEDLOOPPID_OFFSET:
-		return "cfg_fuelClosedLoopPid_offset";
-	case FSIO_SETTING_FUELCLOSEDLOOPPID_MINVALUE:
-		return "cfg_fuelClosedLoopPid_minValue";
-	case FSIO_SETTING_IDLETIMINGPID_OFFSET:
-		return "cfg_idleTimingPid_offset";
-	case FSIO_SETTING_IDLETIMINGPID_MINVALUE:
-		return "cfg_idleTimingPid_minValue";
-	case FSIO_SETTING_IDLERPMPID2_OFFSET:
-		return "cfg_idleRpmPid2_offset";
-	case FSIO_SETTING_IDLERPMPID2_MINVALUE:
-		return "cfg_idleRpmPid2_minValue";
-	case FSIO_SETTING_STARTUPFUELPUMPDURATION:
-		return "cfg_startUpFuelPumpDuration";
-	case FSIO_SETTING_FANONTEMPERATURE:
-		return "cfg_fanOnTemperature";
-	case FSIO_SETTING_FANOFFTEMPERATURE:
-		return "cfg_fanOffTemperature";
+	case FSIO_SETTING_BOOSTPID_OFFSET:
+		return "cfg_boostPid_offset";
+	case FSIO_SETTING_BOOSTPID_MINVALUE:
+		return "cfg_boostPid_minValue";
+	case FSIO_SETTING_VVT_VVTPID_OFFSET:
+		return "cfg_vvt_vvtPid_offset";
+	case FSIO_SETTING_VVT_VVTPID_MINVALUE:
+		return "cfg_vvt_vvtPid_minValue";

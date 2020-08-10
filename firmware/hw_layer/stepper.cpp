@@ -13,13 +13,12 @@
 #if EFI_PROD_CODE || EFI_SIMULATOR
 #include "stepper.h"
 #include "pin_repository.h"
-#include "tps.h"
 #include "engine_controller.h"
 #include "adc_inputs.h"
+#include "sensor.h"
 
 EXTERN_ENGINE;
 
-static Logging *logger;
 
 static void saveStepperPos(int pos) {
 	// use backup-power RTC registers to store the data
@@ -49,16 +48,15 @@ void StepperMotor::ThreadTask() {
 	// first wait until at least 1 slowADC sampling is complete
 	waitForSlowAdc();
 #endif
-#if EFI_SHAFT_POSITION_INPUT
+
 	bool isRunning = engine->rpmCalculator.isRunning(PASS_ENGINE_PARAMETER_SIGNATURE);
-#else
-	bool isRunning = false;
-#endif /* EFI_SHAFT_POSITION_INPUT */
+
 	// now check if stepper motor re-initialization is requested - if the throttle pedal is pressed at startup
-	bool forceStepperParking = !isRunning && getTPS(PASS_ENGINE_PARAMETER_SIGNATURE) > STEPPER_PARKING_TPS;
+	auto tpsPos = Sensor::get(SensorType::DriverThrottleIntent).value_or(0);
+	bool forceStepperParking = !isRunning && tpsPos > STEPPER_PARKING_TPS;
 	if (CONFIG(stepperForceParkingEveryRestart))
 		forceStepperParking = true;
-	scheduleMsg(logger, "Stepper: savedStepperPos=%d forceStepperParking=%d (tps=%.2f)", m_currentPosition, (forceStepperParking ? 1 : 0), getTPS(PASS_ENGINE_PARAMETER_SIGNATURE));
+
 
 	if (m_currentPosition < 0 || forceStepperParking) {
 		// reset saved value
@@ -156,12 +154,12 @@ void StepDirectionStepper::step(bool positive) {
 	pulse();
 }
 
-void StepperMotor::initialize(StepperHw *hardware, int totalSteps, Logging *sharedLogger) {
+void StepperMotor::initialize(StepperHw *hardware, int totalSteps) {
 	m_totalSteps = maxI(3, totalSteps);
 
 	m_hw = hardware;
 
-	logger = sharedLogger;
+	
 
 	Start();
 }
@@ -174,13 +172,13 @@ void StepDirectionStepper::initialize(brain_pin_e stepPin, brain_pin_e direction
 	setReactionTime(reactionTime);
 
 	this->directionPinMode = directionPinMode;
-	this->directionPin.initPin("stepper dir", directionPin, &this->directionPinMode);
+	this->directionPin.initPin("Stepper DIR", directionPin, &this->directionPinMode);
 
 	this->stepPinMode = OM_DEFAULT;	// todo: do we need configurable stepPinMode?
-	this->stepPin.initPin("stepper step", stepPin, &this->stepPinMode);
+	this->stepPin.initPin("Stepper step", stepPin, &this->stepPinMode);
 
 	this->enablePinMode = enablePinMode;
-	this->enablePin.initPin("stepper enable", enablePin, &this->enablePinMode);
+	this->enablePin.initPin("Stepper EN", enablePin, &this->enablePinMode);
 
 	// All pins must be 0 for correct hardware startup (e.g. stepper auto-disabling circuit etc.).
 	this->enablePin.setValue(true); // disable stepper

@@ -6,13 +6,14 @@
 
 #include "thermistors.h"
 
+
 #include <math.h>
 
 SensorResult ThermistorFunc::convert(float ohms) const {
 	// This resistance should have already been validated - only
 	// thing we can check is that it's non-negative
 	if (ohms <= 0) {
-		return {false, 0};
+		return unexpected;
 	}
 
 	float lnR = logf(ohms);
@@ -25,7 +26,7 @@ SensorResult ThermistorFunc::convert(float ohms) const {
 
 	float celsius = convertKelvinToCelcius(kelvin);
 
-	return {true, celsius};
+	return celsius;
 }
 
 void ThermistorFunc::configure(thermistor_conf_s &cfg) {

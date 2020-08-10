@@ -9,14 +9,10 @@
 #include "engine.h"
 #include "error_handling.h"
 
-#if EFI_TUNER_STUDIO
-#include "tunerstudio_configuration.h"
-#endif /* EFI_TUNER_STUDIO */
 EXTERN_ENGINE;
 
-#if EFI_TUNER_STUDIO
-extern TunerStudioOutputChannels tsOutputChannels;
-#endif /* EFI_TUNER_STUDIO */
+#define LOW_VOLTAGE "Low Voltage"
+
 CJ125::CJ125() : wboHeaterControl("wbo"),
 		heaterPid(&heaterPidConfig) {
 }
@@ -26,18 +22,12 @@ void CJ125::SetHeater(float value DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// todo: would be much nicer to have continuous function (vBatt)
 	float maxDuty = (engine->sensors.vBatt > CJ125_HEATER_LIMITING_VOLTAGE) ? CJ125_HEATER_LIMITING_RATE : 1.0f;
 	heaterDuty = (value < CJ125_HEATER_MIN_DUTY) ? 0.0f : minF(maxF(value, 0.0f), maxDuty);
-#ifdef CJ125_DEBUG
-	scheduleMsg(logger, "cjSetHeater: %.2f", heaterDuty);
-#endif
+
 	// a little trick to disable PWM if needed.
 	// todo: this should be moved to wboHeaterControl.setPwmDutyCycle()
 	// todo: is this really needed?!
 	wboHeaterControl.setFrequency(heaterDuty == 0.0f ? NAN : CJ125_HEATER_PWM_FREQ);
 	wboHeaterControl.setSimplePwmDutyCycle(heaterDuty);
-#if EFI_TUNER_STUDIO
-	tsOutputChannels.heaterDuty = heaterDuty;
-#endif /* EFI_TUNER_STUDIO */
-
 }
 
 void CJ125::SetIdleHeater(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
@@ -49,27 +39,25 @@ bool CJ125::isWorkingState(void) const {
 	return state != CJ125_ERROR && state != CJ125_INIT && state != CJ125_IDLE;
 }
 
-void CJ125::StartHeaterControl(pwm_gen_callback *stateChangeCallback DECLARE_ENGINE_PARAMETER_SUFFIX) {
+void CJ125::StartHeaterControl(DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// todo: use custom pin state method, turn pin off while not running
-	startSimplePwmExt(&wboHeaterControl, "wboHeaterPin",
+	startSimplePwmHard(&wboHeaterControl, "wboHeaterPin",
 			&engine->executor,
-			CONFIG(wboHeaterPin),
-			&wboHeaterPin, CJ125_HEATER_PWM_FREQ, 0.0f, stateChangeCallback);
+			engine->wboHeaterPin,
+			&wboHeaterPin, CJ125_HEATER_PWM_FREQ, 0.0f);
 	SetIdleHeater(PASS_ENGINE_PARAMETER_SIGNATURE);
 }
+
+
 
 /**
  * @return true in case of positive SPI identification
  *         false in case of unexpected SPI response
  */
-bool CJ125::cjIdentify(void) {
+bool CJ125::cjIdentify(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	efiAssert(OBD_PCM_Processor_Fault, spi!= NULL, "No SPI pointer", false);
 	// read Ident register
 	int ident = spi->ReadRegister(IDENT_REG_RD) & CJ125_IDENT_MASK;
-
-#if EFI_TUNER_STUDIO
-	tsOutputChannels.wideBandIdent = ident;
-#endif /* EFI_TUNER_STUDIO */
 
 	// set initial registers
 	spi->WriteRegister(INIT_REG1_WR, CJ125_INIT1_NORMAL_17);
@@ -80,36 +68,17 @@ bool CJ125::cjIdentify(void) {
 
 	diag = spi->ReadRegister(DIAG_REG_RD);
 
-
-	scheduleMsg(logger, "cj125: Check ident=0x%x diag=0x%x init1=0x%x init2=0x%x", ident, diag, init1, init2);
 	if (ident != CJ125_IDENT) {
-		scheduleMsg(logger, "cj125: Error! Wrong ident! Cannot communicate with CJ125!");
-		errorCode = CJ125_ERROR_WRONG_IDENT;
-		state = CJ125_ERROR;
+
+		setError(CJ125_ERROR_WRONG_IDENT PASS_ENGINE_PARAMETER_SUFFIX);
 		return false;
 	}
 	if (init1 != CJ125_INIT1_NORMAL_17 || init2 != CJ125_INIT2_DIAG) {
-		scheduleMsg(logger, "cj125: Error! Cannot set init registers! Cannot communicate with CJ125!");
-		errorCode = CJ125_ERROR_WRONG_INIT;
-		state = CJ125_ERROR;
+
+		setError(CJ125_ERROR_WRONG_IDENT PASS_ENGINE_PARAMETER_SUFFIX);
 		return false;
 	}
 
-#if EFI_TUNER_STUDIO
-	tsOutputChannels.wideBandError = errorCode;
-#endif /* EFI_TUNER_STUDIO */
-
-#if EFI_TUNER_STUDIO
-	tsOutputChannels.wideBandState = state;
-#endif /* EFI_TUNER_STUDIO */
-
-
-
-#if 0
-	if (diag != CJ125_DIAG_NORM) {
-		scheduleMsg(logger, "cj125: Diag error!");
-	}
-#endif
 	return true;
 }
 
@@ -160,7 +129,8 @@ void CJ125::cjInitPid(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	heaterPidConfig.minValue = 0;
 	heaterPidConfig.maxValue = 1;
 	heaterPidConfig.offset = 0;
-	// todo: period?
-	heaterPidConfig.periodMs = 1.0f;
+	/**
+	 * See hard-coded CJ125_TICK_DELAY - we run PID at 50Hz
+	 */
 	heaterPid.reset();
 }

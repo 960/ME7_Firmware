@@ -108,7 +108,7 @@ public:
 
   // commonly used methods ***********************************************************************
   PID_AutoTune();          // * Constructor.  links the Autotune to a given PID
-  bool Runtime(Logging *logging);       // * Similar to the PID Compute function,
+  bool Runtime();       // * Similar to the PID Compute function,
                                         //   returns true when done, otherwise returns false
   void Cancel();                        // * Stops the AutoTune
 
@@ -132,7 +132,7 @@ public:
   float GetKi() const;                  //   computed tuning parameters.
   float GetKd() const;                  //
 
-  Logging *logger;
+  
   byte peakCount;
   float input;
   // suggested P coefficient while auto-tuning

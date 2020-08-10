@@ -5,8 +5,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
-#ifndef EFILIB_H_
-#define EFILIB_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -18,6 +17,11 @@
 
 #define SWAP_UINT32(x) ((((x) >> 24) & 0xff) | (((x) << 8) & 0xff0000) | (((x) >> 8) & 0xff00) | (((x) << 24) & 0xff000000))
 
+#define BIT(n) (UINT32_C(1) << (n))
+
+// we also have efi::size which probably does not work for C code
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 // human-readable IDs start from 1 while computer-readbale indexes start from 0
 #define ID2INDEX(id) ((id) - 1)
 
@@ -28,6 +32,9 @@
 #define frequency2periodUs(freq) ((1000000.0f) / (freq))
 
 #define ERROR_CODE 311223344
+
+#define Q(x) #x
+#define QUOTE(x) Q(x)
 
 #ifdef __cplusplus
 extern "C"
@@ -45,19 +52,6 @@ int indexOf(const char *string, char ch);
 float atoff(const char *string);
 int atoi(const char *string);
 
-#if defined(__cplusplus) && defined(__OPTIMIZE__)
-#include <type_traits>
-// "g++ -O2" version, adds more strict type check and yet no "strict-aliasing" warnings!
-#define cisnan(f) ({ \
-	static_assert(sizeof(f) == sizeof(int32_t)); \
-	union cisnanu_t { std::remove_reference_t<decltype(f)> __f; int32_t __i; } __cisnan_u = { f }; \
-	__cisnan_u.__i == 0x7FC00000; \
-})
-#else
-// "g++ -O0" or other C++/C compilers
-#define cisnan(f) (*(((int*) (&f))) == 0x7FC00000)
-#endif /* __cplusplus && __OPTIMIZE__ */
-
 #define UNUSED(x) (void)(x)
   
 int absI(int32_t value);
@@ -73,6 +67,12 @@ float maxF(float i1, float i2);
 float minF(float i1, float i2);
 char* itoa10(char *p, int num);
 bool isSameF(float v1, float v2);
+float clampF(float min, float clamp, float max);
+
+/**
+ * clamps value into the [0, 100] range
+ */
+#define clampPercentValue(x) (clampF(0, x, 100))
 
 bool strEqualCaseInsensitive(const char *str1, const char *str2);
 bool strEqual(const char *str1, const char *str2);
@@ -88,6 +88,9 @@ float expf_taylor(float x);
 }
 
 #include <cstddef>
+
+#define IS_NEGATIVE_ZERO(value) (std::signbit(value) && value==0)
+#define fixNegativeZero(value) (IS_NEGATIVE_ZERO(value) ? 0 : value)
 
 // C++ helpers go here
 namespace efi
@@ -124,4 +127,15 @@ constexpr void copyArrayPartial(TElement (&dest)[NDest], const TElement (&src)[N
 
 #endif /* __cplusplus */
 
-#endif /* EFILIB_H_ */
+#if defined(__cplusplus) && defined(__OPTIMIZE__)
+#include <type_traits>
+// "g++ -O2" version, adds more strict type check and yet no "strict-aliasing" warnings!
+#define cisnan(f) ({ \
+	static_assert(sizeof(f) == sizeof(int32_t)); \
+	union cisnanu_t { std::remove_reference_t<decltype(f)> __f; int32_t __i; } __cisnan_u = { f }; \
+	__cisnan_u.__i == 0x7FC00000; \
+})
+#else
+// "g++ -O0" or other C++/C compilers
+#define cisnan(f) (*(((int*) (&f))) == 0x7FC00000)
+#endif /* __cplusplus && __OPTIMIZE__ */

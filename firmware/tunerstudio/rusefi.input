@@ -91,8 +91,8 @@ showPanel = sim,  ecuStimulator
         startCommand = "l\x01"
         stopCommand  = "l\x02"
         dataReadCommand = "L"
-        dataReadTimeout = 10000 ; time in ms
-        dataReadyCondition = { toothLogReady }
+        dataReadTimeout = 50000 ; time in ms
+        dataReadyCondition = { toothLogReady == 1}
         continuousRead = true
         ; each packet is @@COMPOSITE_PACKET_SIZE@@ and we have @@COMPOSITE_PACKET_COUNT@@ of those
         dataLength = @@COMPOSITE_DATA_LENGTH@@
@@ -113,10 +113,14 @@ showPanel = sim,  ecuStimulator
         recordField = secLevel,          "SecLevel",     1,          1,          1.0,    "Flag"
         recordField = trigger,           "Trigger",      2,          1,          1.0,    "Flag"
         recordField = sync,              "Sync",         3,          1,          1.0,    "Flag"
-		recordField = time,              "Time",         8,         32,         0.01,    "ms"
+	   recordField = refTime,           "RefTime",      8,          32,         0.01,  "ms"
 
-        ; it seems that TS also needs to know the diff.size of a tooth
-        calcField = toothTime,           "ToothTime",    "ms",       { time - pastValue(time, 1) }
+        ; hidden calcField serves as intermediate variable
+        calcField = maxTime,               "MaxTime",   "ms",  { maxValue(refTime) }
+
+        calcField = toothTime,           "ToothTime",    "ms",       { refTime - pastValue(refTime, 1) }
+        ;recordField = time,                "Time",       24,         16,         1.0,    "ms"
+        calcField = time,                "Time",   "ms",  { refTime }
 
 [VeAnalyze]
 
@@ -262,8 +266,8 @@ showPanel = sim,  ecuStimulator
 
 ; Mode, firmware, protocol, run time
 ; TS requires 'seconds' name since it has special internal meaning
-      seconds         = scalar,  U32,    112,    "sec",      1,       0.0
-      engineMode      = scalar,  U32,    116,     "em",      1,       0.0;
+      secl         = scalar,  U32,    112,    "sec",    1.000, 0.000
+      engineMode      = scalar,  U32,    116,     "em",      1,       0.0
       firmwareVersion = scalar,  U32,    120,"version_f",    1,         0
 
 
@@ -327,6 +331,10 @@ showPanel = sim,  ecuStimulator
 
 	; we use this to match logs to tunes
 	tuneCrc16         = scalar,  U16,    244, "crc16",           1,         0
+	widebandIdent	= scalar,  S16,    246,    "val",           1,       0.0
+ 	time             = { timeNow                                       }
+   	seconds          = { secl                                          }
+
  	map_bar      = { (MAPValue - 100) / 101.33 }
 ;
 ; see TunerStudioOutputChannels struct
@@ -337,7 +345,7 @@ showPanel = sim,  ecuStimulator
 	LM_REAL_MAF = {4}
 
       egoCorrection   = { 100 }
-      time            = { timeNow }
+    
 
 	; These "synthetic" channels provide the Y-axis (load) value for gen purp PWM table's Y axes
 	gppwm1_load = {(gppwm1_loadAxis == 0) ? TPSValue : ((gppwm1_loadAxis == 1) ? MAPValue : ((gppwm1_loadAxis == 2) ? coolant : ((gppwm1_loadAxis == 3) ? intake : ((gppwm1_loadAxis == 4) ? fuelingLoad : ignitionLoad))))}
@@ -784,7 +792,7 @@ gaugeCategory = Sensors - Basic
    RPMGauge        = RPMValue,           "RPM - engine speed",       "RPM",       0,   15000,     200,    500,    6000,  6000,   0,   0
    CLTGauge          = coolant,       "Coolant temp",        "deg C",      -40,    140,     -15,      1,      95,   110,   1,   1
    IATGauge          = intake,     "Intake air temp",        "deg C",      -40,    140,     -15,      1,      95,   110,   1,   1
-   afr1Gauge         = AFRValue, "Air fuel ratio",          "",       10,   19.4,      12,     13,      15,    16,   2,   2
+   afr1Gauge         = AFRValue, "Air fuel ratio",          "",       10,   19.4,      12,     13,      15,    16,   2,   1
    MAFGauge			 = MAFValue,          "Mass air flow",         "v",        0,      5,       0,      1,       3,     4,   1,   1
    VBattGauge        = VBatt,      "Battery voltage",         "V",        8,     21,       9,     10,      17,    19,   1,   1
    MAPGauge     	 = MAPValue,               "MAP",       "kPa",        0,    300,      10,     10,     200,   200,   0,   0	
@@ -794,14 +802,14 @@ gaugeCategory = Sensors - Basic
 ;Name                 Var                    Title           Units       Lo     Hi      LoD     LoW      HiW   HiD   vd   ld
 
 gaugeCategory = Other Sensors
+knockGauge = knockLevel,	    @@GAUGE_NAME_KNOCK_LEVEL@@,   8,     21,       9,     10,      17,    19,   1,   1
    	VSSGauge          = vehicleSpeedKph,     "Vehicle speed",         "kmh",        0,    200,       0,      1,       3,     4,   1,   1
    	atmPresCGauge     = baroPressure,          "Barometric pressure",       "kPa",        0,   1024,       0,      0,       0,     0,   0,   0
    	vvtPositionGauge = vvtPosition, "VVT position", "deg",     0,   100,     0,    0,    720,  720,   0,   0
    	OilPressGauge   	 = oilPressure,   "Oil Pressure",       "kPa",        0,    750,      35,     75,     550,   700,   0,   0	
    	idleAirValvePositionGauge = idleAirValvePosition, "Idle position", "%",     0,   100,     0,    0,    100,  100,   1,   1
    	fuelTankLevelGauge   = fuelTankLevel,"Fuel level",           "x",        0,      7,      10,     10,     100,   100,   1,   1
-	;widebandStateGauge = cj125State,"Code",         "",        0,    120,      10,     10,     100,   1000,   1,   1
-	;widebandDiagGauge = cj125Diag,"Code",         "",        0,    120,      10,     10,     100,   1000,   1,   1
+	
 
 gaugeCategory = Sensors - Voltage
    	TpsVoltageGauge  = rawTps1Primary, "TPS 1 Primary Volts", "V", 0, 5, 0, 0, 5, 5, 3, 0
@@ -852,7 +860,12 @@ gaugeCategory = Throttle Body (incl. ETB)
    	etbTargetGauge     = etbTarget,     "ETB position target", "%",    0,    100,    0,     0,     100,   100,   1,   1
    	etbErrorGauge      = etb1Error,     "ETB position error",  "%",    -20,  20,    -10,   -5,    5,    10,  2, 0
    	etbDutyCycleGauge  = etb1DutyCycle, "ETB duty cycle",                 "%",    -100, 100,   -75,   -50,   50,   75,  0, 0
-  
+  	
+gaugeCategory = WideBand
+	afr1Gauge         = AFRValue, "Air fuel ratio",          "",       10,   19.4,      12,     13,      15,    16,   2,   1
+	widebandIdentG = widebandIdent,     "CJ125 Ident",         "%",        0,    100,       0,      0,     100,   100,   1,   1
+	;widebandStateGauge = cj125State,"Code",         "",        0,    120,      10,     10,     100,   1000,   1,   1
+	;widebandDiagGauge = cj125Diag,"Code",         "",        0,    120,      10,     10,     100,   1000,   1,   1
 
 
 [WueAnalyze]
@@ -1191,7 +1204,7 @@ menuDialog = main
 		# O2 sensor(s)
 		subMenu = std_separator
 		subMenu = egoSettings,						"EGO Sensor"
-		
+		subMenu = knockFilter, "Knock Filter"
 	
 		subMenu = narrowToWideOxygenCurve,			"Narrow to Wideband approximation"
 	  
@@ -1407,9 +1420,9 @@ dialog = limits, "Limits"
 		field = "skipped Tooth Count",					trigger_missingTeeth, {trigger_type == 0}  
 		field = ""
  		field = "Enable noise filtering",				enableTriggerFilter
-		field = "Ratio From	(3 x ratio)", 							syncRatioFrom
-		field = "Ratio To	(3 x ratio)", 							syncRatioTo
-		field = "Enable Test Sync Ratios",				triggerRatios
+		field = "Enable Custom Sync Ratio",				syncMode
+		field = "Min (3x)",								syncRatioFrom
+		field = "Max (3x)",								syncRatioTo
 		
 
 dialog = triggerInputs,					"Trigger Inputs"
@@ -1626,6 +1639,8 @@ dialog = triggerInputs,					"Trigger Inputs"
 		commandButton = "Spark #6", cmd_test_spk6
 		commandButton = "Spark #7", cmd_test_spk7
 		commandButton = "Spark #8", cmd_test_spk8
+
+		
 
 
 
@@ -1982,8 +1997,13 @@ dialog = crankingFuel, "Fuel"
 	    field = "Internal Wideband Sensor"
 		field = "Enabled",							isCJ125Enabled, {afr_type == 7}
 		field = "Sensor Type",						cj125isLsu49, {isCJ125Enabled == 1 && afr_type == 7}
-		commandButton = "Start Calibration", 		cmd_cj125_calibrate, {isCJ125Enabled == 1 && afr_type == 7}
 		
+		field = "Dynamic Mode Change (Test)",		cj125AutoChangeMode, {isCJ125Enabled == 1 && afr_type == 7}
+		field = "Custom PID Gains",					tuneCj125Pid, {isCJ125Enabled == 1 && afr_type == 7}
+		field = "P Gain",							cj125Pfactor, {isCJ125Enabled == 1 && afr_type == 7 && tuneCj125Pid == 1}
+		field = "I Gain",							cj125Ifactor, {isCJ125Enabled == 1 && afr_type == 7 && tuneCj125Pid == 1}
+		commandButton = "Start Calibration", 		cmd_cj125_calibrate, {isCJ125Enabled == 1 && afr_type == 7}
+		commandButton = "Reset", 		cmd_cj125_reset, {isCJ125Enabled == 1 && afr_type == 7}
 
 
 	dialog = egoSettings, "", yAxis
@@ -1994,7 +2014,8 @@ dialog = crankingFuel, "Fuel"
 		field = "Enable AEM X-Series CANbus",			enableAemXSeries, { canReadEnabled }
 		field = "Enable Innovate LC-2 Serial",			enableInnovateLC2, { auxSerialRxPin && auxSerialTxPin }
 
-	      
+	      dialog = knockFilter, "Knock Filter"
+		field = "Knock Filter",							knockBandCustom
 
 
 

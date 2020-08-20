@@ -32,20 +32,19 @@ void setAfrMap(afr_table_t table, float value);
  * See also setLinearCurve()
  */
 void setMap(fuel_table_t table, float value);
-void setWholeFuelMap(float value DECLARE_CONFIG_PARAMETER_SUFFIX);
 void setWholeIgnitionIatCorr(float value DECLARE_CONFIG_PARAMETER_SUFFIX);
 void setFuelTablesLoadBin(float minValue, float maxValue DECLARE_CONFIG_PARAMETER_SUFFIX);
 void setWholeIatCorrTimingTable(float value DECLARE_CONFIG_PARAMETER_SUFFIX);
 void setWholeTimingTable_d(angle_t value DECLARE_CONFIG_PARAMETER_SUFFIX);
 #define setWholeTimingTable(x) setWholeTimingTable_d(x PASS_CONFIG_PARAMETER_SUFFIX);
 void setConstantDwell(floatms_t dwellMs DECLARE_CONFIG_PARAMETER_SUFFIX);
-void printFloatArray(const char *prefix, float array[], int size);
 
 // needed by bootloader
 void setDefaultBasePins(DECLARE_CONFIG_PARAMETER_SIGNATURE);
 
 void setDefaultSdCardParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE);
 
+void onBurnRequest(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 void rememberCurrentConfiguration(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 void incrementGlobalConfigurationVersion(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
@@ -55,7 +54,6 @@ void copyFuelTable(fuel_table_t const source, fuel_table_t destination);
 void copyTimingTable(ignition_table_t const source, ignition_table_t destination);
 
 void emptyCallbackWithConfiguration();
-
 
 typedef void (*configuration_callback_t)(engine_configuration_s*);
 

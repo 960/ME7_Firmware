@@ -69,36 +69,6 @@
 #define STM32_HSE_BYPASS
 #endif /* EFI_USE_OSC */
 
-
-
-
-
-/* SPI storage */
-#define SPI_FRAM_CS_GPIO GPIOE
-#define SPI_FRAM_CS_PIN 15
-
-#define SPI_FRAM_AF 6U
-#define SPI_FRAM_SCK GPIOB_3
-#define SPI_FRAM_MISO GPIOB_4
-#define SPI_FRAM_MOSI GPIOB_5
-#define SPI_FRAM_SPI  SPID3
-
-#define SPI_FRAM_WP GPIOE_14
-#define SPI_FRAM_HOLD GPIOB_10
-
-
-#define FRAM_SIZE (8 * 32768)
-
-
-#define EEPROM_SIZE 262868
-#define EEPROM_PAGE_SIZE 32
-#define EEPROM_WRITE_TIME_MS 10 // byte/page write time
-#define EEPROM_SPID SPID3
-#define EEPROM_SPIDCONFIG spi3cfg
-
-
-
-
 /*
  * Board voltages.
  * Required for performance limits calculation.

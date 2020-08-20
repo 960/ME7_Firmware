@@ -11,7 +11,7 @@
 #if EFI_INTERNAL_FLASH
 #include "os_access.h"
 #include "flash_main.h"
-
+#include "fram.h"
 #include "flash_int.h"
 #include "engine_math.h"
 
@@ -69,6 +69,7 @@ int eraseAndFlashCopy(flashaddr_t storageAddress, const TStorage& data)
 {
 	intFlashErase(storageAddress, sizeof(TStorage));
 	return intFlashWrite(storageAddress, reinterpret_cast<const char*>(&data), sizeof(TStorage));
+
 }
 
 void writeToFlashNow(void) {

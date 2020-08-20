@@ -54,7 +54,7 @@ typedef unsigned int time_t;
  * See "threadsinfo" command cmd_threads
  */
 #ifndef UTILITY_THREAD_STACK_SIZE
-#define UTILITY_THREAD_STACK_SIZE 800
+#define UTILITY_THREAD_STACK_SIZE 400
 #endif /* UTILITY_THREAD_STACK_SIZE */
 
 #define getCurrentRemainingStack() getRemainingStack(chThdGetSelfX())
@@ -108,7 +108,7 @@ typedef unsigned int time_t;
  * converts efitick_t to efitimeus_t
  */
 #define NT2US(nt) ((nt) / US_TO_NT_MULTIPLIER)
-
+#define US2MS(us) ((us) * 1000)
 #define UNIT_TEST_BUSY_WAIT_CALLBACK() {}
 
 #ifdef __cplusplus

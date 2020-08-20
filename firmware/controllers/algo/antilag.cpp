@@ -7,7 +7,7 @@
 
 #include "engine.h"
 
-#if EFI_ANTILAG
+//#if EFI_ANTILAG
 
 #if EFI_TUNER_STUDIO
 #include "tunerstudio_outputs.h"
@@ -107,5 +107,5 @@ void initAntiLag( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 
 	Als.Start();
 }
-#endif
+//#endif
 

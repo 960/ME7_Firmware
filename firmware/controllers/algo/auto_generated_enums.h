@@ -1,7 +1,7 @@
 // was generated automatically by rusEfi tool  from rusefi_hw_enums.h
 // was generated automatically by rusEfi tool  from rusefi_enums.h
 // by enum2string.jar tool
-// on Thu Aug 06 22:05:59 CEST 2020
+// on Tue Aug 18 11:53:20 CEST 2020
 // see also gen_config_and_enums.bat
 
 
@@ -27,6 +27,7 @@ const char *getCranking_ignition_mode_e(cranking_ignition_mode_e value);
 const char *getDebug_mode_e(debug_mode_e value);
 const char *getEgo_sensor_e(ego_sensor_e value);
 const char *getEngine_load_mode_e(engine_load_mode_e value);
+const char *getEngine_type_e(engine_type_e value);
 const char *getGear_e(gear_e value);
 const char *getGppwm_channel_e(gppwm_channel_e value);
 const char *getGppwm_compare_mode_e(gppwm_compare_mode_e value);

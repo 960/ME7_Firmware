@@ -20,7 +20,7 @@
 #include "os_util.h"
 #include "bench_test.h"
 #include "vehicle_speed.h"
-
+#include "software_knock.h"
 #include "pin_repository.h"
 
 #include "smart_gpio.h"
@@ -43,6 +43,7 @@
 
 
 #include "trigger_central.h"
+#include "svnversion.h"
 #include "engine_configuration.h"
 
 #include "perf_trace.h"
@@ -51,6 +52,10 @@
 #if EFI_MC33816
 #include "mc33816.h"
 #endif /* EFI_MC33816 */
+
+#if EFI_MAP_AVERAGING
+
+#endif
 
 #if EFI_INTERNAL_FLASH
 #include "flash_main.h"
@@ -359,7 +364,10 @@ void initHardware() {
 		return;
 	}
 
-
+#if EFI_SPI_FRAM
+	initEeprom();
+	identify();
+#endif
 
 	initFlash();
 	/**
@@ -370,7 +378,7 @@ void initHardware() {
 	 */
 
 		readFromFlash();
-		initEeprom(PASS_ENGINE_PARAMETER_SUFFIX);
+
 
 	// it's important to initialize this pretty early in the game before any scheduling usages
 	initSingleTimerExecutorHardware();
@@ -455,7 +463,9 @@ void initHardware() {
 #if EFI_CAN_SUPPORT
 	initCanVssSupport();
 #endif
-
+#if EFI_SOFTWARE_KNOCK
+	initSoftwareKnock();
+#endif /* EFI_SOFTWARE_KNOCK */
 
 	calcFastAdcIndexes();
 

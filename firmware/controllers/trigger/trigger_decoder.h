@@ -11,16 +11,17 @@
 #include "trigger_structure.h"
 #include "engine_configuration.h"
 #include "trigger_state_generated.h"
+#include "gap_tracker.h"
 
 class TriggerState;
 
 struct TriggerStateListener {
-
+#if EFI_SHAFT_POSITION_INPUT
 	virtual void OnTriggerStateProperState(efitick_t nowNt) = 0;
 	virtual void OnTriggerSyncronization(bool wasSynchronized) = 0;
 	virtual void OnTriggerInvalidIndex(int currentIndex) = 0;
 	virtual void OnTriggerSynchronizationLost() = 0;
-
+#endif
 };
 
 typedef void (*TriggerStateCallback)(TriggerState *);
@@ -96,9 +97,7 @@ public:
 	/**
 	 * current duration at index zero and previous durations are following
 	 */
-	uint32_t toothDurations[GAP_TRACKING_LENGTH + 1];
-
-	efitick_t toothed_previous_time;
+	GapTracker<GAP_TRACKING_LENGTH> gapTracker;
 
 	current_cycle_state_s currentCycle;
 
@@ -161,9 +160,9 @@ public:
 	float prevInstantRpmValue = 0;
 	void movePreSynchTimestamps(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	float calculateInstantRpm(int *prevIndex, efitick_t nowNt DECLARE_ENGINE_PARAMETER_SUFFIX);
-
+#if EFI_ENGINE_CONTROL && EFI_SHAFT_POSITION_INPUT
 	void runtimeStatistics(efitick_t nowNt DECLARE_ENGINE_PARAMETER_SUFFIX);
-
+#endif
 	/**
 	 * Update timeOfLastEvent[] on every trigger event - even without synchronization
 	 * Needed for early spin-up RPM detection.
@@ -176,9 +175,8 @@ angle_t getEngineCycle(operation_mode_e operationMode);
 class Engine;
 
 void initTriggerDecoder(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-void initTriggerDecoderLogger();
+
 
 bool isTriggerDecoderError(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
 void calculateTriggerSynchPoint(TriggerWaveform *shape, TriggerState *state DECLARE_ENGINE_PARAMETER_SUFFIX);
-

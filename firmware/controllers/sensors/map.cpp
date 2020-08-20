@@ -19,10 +19,28 @@
 #include "pin_repository.h"
 #endif
 
+
+
 EXTERN_ENGINE;
+
+
 
 // See 'useFixedBaroCorrFromMap'
 static float storedInitialBaroPressure = NAN;
+
+/**
+ * @brief	MAP value decoded for a 1.83 Honda sensor
+ * -6.64kPa at zero volts
+ * 182.78kPa at 5 volts
+ *
+ * about 3 volts at 100kPa
+ *
+ * @returns kPa value
+ */
+
+
+
+
 
 static FastInterpolation customMap;
 
@@ -116,9 +134,17 @@ static void applyConfiguration(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 }
 
+
+
+
+
 void initMapDecoder( DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	
 	applyConfiguration(PASS_ENGINE_PARAMETER_SIGNATURE);
 	//engine->configurationListeners.registerCallback(applyConfiguration);
+
+
+
 	if (CONFIG(useFixedBaroCorrFromMap)) {
 		// Read initial MAP sensor value and store it for Baro correction.
 		storedInitialBaroPressure = getRawMap(PASS_ENGINE_PARAMETER_SIGNATURE);

@@ -45,6 +45,10 @@ class AirmassModelBase;
 
 class IEtbController;
 
+class TCU {
+public:
+	gear_e currentGear = NEUTRAL;
+};
 
 class Engine : public TriggerStateListener {
 public:
@@ -55,6 +59,7 @@ public:
 
 	cyclic_buffer<int> triggerErrorDetection;
 
+	TCU tcu;
 
 
 
@@ -107,7 +112,6 @@ public:
 
 	brain_pin_e cj125CsPin = GPIO_UNASSIGNED;
 	output_pin_e cj125ModePin = GPIO_UNASSIGNED;
-	output_pin_e cj125ModePin2 = GPIO_UNASSIGNED;
 	pin_output_mode_e cj125ModePinMode = OM_DEFAULT;
 
 
@@ -145,6 +149,9 @@ public:
 	 */
 	int globalSparkIdCounter = 0;
 
+	// this is useful at least for real hardware integration testing - maybe a proper solution would be to simply
+	// GND input pins instead of leaving them floating
+	bool hwTriggerInputEnabled = true;
 
 
 #if !EFI_PROD_CODE

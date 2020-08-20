@@ -85,7 +85,8 @@
 #define SPI_FRAM_HOLD GPIOB_10
 
 
-//#define FRAM_SIZE (8 * 32768)
+#define FRAM_SIZE 262144
+//(8 * 32768)
 
 
 

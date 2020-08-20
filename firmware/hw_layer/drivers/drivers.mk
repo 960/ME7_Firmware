@@ -6,7 +6,6 @@ HW_LAYER_DRIVERS_INC = \
 	$(DRIVERS_DIR)/can \
 	$(DRIVERS_DIR)/serial \
 
-
 HW_LAYER_DRIVERS_CORE = \
 	$(DRIVERS_DIR)/gpio/core.c \
 

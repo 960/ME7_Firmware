@@ -56,8 +56,8 @@ void TriggerEmulatorHelper::handleEmulatorCallback(PwmConfig *state, int stateIn
 		if (needEvent(stateIndex, state->phaseCount, &state->multiChannelStateSequence, i)) {
 			pin_state_t currentValue = multiChannelStateSequence->getChannelState(/*phaseIndex*/i, stateIndex);
 			
-			constexpr trigger_event_e riseEvents[] = { SHAFT_PRIMARY_RISING, SHAFT_SECONDARY_RISING, SHAFT_3RD_RISING };
-			constexpr trigger_event_e fallEvents[] = { SHAFT_PRIMARY_FALLING, SHAFT_SECONDARY_FALLING, SHAFT_3RD_FALLING };
+			constexpr trigger_event_e riseEvents[] = { SHAFT_PRIMARY_FALLING, SHAFT_SECONDARY_RISING, SHAFT_3RD_RISING };
+			constexpr trigger_event_e fallEvents[] = { SHAFT_PRIMARY_RISING, SHAFT_SECONDARY_FALLING, SHAFT_3RD_FALLING };
 
 			trigger_event_e event = (currentValue ? riseEvents : fallEvents)[i];
 

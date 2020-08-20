@@ -272,7 +272,7 @@ void executeTSCommand(uint16_t subsystem, uint16_t index) {
 		cjStartCalibration();
 #endif /* EFI_CJ125 */
 	} else if (subsystem == 0x19) {
-
+		cjRestart();
 	} else if (subsystem == 0x20) {
 		mainRelayBench();
 

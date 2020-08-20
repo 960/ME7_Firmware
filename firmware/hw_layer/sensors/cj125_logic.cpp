@@ -39,16 +39,14 @@ bool CJ125::isWorkingState(void) const {
 	return state != CJ125_ERROR && state != CJ125_INIT && state != CJ125_IDLE;
 }
 
-void CJ125::StartHeaterControl(DECLARE_ENGINE_PARAMETER_SUFFIX) {
+void CJ125::StartHeaterControl(pwm_gen_callback *stateChangeCallback DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// todo: use custom pin state method, turn pin off while not running
-	startSimplePwmHard(&wboHeaterControl, "wboHeaterPin",
+	startSimplePwmExt(&wboHeaterControl, "wboHeaterPin",
 			&engine->executor,
 			engine->wboHeaterPin,
-			&wboHeaterPin, CJ125_HEATER_PWM_FREQ, 0.0f);
+			&wboHeaterPin, CJ125_HEATER_PWM_FREQ, 0.0f, stateChangeCallback);
 	SetIdleHeater(PASS_ENGINE_PARAMETER_SIGNATURE);
 }
-
-
 
 /**
  * @return true in case of positive SPI identification
@@ -67,6 +65,9 @@ bool CJ125::cjIdentify(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	int init2 = spi->ReadRegister(INIT_REG2_RD);
 
 	diag = spi->ReadRegister(DIAG_REG_RD);
+
+	tsOutputChannels.widebandIdent = ident;
+
 
 	if (ident != CJ125_IDENT) {
 
@@ -107,7 +108,7 @@ void CJ125::cjSetMode(cj125_mode_e m) {
 bool CJ125::isValidState() const {
 	// check if controller is functioning
 	if (!isWorkingState())
-		return false;
+		return true;
 	// check if amplification is turned on
 	if (amplCoeff == 0.0f)
 		return false;
@@ -118,13 +119,27 @@ bool CJ125::isValidState() const {
 }
 
 void CJ125::cjInitPid(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+if (CONFIG(tuneCj125Pid)) {
 	if (engineConfiguration->cj125isLsu49) {
-		heaterPidConfig.pFactor = CJ125_PID_LSU49_P;
-		heaterPidConfig.iFactor = CJ125_PID_LSU49_I;
+		heaterPidConfig.pFactor = config->cj125Pfactor;
+		heaterPidConfig.iFactor = config->cj125Ifactor;
 	} else {
-		heaterPidConfig.pFactor = CJ125_PID_LSU42_P;
-		heaterPidConfig.iFactor = CJ125_PID_LSU42_I;
+		heaterPidConfig.pFactor = config->cj125Pfactor;
+		heaterPidConfig.iFactor = config->cj125Ifactor;
 	}
+} else {
+	if (engineConfiguration->cj125isLsu49) {
+			heaterPidConfig.pFactor = CJ125_PID_LSU49_P;
+			heaterPidConfig.iFactor = CJ125_PID_LSU49_I;
+		} else {
+			heaterPidConfig.pFactor = CJ125_PID_LSU42_P;
+			heaterPidConfig.iFactor = CJ125_PID_LSU42_I;
+		}
+
+
+}
+
+
 	heaterPidConfig.dFactor = 0.0f;
 	heaterPidConfig.minValue = 0;
 	heaterPidConfig.maxValue = 1;

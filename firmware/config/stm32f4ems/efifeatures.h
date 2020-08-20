@@ -8,7 +8,8 @@
  */
 
 #pragma once
-
+#define EFI_SPI_FRAM TRUE
+#define EFI_SOFTWARE_KNOCK TRUE
 #define EFI_GPIO_HARDWARE TRUE
 #define EFI_AUXILIARIES TRUE
 #define EFI_BOOST_CONTROL TRUE

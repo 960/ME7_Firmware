@@ -618,6 +618,8 @@ case DBG_ETB_LOGIC:
   return "DBG_ETB_LOGIC";
 case DBG_EXECUTOR:
   return "DBG_EXECUTOR";
+case DBG_FRAM:
+  return "DBG_FRAM";
 case DBG_FSIO_ADC:
   return "DBG_FSIO_ADC";
 case DBG_FSIO_EXPRESSION:
@@ -696,6 +698,15 @@ case LM_REAL_MAF:
   return "LM_REAL_MAF";
 case LM_SPEED_DENSITY:
   return "LM_SPEED_DENSITY";
+  }
+ return NULL;
+}
+const char *getEngine_type_e(engine_type_e value){
+switch(value) {
+case Force_4_bytes_size_engine_type:
+  return "Force_4_bytes_size_engine_type";
+case MINIMAL_PINS:
+  return "MINIMAL_PINS";
   }
  return NULL;
 }
@@ -1049,6 +1060,8 @@ case TT_3_1_CAM:
   return "TT_3_1_CAM";
 case TT_60_2_VW:
   return "TT_60_2_VW";
+case TT_60_2_VW_VVT:
+  return "TT_60_2_VW_VVT";
 case TT_BOSCH_QUICK_START:
   return "TT_BOSCH_QUICK_START";
 case TT_DODGE_NEON_1995:

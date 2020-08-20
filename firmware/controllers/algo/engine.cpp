@@ -19,7 +19,7 @@
 #include "speed_density.h"
 #include "advance_map.h"
 #include "os_util.h"
-
+#include "software_knock.h"
 #include "auxiliaries.h"
 
 
@@ -369,6 +369,9 @@ int Engine::getRpmHardLimit(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 void Engine::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ScopePerf pc(PE::EnginePeriodicFastCallback);
 	engineState.periodicFastCallback(PASS_ENGINE_PARAMETER_SIGNATURE);
+#if EFI_SOFTWARE_KNOCK
+	processLastKnockEvent();
+#endif
 }
 
 void doScheduleStopEngine(DECLARE_ENGINE_PARAMETER_SIGNATURE) {

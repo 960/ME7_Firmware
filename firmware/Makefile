@@ -28,6 +28,7 @@ ifeq ($(DEBUG_LEVEL_OPT),)
   # to debug firmware with optimization enabled).
     DEBUG_LEVEL_OPT = -O0 -ggdb -g3
 endif
+DDEFS += -D$(PROJECT_BOARD)
 
 
 ifeq ($(CCACHE_DIR),)
@@ -289,7 +290,6 @@ INCDIR = $(CHIBIOS)/os/license \
 	$(CHIBIOS)/os/ex/ST \
 	$(CHIBIOS)/os/hal/lib/peripherals/sensors \
 	$(CONFIGPATH) \
-	config/engines \
 	config \
 	ext \
 	ext_algo \

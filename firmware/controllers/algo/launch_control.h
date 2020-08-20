@@ -10,4 +10,7 @@
 #include "engine.h"
 
 void initLaunchControl( DECLARE_ENGINE_PARAMETER_SUFFIX);
+void initAntiLag( DECLARE_ENGINE_PARAMETER_SUFFIX);
+void setDefaultAntiLagParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE);
 void setDefaultLaunchParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE);
+

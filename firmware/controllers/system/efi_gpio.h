@@ -160,7 +160,6 @@ public:
 	OutputPin warningLedPin; // orange LED on brain board by default
 	OutputPin triggerErrorPin; // green LED on brain board by default
 	OutputPin cj125ModePin;
-	OutputPin cj125ModePin2;
 	OutputPin debugTriggerSync;
 	OutputPin boostPin;
 	OutputPin vvtPin;

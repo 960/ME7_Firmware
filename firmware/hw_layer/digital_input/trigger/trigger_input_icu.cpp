@@ -28,8 +28,9 @@ EXTERN_ENGINE;
 
 static void vvtRisingCallback(void *) {
 	efitick_t now = getTimeNowNt();
-
-
+	if (!engine->hwTriggerInputEnabled) {
+		return;
+	}
 		// real physical fronts go into engine sniffer
 		LogTriggerTooth(SHAFT_SECONDARY_RISING, now);
 	hwHandleVvtCamSignal(TV_RISE, now);
@@ -37,7 +38,9 @@ static void vvtRisingCallback(void *) {
 
 static void vvtFallingCallback(void *) {
 	efitick_t now = getTimeNowNt();
-
+	if (!engine->hwTriggerInputEnabled) {
+		return;
+	}
 		LogTriggerTooth(SHAFT_SECONDARY_FALLING, now);
 	hwHandleVvtCamSignal(TV_FALL, now);
 }
@@ -48,7 +51,9 @@ static void vvtFallingCallback(void *) {
 static void shaftRisingCallback(bool isPrimary) {
 	efitick_t stamp = getTimeNowNt();
 
-
+	if (!engine->hwTriggerInputEnabled) {
+		return;
+	}
 	icuRisingCallbackCounter++;
 // todo: support for 3rd trigger input channel
 	if (hasFirmwareErrorFlag)
@@ -65,6 +70,10 @@ static void shaftRisingCallback(bool isPrimary) {
 
 static void shaftFallingCallback(bool isPrimary) {
 	efitick_t stamp = getTimeNowNt();
+
+	if (!engine->hwTriggerInputEnabled) {
+		return;
+	}
 
 	icuFallingCallbackCounter++;
 

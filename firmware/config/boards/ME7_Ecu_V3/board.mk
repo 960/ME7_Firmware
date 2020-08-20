@@ -18,14 +18,7 @@ ifeq ($(PROJECT_CPU),ARCH_STM32F7)
   MCU_DEFS = -DSTM32F767xx
   BOARDSRC = $(CHIBIOS)/os/hal/boards/ST_NUCLEO144_F767ZI/board.c
   BOARDINC = $(BOARDS_DIR)/ME7_Ecu_V3		# For board.h
-  BOARDINC += $(PROJECT_DIR)/config/stm32f7ems	# efifeatures/halconf/chconf.h
   LDSCRIPT= $(BOARDS_DIR)/ME7_Ecu_V3/STM32F76xxI.ld
-endif
-ifeq ($(PROJECT_CPU),ARCH_STM32H7)
- MCU_DEFS = -DSTM32H743xx
-  BOARDSRC = $(CHIBIOS)/os/hal/boards/ST_NUCLEO144_H743ZI/board.c
-  BOARDINC = $(BOARDS_DIR)/nucleo_h743		# For board.h
-    LDSCRIPT= $(BOARDS_DIR)/nucleo_h743/STM32H743xI.ld
 endif
 # Set this if you want a default engine type other than normal MRE
 ifeq ($(DEFAULT_ENGINE_TYPE),)

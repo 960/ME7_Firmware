@@ -37,9 +37,13 @@
 #include "trigger_honda.h"
 #include "trigger_vw.h"
 #include "trigger_universal.h"
-#include "engine_configuration.h"
 
-extern persistent_config_container_s persistentState;
+#if EFI_SENSOR_CHART
+
+#endif /* EFI_SENSOR_CHART */
+
+#include "engine_configuration.h"
+		extern persistent_config_container_s persistentState;
 
 EXTERN_ENGINE;
 
@@ -94,6 +98,7 @@ void TriggerWaveform::initialize(operation_mode_e operationMode) {
 	previousAngle = 0;
 	memset(riseOnlyIndexes, 0, sizeof(riseOnlyIndexes));
 	memset(isRiseEvent, 0, sizeof(isRiseEvent));
+
 }
 
 size_t TriggerWaveform::getSize() const {
@@ -106,6 +111,7 @@ int TriggerWaveform::getTriggerWaveformSynchPointIndex() const {
 
 /**
  * physical primary trigger duration
+ * @see getEngineCycle
  */
 angle_t TriggerWaveform::getCycleDuration() const {
 	switch (operationMode) {
@@ -164,6 +170,10 @@ operation_mode_e TriggerWaveform::getOperationMode() const {
 	return operationMode;
 }
 
+#if EFI_UNIT_TEST
+extern bool printTriggerDebug;
+#endif
+
 void TriggerWaveform::calculateExpectedEventCounts(bool useOnlyRisingEdgeForTrigger) {
 	UNUSED(useOnlyRisingEdgeForTrigger);
 
@@ -201,6 +211,8 @@ void TriggerWaveform::addEvent(angle_t angle, trigger_wheel_e const channelIndex
 	} else {
 		state = stateParam;
 	}
+
+
 
 	// todo: the whole 'useOnlyRisingEdgeForTrigger' parameter and logic should not be here
 	// todo: see calculateExpectedEventCounts
@@ -305,6 +317,7 @@ void TriggerWaveform::setTriggerSynchronizationGap3(int gapIndex, float syncRati
 		this->syncRatioAvg = (int)efiRound((syncRatioFrom + syncRatioTo) * 0.5f, 1.0f);
 	}
 
+
 }
 
 /**
@@ -382,15 +395,19 @@ void TriggerWaveform::prepareShape() {
 }
 
 void TriggerWaveform::setTriggerSynchronizationGap(float syncRatio) {
-	setTriggerSynchronizationGap3(/*gapIndex*/0, syncRatio * CONFIG(syncRatioFrom), syncRatio * CONFIG(syncRatioTo));
-}
+	if (CONFIG(syncMode)) {
+		setTriggerSynchronizationGap3(/*gapIndex*/0, syncRatio * CONFIG(syncRatioFrom), syncRatio * CONFIG(syncRatioTo));
+	} else {
+	setTriggerSynchronizationGap3(/*gapIndex*/0, syncRatio * 0.75f, syncRatio * 1.25f);
 
+	}
+}
 void TriggerWaveform::setSecondTriggerSynchronizationGap2(float syncRatioFrom, float syncRatioTo) {
 	setTriggerSynchronizationGap3(/*gapIndex*/1, syncRatioFrom, syncRatioTo);
 }
 
 void TriggerWaveform::setThirdTriggerSynchronizationGap(float syncRatio) {
-	setTriggerSynchronizationGap3(/*gapIndex*/2, syncRatio * 0.85f, syncRatio * 1.15f);
+	setTriggerSynchronizationGap3(/*gapIndex*/2, syncRatio * 0.75f, syncRatio * 1.25f);
 }
 
 void TriggerWaveform::setSecondTriggerSynchronizationGap(float syncRatio) {
@@ -399,7 +416,7 @@ void TriggerWaveform::setSecondTriggerSynchronizationGap(float syncRatio) {
 
 
 /**
- * External logger is needed because at this point our logger is not yet initialized
+ * External is needed because at this point our is not yet initialized
  */
 void TriggerWaveform::initializeTriggerWaveform(operation_mode_e ambiguousOperationMode, bool useOnlyRisingEdgeForTrigger, const trigger_config_s *triggerConfig) {
 
@@ -613,6 +630,10 @@ void TriggerWaveform::initializeTriggerWaveform(operation_mode_e ambiguousOperat
 	case TT_SUBARU_SVX:
 		initializeSubaru_SVX(this);
 		break;
+
+	case TT_60_2_VW_VVT:
+		setVwVvtConfiguration(this);
+			break;
 
 	default:
 		setShapeDefinitionError(true);

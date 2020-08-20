@@ -19,6 +19,9 @@
 #include "closed_loop_fuel.h"
 #include "sensor.h"
 
+#if EFI_PROD_CODE
+#include "svnversion.h"
+#endif
 
 #if ! EFI_UNIT_TEST
 #include "status_loop.h"

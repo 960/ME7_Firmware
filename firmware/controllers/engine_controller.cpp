@@ -43,33 +43,61 @@
 #include "local_version_holder.h"
 #include "alternator_controller.h"
 #include "fuel_math.h"
+
+
 #include "spark_logic.h"
+
+
 #include "counter64.h"
 #include "perf_trace.h"
 #include "boost_control.h"
 #include "vvt_control.h"
 #include "launch_control.h"
+
 #include "gppwm.h"
+#include "date_stamp.h"
+
 #include "tunerstudio.h"
+
+
+#if HAL_USE_ADC
 #include "AdcConfiguration.h"
+#endif /* HAL_USE_ADC */
+
 #include "periodic_task.h"
+
+
+#if ! EFI_UNIT_TEST
 #include "init.h"
+#endif /* EFI_UNIT_TEST */
+
 #include "adc_inputs.h"
 #include "pwm_generator_logic.h"
 
+#if EFI_PROD_CODE
 #include "pwm_tester.h"
 
 #include "pin_repository.h"
+#endif /* EFI_PROD_CODE */
 
+#if EFI_CJ125
 #include "cj125.h"
-
+#endif /* EFI_CJ125 */
 
 EXTERN_ENGINE;
+
+#if !EFI_UNIT_TEST
+
+
+
 /**
  * todo: this should probably become 'static', i.e. private, and propagated around explicitly?
  */
-Engine ___engine __attribute__((section(CCM_RAM)));
+Engine ___engine CCM_OPTIONAL;
 Engine * engine = &___engine;
+
+#endif /* EFI_UNIT_TEST */
+
 
 void initDataStructures(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
@@ -86,6 +114,9 @@ static void initMockVoltage(void) {
 }
 
 #endif /* EFI_ENABLE_MOCK_ADC */
+
+
+#if !EFI_UNIT_TEST
 
 static void doPeriodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
@@ -142,11 +173,11 @@ static void resetAccel(void) {
 static void doPeriodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	efiAssertVoid(CUSTOM_ERR_6661, getCurrentRemainingStack() > 64, "lowStckOnEv");
-
+#if EFI_PROD_CODE
 	touchTimeCounter();
 
 	slowStartStopButtonCallback(PASS_ENGINE_PARAMETER_SIGNATURE);
-
+#endif /* EFI_PROD_CODE */
 
 	efitick_t nowNt = getTimeNowNt();
 
@@ -154,6 +185,8 @@ static void doPeriodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		// loss of VVT sync
 		engine->triggerCentral.vvtSyncTimeNt = 0;
 	}
+
+
 	/**
 	 * Update engine RPM state if needed (check timeouts).
 	 */
@@ -175,6 +208,7 @@ static void doPeriodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		resetAccel();
 	}
 
+
 	if (!engine->rpmCalculator.isStopped(PASS_ENGINE_PARAMETER_SIGNATURE)) {
 		updatePrimeInjectionPulseState(PASS_ENGINE_PARAMETER_SIGNATURE);
 	}
@@ -193,24 +227,30 @@ void initPeriodicEvents(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 }
 
 char * getPinNameByAdcChannel(const char *msg, adc_channel_e hwChannel, char *buffer) {
-
+#if HAL_USE_ADC
 	if (hwChannel == EFI_ADC_NONE) {
 		strcpy(buffer, "NONE");
 	} else {
 		strcpy(buffer, portname(getAdcChannelPort(msg, hwChannel)));
 		itoa10(&buffer[2], getAdcChannelPin(hwChannel));
 	}
-
+#else
+	strcpy(buffer, "NONE");
+#endif /* HAL_USE_ADC */
 	return buffer;
 }
 
 
+#if HAL_USE_ADC
 extern AdcDevice fastAdc;
-
+#endif /* HAL_USE_ADC */
 
 
 #define isOutOfBounds(offset) ((offset<0) || (offset) >= (int) sizeof(engine_configuration_s))
 
+
+
+#endif /* EFI_UNIT_TEST */
 
 // this method is used by real firmware and simulator and unit test
 void commonInitEngineController( DECLARE_ENGINE_PARAMETER_SUFFIX) {
@@ -321,7 +361,7 @@ void initEngineContoller( DECLARE_ENGINE_PARAMETER_SUFFIX) {
  * UNUSED_SIZE constants.
  */
 #ifndef RAM_UNUSED_SIZE
-#define RAM_UNUSED_SIZE 9600
+#define RAM_UNUSED_SIZE 8600
 #endif
 #ifndef CCM_UNUSED_SIZE
 #define CCM_UNUSED_SIZE 2900
@@ -337,6 +377,11 @@ int getRusEfiVersion(void) {
 		return 123; // this is here to make the compiler happy about the unused array
 	if (UNUSED_CCM_SIZE[0] * 0 != 0)
 		return 3211; // this is here to make the compiler happy about the unused array
-	return 1234;
+#if defined(EFI_BOOTLOADER_INCLUDE_CODE)
+	// make bootloader code happy too
+	if (initBootloader() != 0)
+		return 123;
+#endif /* EFI_BOOTLOADER_INCLUDE_CODE */
+	return VCS_DATE;
 }
 #endif /* EFI_UNIT_TEST */

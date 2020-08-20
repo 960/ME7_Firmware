@@ -900,6 +900,8 @@
 #define isManualSpinningMode_offset_hex a4
 #define isVvtControlEnabled_offset 156
 #define isVvtControlEnabled_offset_hex 9c
+#define knockBandCustom_offset 1848
+#define knockBandCustom_offset_hex 738
 #define knockDetectionWindowEnd_offset 940
 #define knockDetectionWindowEnd_offset_hex 3ac
 #define knockDetectionWindowStart_offset 936
@@ -964,8 +966,8 @@
 #define loadBasedAeMult_offset_hex 420
 #define mafAdcChannel_offset 178
 #define mafAdcChannel_offset_hex b2
-#define mainUnusedEnd_offset 1848
-#define mainUnusedEnd_offset_hex 738
+#define mainUnusedEnd_offset 1852
+#define mainUnusedEnd_offset_hex 73c
 #define manIdlePosition_offset 580
 #define manIdlePosition_offset_hex 244
 #define MAP_ACCEL_TAPER 8
@@ -1484,12 +1486,12 @@
 #define triggerErrorPinMode_offset_hex 104
 #define triggerFilter_offset 1828
 #define triggerFilter_offset_hex 724
-#define triggerRatios_offset 148
-#define triggerRatios_offset_hex 94
 #define triggerSimulatorFrequency_offset 552
 #define triggerSimulatorFrequency_offset_hex 228
 #define triggerTestMaxEvents_offset 148
 #define triggerTestMaxEvents_offset_hex 94
+#define triggerTestMinGap_offset 148
+#define triggerTestMinGap_offset_hex 94
 #define TS_COMPOSITE_DISABLE 2
 #define TS_COMPOSITE_ENABLE 1
 #define TS_CONFIG_SIZE 11000

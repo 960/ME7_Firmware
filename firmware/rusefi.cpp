@@ -180,7 +180,7 @@ void runRusEfi(void) {
 	 * Initialize hardware drivers
 	 */
 	initHardware();
-
+	efiSetPadMode("knock", GPIOF_4, PAL_MODE_INPUT_ANALOG);
 
 	/**
 	 * Now let's initialize actual engine control logic

@@ -157,22 +157,15 @@ void setDefaultMaps(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 }
 
 void setPinConfigurationOverrides(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	engine->is_enabled_spi_1 = true;
+	engine->is_enabled_spi_3 = true;
 	engine->is_enabled_spi_2 = true;
-	engine->is_enabled_spi_3 = false;
-
-	engine->pinSpi1Mosi = GPIOB_5;
-	engine->pinSpi1Miso = GPIOB_4;
-	engine->pinSpi1Sck = GPIOB_3;
+	engine->pinSpi3Mosi = GPIOB_5;
+	engine->pinSpi3Miso = GPIOB_4;
+	engine->pinSpi3Sck = GPIOB_3;
 
 	engine->pinSpi2Mosi = GPIOB_15;
 	engine->pinSpi2Miso = GPIOB_14;
 	engine->pinSpi2Sck = GPIOB_13;
-
-	//engine->cj125ModePin = GPIOE_12;
-	//Hold and WP
-	engine->cj125ModePin = GPIOE_14;
-	engine->cj125ModePin2 = GPIOB_10;
 
 
 	engine->cj125SpiDevice = SPI_DEVICE_2;

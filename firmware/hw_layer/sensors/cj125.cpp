@@ -120,18 +120,25 @@ static void cjWriteRegister(uint8_t regAddr, uint8_t regValue) {
 static float getUr() {
 
 	if (engine->cj125ur != EFI_ADC_NONE) {
+#if EFI_PROD_CODE
 		// if a standard voltage division scheme with OpAmp is used
 		return getVoltageDivided("cj125ur", engine->cj125ur PASS_ENGINE_PARAMETER_SUFFIX);
+
+#endif /* EFI_PROD_CODE */
 	}
 	return 0.0f;
+
 }
 
 static float getUa() {
-
 	if (engine->cj125ua != EFI_ADC_NONE) {
+
 			return getVoltageDivided("cj125ua", engine->cj125ua PASS_ENGINE_PARAMETER_SUFFIX);
+
 	}
+
 	return 0.0f;
+
 }
 
 static float getVoltageFrom16bit(uint32_t stored) {
@@ -177,7 +184,6 @@ static void cjUpdateAnalogValues() {
 void CJ125::calibrate(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	cjIdentify(PASS_ENGINE_PARAMETER_SIGNATURE);
 
-
 	cjSetMode(CJ125_MODE_CALIBRATION);
 	int init1 = cjReadRegister(INIT_REG1_RD);
 	// check if our command has been accepted
@@ -219,7 +225,6 @@ void CJ125::calibrate(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// check if everything is ok
 	diag = cjReadRegister(DIAG_REG_RD);
 	cjUpdateAnalogValues();
-
 
 	// store new calibration data
 	uint32_t storedLambda = get16bitFromVoltage(vUaCal);
@@ -272,9 +277,8 @@ static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 void CJ125::setError(cj125_error_e errCode DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	errorCode = errCode;
 	state = CJ125_ERROR;
-
 	// This is for safety:
-	SetHeater(0 PASS_ENGINE_PARAMETER_SUFFIX);
+	//SetHeater(0 PASS_ENGINE_PARAMETER_SUFFIX);
 	// Software-reset of CJ125
 	cjWriteRegister(INIT_REG2_WR, CJ125_INIT2_RESET);
 }
@@ -348,10 +352,10 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 			instance->SetIdleHeater(PASS_ENGINE_PARAMETER_SIGNATURE);
 		}
 
-#if 0
-		// Change amplification if AFR gets lean/rich for better accuracy
-		globalInstance.cjSetMode(globalInstance.lambda > 1.0f ? CJ125_MODE_NORMAL_17 : CJ125_MODE_NORMAL_8);
-#endif
+		if (CONFIG(cj125AutoChangeMode)) {
+			// Change amplification if AFR gets lean/rich for better accuracy
+			globalInstance.cjSetMode(globalInstance.lambda > 1.0f ? CJ125_MODE_NORMAL_17 : CJ125_MODE_NORMAL_8);
+		}
 
 		switch (instance->state) {
 		case CJ125_PREHEAT:
@@ -362,9 +366,9 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 				float preheatDuty = instance->heaterDuty + periodSecs * CJ125_HEATER_PREHEAT_RATE;
 				instance->SetHeater(preheatDuty PASS_ENGINE_PARAMETER_SUFFIX);
 				// If we are heating too long, and there's still no result, then something is wrong...
-				if (nowNt - instance->startHeatingNt > NT_PER_SECOND * CJ125_PREHEAT_TIMEOUT) {
-					instance->setError(CJ125_ERROR_HEATER_MALFUNCTION PASS_ENGINE_PARAMETER_SUFFIX);
-				}
+				//if (nowNt - instance->startHeatingNt > NT_PER_SECOND * CJ125_PREHEAT_TIMEOUT) {
+				//	instance->setError(CJ125_ERROR_HEATER_MALFUNCTION PASS_ENGINE_PARAMETER_SUFFIX);
+				//}
 
 				instance->prevNt = nowNt;
 			}
@@ -384,7 +388,7 @@ static bool cj125periodic(CJ125 *instance DECLARE_ENGINE_PARAMETER_SUFFIX) {
 			break;
 		case CJ125_OVERHEAT:
 			if (nowNt - instance->prevNt >= CJ125_HEATER_OVERHEAT_PERIOD) {
-				instance->setError(CJ125_ERROR_OVERHEAT PASS_ENGINE_PARAMETER_SUFFIX);
+			//	instance->setError(CJ125_ERROR_OVERHEAT PASS_ENGINE_PARAMETER_SUFFIX);
 				instance->prevNt = nowNt;
 			}
 		default:
@@ -406,7 +410,7 @@ static msg_t cjThread(void)
 	globalInstance.prevNt = getTimeNowNt();
 	while (1) {
 		bool needIdleSleep = cj125periodic(&globalInstance PASS_ENGINE_PARAMETER_SUFFIX);
-		chThdSleepMilliseconds(needIdleSleep ? CJ125_IDLE_TICK_DELAY : CJ125_TICK_DELAY);
+		chThdSleepMilliseconds(needIdleSleep ? 20 : 20);
 	}
 	return -1;
 }
@@ -421,10 +425,10 @@ static bool cjCheckConfig(void) {
 void cjStartCalibration(void) {
 	if (!cjCheckConfig())
 		return;
-	if (globalInstance.isWorkingState()) {
+//	if (globalInstance.isWorkingState()) {
 		// todo: change this later for the normal thread operation (auto pre-heating)
-		return;
-	}
+//		return;
+//	}
 	globalInstance.state = CJ125_CALIBRATION;
 }
 
@@ -483,7 +487,7 @@ void cjPostState(TunerStudioOutputChannels *tsOutputChannels) {
 	tsOutputChannels->debugFloatField5 = globalInstance.vUr;
 	tsOutputChannels->debugFloatField6 = globalInstance.vUaCal;
 	tsOutputChannels->debugFloatField7 = globalInstance.vUrCal;
-	tsOutputChannels->debugIntField1 = globalInstance.state;
+
 	tsOutputChannels->debugIntField2 = globalInstance.diag;
 }
 #endif /* EFI_TUNER_STUDIO */
@@ -514,7 +518,7 @@ void initCJ125(DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	if (!cjStartSpi(PASS_ENGINE_PARAMETER_SIGNATURE))
 		return;
 
-	globalInstance.StartHeaterControl(PASS_ENGINE_PARAMETER_SUFFIX);
+	globalInstance.StartHeaterControl((pwm_gen_callback*)applyPinState PASS_ENGINE_PARAMETER_SUFFIX);
 	cjStart(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	chThdCreateStatic(cj125ThreadStack, sizeof(cj125ThreadStack), LOWPRIO, (tfunc_t)(void*) cjThread, NULL);

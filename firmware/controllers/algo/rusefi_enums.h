@@ -25,6 +25,13 @@
 #define PERCENT_MULT 100.0f
 #define PERCENT_DIV 0.01f
 
+/**
+ * http://rusefi.com/wiki/index.php?title=Manual:Engine_Type
+ */
+typedef enum {
+	MINIMAL_PINS = 99,
+	Force_4_bytes_size_engine_type = ENUM_32_BITS,
+} engine_type_e;
 
 
 /**
@@ -176,7 +183,9 @@ typedef enum {
 	//
 	// Another point: once you add a new trigger, run get_trigger_images.bat which would run rusefi_test.exe from unit_tests
 	//
-	TT_UNUSED = 50, // this is used if we want to iterate over all trigger types
+	TT_60_2_VW_VVT = 50,
+
+	TT_UNUSED = 51, // this is used if we want to iterate over all trigger types
 
 	Force_4_bytes_size_trigger_type = ENUM_32_BITS,
 } trigger_type_e;
@@ -540,7 +549,7 @@ typedef enum {
 	DBG_LAUNCH = 38,
 	DBG_ETB_AUTOTUNE = 39,
 	DBG_COMPOSITE_LOG = 40,
-
+	DBG_FRAM = 41,
 	Force_4_bytes_size_debug_mode_e = ENUM_32_BITS,
 } debug_mode_e;
 

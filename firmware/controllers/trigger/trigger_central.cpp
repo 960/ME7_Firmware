@@ -89,6 +89,17 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 	} else {
 		tc->vvtEventFallCounter++;
 	}
+
+	if (!CONFIG(vvtCamSensorUseRise)) {
+#if EFI_TOOTH_LOGGER
+		if (front == TV_RISE) {
+			LogTriggerTooth(SHAFT_SECONDARY_RISING, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
+		} else {
+			LogTriggerTooth(SHAFT_SECONDARY_FALLING, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
+		}
+#endif /* EFI_TOOTH_LOGGER */
+	}
+
 	if (CONFIG(vvtCamSensorUseRise) ^ (front != TV_FALL)) {
 		return;
 	}
@@ -232,9 +243,6 @@ void hwHandleShaftSignal(trigger_event_e signal, efitick_t timestamp) {
 	LogTriggerTooth(signal, timestamp PASS_ENGINE_PARAMETER_SUFFIX);
 	if (!CONFIG(enableTriggerFilter)) {
 		if (!isUsefulSignal(signal PASS_CONFIG_PARAMETER_SUFFIX)) {
-			/**
-			 * no need to process VR falls further
-			 */
 			return;
 		}
 	}

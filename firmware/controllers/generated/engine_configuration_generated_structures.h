@@ -1,4 +1,4 @@
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 09 21:53:34 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Thu Aug 20 12:13:02 CEST 2020
 // by class com.rusefi.output.CHeaderConsumer
 // begin
 #ifndef CONTROLLERS_GENERATED_ENGINE_CONFIGURATION_GENERATED_STRUCTURES_H
@@ -774,7 +774,7 @@ struct engine_configuration_s {
 	bool displayLogicLevelsInEngineSniffer : 1;
 	/**
 	offset 148 bit 12 */
-	bool triggerRatios : 1;
+	bool triggerTestMinGap : 1;
 	/**
 	offset 148 bit 13 */
 	bool triggerTestMaxEvents : 1;
@@ -2290,7 +2290,11 @@ struct engine_configuration_s {
 	/**
 	 * offset 1848
 	 */
-	int mainUnusedEnd[438];
+	float knockBandCustom;
+	/**
+	 * offset 1852
+	 */
+	int mainUnusedEnd[437];
 	/** total size 3600*/
 };
 
@@ -2595,4 +2599,4 @@ typedef struct persistent_config_s persistent_config_s;
 
 #endif
 // end
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 09 21:53:34 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Thu Aug 20 12:13:02 CEST 2020

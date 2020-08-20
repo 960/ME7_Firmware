@@ -53,6 +53,7 @@
 #include "idle_thread.h"
 #include "engine_configuration.h"
 #include "os_util.h"
+#include "svnversion.h"
 #include "engine.h"
 
 
@@ -82,9 +83,22 @@ extern int icuFallingCallbackCounter;
 #include "cj125.h"
 #endif /* EFI_CJ125 */
 
+#if EFI_MAP_AVERAGING
+
+#endif
+
+#if EFI_FSIO
+
+#endif /* EFI_FSIO */
+
 #if (BOARD_TLE8888_COUNT > 0)
 #include "tle8888.h"
 #endif /* BOARD_TLE8888_COUNT */
+
+#if EFI_ENGINE_SNIFFER
+#include "engine_sniffer.h"
+extern WaveChart waveChart;
+#endif /* EFI_ENGINE_SNIFFER */
 
 int warningEnabled = true;
 
@@ -283,8 +297,8 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 		tsOutputChannels->manifoldAirPressure = mapValue;
 	}
 
-	tsOutputChannels->knockCount = engine->knockCount;
-	tsOutputChannels->knockLevel = engine->knockVolts;
+	//tsOutputChannels->knockCount = engine->knockCount;
+	//tsOutputChannels->knockLevel = engine->knockVolts;
 
 	tsOutputChannels->hasCriticalError = hasFirmwareError();
 
@@ -375,6 +389,7 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 		break;
 	case DBG_STATUS:
 		tsOutputChannels->debugFloatField1 = timeSeconds;
+		tsOutputChannels->debugIntField1 = atoi(VCS_VERSION);
 		break;
 	case DBG_METRICS:
 #if EFI_CLOCK_LOCKS

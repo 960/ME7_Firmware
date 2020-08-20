@@ -8,7 +8,7 @@ $(error Please run 'make' again. Please make sure you have 'git' command in PATH
 endif
 
 ifeq ($(PROJECT_BOARD),)
-  PROJECT_BOARD = ME7_Ecu_V3
+  PROJECT_BOARD = ME7_Ecu_V2
 endif
 
 ifeq ($(PROJECT_CPU),)

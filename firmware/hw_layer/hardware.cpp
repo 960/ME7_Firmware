@@ -43,7 +43,7 @@
 
 
 #include "trigger_central.h"
-#include "svnversion.h"
+
 #include "engine_configuration.h"
 
 #include "perf_trace.h"
@@ -53,9 +53,6 @@
 #include "mc33816.h"
 #endif /* EFI_MC33816 */
 
-#if EFI_MAP_AVERAGING
-
-#endif
 
 #if EFI_INTERNAL_FLASH
 #include "flash_main.h"

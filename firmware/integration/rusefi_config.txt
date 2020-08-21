@@ -1033,7 +1033,7 @@ float syncRatioFrom;;"",        1,     0,  0,    10,  2
 float syncRatioTo;;"",        1,     0,  0,    10,  2
 float idle_antiwindupFreq;+0.1 is a good default value;    "x",    1,      0.0,       -1000000,  1000000, 1       
 float idle_derivativeFilterLoss;+0.1 is a good default value;    "x",    1,      0.0,       -1000000,  1000000, 1        
-float knockBandCustom;;"",        1,     0,  0,    1000,  2	
+float knockBandCustom;;"",        1,     0,  0,    20000,  0	
 	int[437] mainUnusedEnd;
 
 ! end of engine_configuration_s

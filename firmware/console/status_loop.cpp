@@ -53,7 +53,7 @@
 #include "idle_thread.h"
 #include "engine_configuration.h"
 #include "os_util.h"
-#include "svnversion.h"
+
 #include "engine.h"
 
 
@@ -389,7 +389,7 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 		break;
 	case DBG_STATUS:
 		tsOutputChannels->debugFloatField1 = timeSeconds;
-		tsOutputChannels->debugIntField1 = atoi(VCS_VERSION);
+
 		break;
 	case DBG_METRICS:
 #if EFI_CLOCK_LOCKS

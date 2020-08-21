@@ -81,7 +81,7 @@
 #include <string.h>
 #include "engine_configuration.h"
 #include "bench_test.h"
-#include "svnversion.h"
+
 
 #include "status_loop.h"
 
@@ -540,7 +540,7 @@ static void handleOutputChannelsCommand(ts_channel_s *tsChannel, ts_response_for
 
 static void handleGetVersion(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	static char versionBuffer[32];
-	chsnprintf(versionBuffer, sizeof(versionBuffer), "Ruud Bilelektro", getRusEfiVersion(), VCS_VERSION);
+	chsnprintf(versionBuffer, sizeof(versionBuffer), "Ruud Bilelektro", getRusEfiVersion(), 12345);
 	sr5SendResponse(tsChannel, mode, (const uint8_t *) versionBuffer, strlen(versionBuffer) + 1);
 }
 

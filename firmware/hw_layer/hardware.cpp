@@ -20,7 +20,7 @@
 #include "os_util.h"
 #include "bench_test.h"
 #include "vehicle_speed.h"
-#include "software_knock.h"
+
 #include "pin_repository.h"
 
 #include "smart_gpio.h"
@@ -35,24 +35,18 @@
 
 #include "AdcConfiguration.h"
 #include "idle_thread.h"
-
-
 #include "histogram.h"
-
 #include "cj125.h"
-
-
 #include "trigger_central.h"
-
 #include "engine_configuration.h"
 
 #include "perf_trace.h"
 #include "boost_control.h"
 #include "vvt_control.h"
+#include "software_knock.h"
 #if EFI_MC33816
 #include "mc33816.h"
 #endif /* EFI_MC33816 */
-
 
 #if EFI_INTERNAL_FLASH
 #include "flash_main.h"
@@ -343,28 +337,13 @@ void initHardware() {
 	engine_configuration_s *engineConfiguration = engine->engineConfigurationPtr;
 	efiAssertVoid(CUSTOM_EC_NULL, engineConfiguration!=NULL, "engineConfiguration");
 	
-
-
-	// todo: enable protection. it's disabled because it takes
-	// 10 extra seconds to re-flash the chip
-	//flashProtect();
-
 	chMtxObjectInit(&spiMtx);
 
-
-	/**
-	 * We need the LED_ERROR pin even before we read configuration
-	 */
 	initPrimaryPins();
 
 	if (hasFirmwareError()) {
 		return;
 	}
-
-#if EFI_SPI_FRAM
-	initEeprom();
-	identify();
-#endif
 
 	initFlash();
 	/**
@@ -373,23 +352,22 @@ void initHardware() {
 	 *
 	 * interesting fact that we have another read from flash before we get here
 	 */
-
-		readFromFlash();
-
-
+	readFromFlash();
 	// it's important to initialize this pretty early in the game before any scheduling usages
 	initSingleTimerExecutorHardware();
-
 	if (hasFirmwareError()) {
 		return;
 	}
-
 
 #if HAL_USE_ADC
 	initAdcInputs();
 	// wait for first set of ADC values so that we do not produce invalid sensor data
 	waitForSlowAdc(1);
 #endif /* HAL_USE_ADC */
+
+#if EFI_SOFTWARE_KNOCK
+	initSoftwareKnock();
+#endif /* EFI_SOFTWARE_KNOCK */
 
 	initRtc();
 
@@ -407,7 +385,6 @@ void initHardware() {
 				getInputMode(CONFIG(startStopButtonMode)));
 	}
 
-
 	// output pins potentially depend on 'initSmartGpio'
 	initOutputPins(PASS_ENGINE_PARAMETER_SIGNATURE);
 
@@ -419,14 +396,7 @@ void initHardware() {
 	initCan();
 #endif /* EFI_CAN_SUPPORT */
 
-//	init_adc_mcp3208(&adcState, &SPID2);
-//	requestAdcValue(&adcState, 0);
-
-
-	// todo: figure out better startup logic
 	initTriggerCentral();
-
-
 	turnOnHardware();
 
 
@@ -460,13 +430,7 @@ void initHardware() {
 #if EFI_CAN_SUPPORT
 	initCanVssSupport();
 #endif
-#if EFI_SOFTWARE_KNOCK
-	initSoftwareKnock();
-#endif /* EFI_SOFTWARE_KNOCK */
-
 	calcFastAdcIndexes();
-
-
 }
 
 #endif /* EFI_PROD_CODE */

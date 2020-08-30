@@ -48,3 +48,7 @@ call gen_config_board ME7_Ecu_V3
 IF NOT ERRORLEVEL 0 echo ERROR generating
 IF NOT ERRORLEVEL 0 EXIT /B 1
 
+
+call gen_config_board Stm_Adapter
+IF NOT ERRORLEVEL 0 echo ERROR generating
+IF NOT ERRORLEVEL 0 EXIT /B 1

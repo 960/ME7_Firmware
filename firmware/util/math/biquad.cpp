@@ -2,7 +2,7 @@
  * @file biquad.cpp
  *
  * @date Sep 10, 2016
- * @author Matthew Kennedy, (c) 2020
+ * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
 #include "biquad.h"
@@ -11,9 +11,14 @@
 #include <math.h>
 
 Biquad::Biquad() {
-	// Default to passthru
+// Default to passthru
 	a0 = 1;
 	a1 = a2 = b1 = b2 = 0;
+
+	reset();
+}
+
+void Biquad::reset() {
 	z1 = z2 = 0;
 }
 
@@ -57,4 +62,14 @@ float Biquad::filter(float input) {
 	z1 = input * a1 + z2 - b1 * result;
 	z2 = input * a2 - b2 * result;
 	return result;
+}
+
+void Biquad::cookSteadyState(float steadyStateInput) {
+    float Y = steadyStateInput * (a0 + a1 + a2) / (1 + b1 + b2);
+
+    float steady_z2 = steadyStateInput * a2 - Y * b2;
+    float steady_z1 = steady_z2 + steadyStateInput * a1 - Y * b1;
+
+    this->z1 = steady_z1;
+    this->z2 = steady_z2;
 }

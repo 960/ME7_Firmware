@@ -9,7 +9,7 @@
 #include "global.h"
 #include "efi_gpio.h"
 #include "expected.h"
-#include "pin_repository.h"
+
 #ifndef EFI_PIN_ADC9
 #define EFI_PIN_ADC9 GPIOB_1
 #endif /* EFI_PIN_ADC9 */
@@ -18,10 +18,6 @@
 #include "mpu_util.h"
 #include "backup_ram.h"
 #endif /* EFI_PROD_CODE */
-#include "hal_ee25xx.h"
-
-
-
 
 
 #if HAL_USE_ADC
@@ -308,7 +304,6 @@ void jump_to_bootloader() {
 	NVIC_SystemReset();
 }
 #endif /* EFI_PROD_CODE */
-
 
 #if EFI_AUX_SERIAL
 

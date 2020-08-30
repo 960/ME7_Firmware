@@ -28,6 +28,10 @@ enum class TsCalMode : uint8_t {
 	EtbKd = 5,
 	Tps1SecondaryMax = 6,
 	Tps1SecondaryMin = 7,
+	Tps2Max = 8,
+	Tps2Min = 9,
+	Tps2SecondaryMax = 10,
+	Tps2SecondaryMin = 11,
 };
 
 /**
@@ -226,7 +230,11 @@ typedef struct {
 
 	int16_t tuneCrc16; // 244
 	int16_t widebandIdent; // 246
-	uint8_t unusedAtTheEnd[40]; // we have some unused bytes to allow compatible TS changes
+
+
+	scaled_voltage rawPpsSecondary;		// 248
+
+	uint8_t unusedAtTheEnd[38]; // we have some unused bytes to allow compatible TS changes
 
 	// Temporary - will remove soon
 	TsDebugChannels* getDebugChannels() {

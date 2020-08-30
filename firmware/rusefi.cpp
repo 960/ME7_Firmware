@@ -110,7 +110,7 @@
 #include "hardware.h"
 #include "engine_controller.h"
 #include "efi_gpio.h"
-
+#include "fram.h"
 #include "rfi_perftest.h"
 #include "rusefi.h"
 #include "memstreams.h"
@@ -171,6 +171,7 @@ void runRusEfi(void) {
 	 */
 	readConfiguration();
 #endif /* EFI_INTERNAL_FLASH */
+
 #ifndef EFI_ACTIVE_CONFIGURATION_IN_FLASH
 	// TODO: need to fix this place!!! should be a version of PASS_ENGINE_PARAMETER_SIGNATURE somehow
 	prepareVoidConfiguration(&activeConfiguration);
@@ -180,7 +181,7 @@ void runRusEfi(void) {
 	 * Initialize hardware drivers
 	 */
 	initHardware();
-	efiSetPadMode("knock", GPIOF_4, PAL_MODE_INPUT_ANALOG);
+
 
 	/**
 	 * Now let's initialize actual engine control logic

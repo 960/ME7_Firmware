@@ -8,18 +8,12 @@
  */
 
 #pragma once
-
-
+#define EFI_SPI_FRAM TRUE
 #define EFI_SOFTWARE_KNOCK TRUE
 #define EFI_GPIO_HARDWARE TRUE
 #define EFI_AUXILIARIES TRUE
 #define EFI_BOOST_CONTROL TRUE
 #define EFI_VVT_CONTROL TRUE
-
-#ifndef EFI_SPI_FRAM
-#define EFI_SPI_FRAM TRUE
-#endif
-
 
 #ifndef EFI_LAUNCH_CONTROL
 #define EFI_LAUNCH_CONTROL TRUE
@@ -105,7 +99,7 @@
  */
 #define EFI_CLI_SUPPORT FALSE
 
-#define EFI_RTC TRUE
+#define EFI_RTC FALSE
 
 #define EFI_ALTERNATOR_CONTROL TRUE
 
@@ -313,7 +307,7 @@
  */
 #define EFI_CUSTOM_PANIC_METHOD TRUE
 
-#define ADC_CHANNEL_VREF ADC_CHANNEL_IN14
+
 
 /**
  * currently ChibiOS uses only first and second channels of each timer for input capture

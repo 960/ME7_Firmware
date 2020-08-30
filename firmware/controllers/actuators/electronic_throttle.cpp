@@ -361,7 +361,7 @@ void EtbController::setOutput(expected<percent_t> outputValue) {
 	if (!m_motor) return;
 
 	// If output is valid and we aren't paused, output to motor.
-	if (outputValue && !engineConfiguration->pauseEtbControl) {
+	if (outputValue) {
 		m_motor->enable();
 		m_motor->set(ETB_PERCENT_TO_DUTY(outputValue.Value));
 	} else {

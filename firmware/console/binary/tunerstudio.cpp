@@ -61,30 +61,23 @@
 
 #include "global.h"
 #include "os_access.h"
-
 #include "allsensors.h"
 #include "tunerstudio.h"
-
 #include "main_trigger_callback.h"
 #include "flash_main.h"
-
 #include "tunerstudio_io.h"
 #include "tunerstudio_outputs.h"
 #include "malfunction_central.h"
 #include "console_io.h"
 #include "crc.h"
-
 #include "tunerstudio_io.h"
 #include "tooth_logger.h"
 #include "electronic_throttle.h"
-
 #include <string.h>
 #include "engine_configuration.h"
 #include "bench_test.h"
-
-
+#include "fram.h"
 #include "status_loop.h"
-
 #include "perf_trace.h"
 
 #if EFI_TUNER_STUDIO
@@ -121,14 +114,10 @@ static void resetTs(void) {
 }
 
 static void printErrorCounters(void) {
-
 }
 
 void printTsStats(void) {
-
-
 	printErrorCounters();
-
 }
 
 
@@ -141,7 +130,7 @@ char *getWorkingPageAddr() {
 }
 
 static constexpr size_t getTunerStudioPageSize() {
-	return TS_CONFIG_SIZE;
+	return TOTAL_CONFIG_SIZE;
 }
 
 static void sendOkResponse(ts_channel_s *tsChannel, ts_response_format_e mode) {
@@ -162,28 +151,14 @@ static void handlePageSelectCommand(ts_channel_s *tsChannel, ts_response_format_
 		sendErrorCode(tsChannel);
 	}
 }
-#include "fram.h"
-/**
- * Copy specified amount of bytes from specified offset from communication layer working copy into real configuration
- *
- * Some changes like changing VE table or timing table are applied right away, meaning
- * that the values are copied from communication copy into actual engine control copy right away.
- * We call these parameters 'soft parameters'
- *
- * This is needed to support TS online auto-tune.
- *
- * On the contrary, 'hard parameters' are waiting for the Burn button to be clicked and configuration version
- * would be increased and much more complicated logic would be executed.
- */
-static void onlineApplyWorkingCopyBytes(uint32_t offset, uint32_t count) {
+
+static void onlineApplyWorkingCopyBytes(uint32_t offset, int count) {
 	if (offset >= sizeof(engine_configuration_s)) {
-		uint32_t maxSize = sizeof(persistent_config_s) - offset;
+		int maxSize = sizeof(persistent_config_s) - offset;
 		if (count > maxSize) {
 			warning(CUSTOM_TS_OVERFLOW, "TS overflow %d %d", offset, count);
 			return;
 		}
-
-
 #if !defined(EFI_NO_CONFIG_WORKING_COPY)
 		memcpy(((char*) &persistentState.persistentConfiguration) + offset, ((char*) &configWorkingCopy) + offset,
 				count);
@@ -216,11 +191,6 @@ static const void * getStructAddr(int structId) {
 	}
 }
 
-/**
- * Read internal structure for Live Doc
- * This is somewhat similar to read page and somewhat similar to read outputs
- * We can later consider combining this functionality
- */
 static void handleGetStructContent(ts_channel_s *tsChannel, int structId, int size) {
 	tsState.readPageCommandsCounter++;
 
@@ -232,38 +202,17 @@ static void handleGetStructContent(ts_channel_s *tsChannel, int structId, int si
 	sr5SendResponse(tsChannel, TS_CRC, (const uint8_t *)addr, size);
 }
 
-// Validate whether the specified offset and count would cause an overrun in the tune.
-// Returns true if an overrun would occur.
 static bool validateOffsetCount(size_t offset, size_t count, ts_channel_s *tsChannel) {
 	if (offset + count > getTunerStudioPageSize()) {
-
-
 		sendErrorCode(tsChannel);
 		return true;
 	}
-
 	return false;
 }
 
-/**
- * read log file content for rusEfi console
- */
-static void handleReadFileContent(ts_channel_s *tsChannel, short fileId, uint16_t offset, uint16_t length) {
-//#if EFI_FILE_LOGGING
-//	readLogFileContent(tsChannel->crcReadBuffer, fileId, offset, length);
-//#else
-	UNUSED(tsChannel); UNUSED(fileId); UNUSED(offset); UNUSED(length);
-//#endif /* EFI_FILE_LOGGING */
-}
-
-/**
- * This command is needed to make the whole transfer a bit faster
- * @note See also handleWriteValueCommand
- */
 static void handleWriteChunkCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t offset, uint16_t count,
 		void *content) {
 	tsState.writeChunkCommandCounter++;
-
 
 	if (validateOffsetCount(offset, count, tsChannel)) {
 		return;
@@ -272,27 +221,17 @@ static void handleWriteChunkCommand(ts_channel_s *tsChannel, ts_response_format_
 	uint8_t * addr = (uint8_t *) (getWorkingPageAddr() + offset);
 	memcpy(addr, content, count);
 	onlineApplyWorkingCopyBytes(offset, count);
-//	AP_RAMTRON::write(content, addr, count);
 	sendOkResponse(tsChannel, mode);
 }
 
 static void handleCrc32Check(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t pageId) {
 	UNUSED(pageId);
-
 	tsState.crc32CheckCommandCounter++;
-
 	uint16_t count = getTunerStudioPageSize();
-
 	uint32_t crc = SWAP_UINT32(crc32((void * ) getWorkingPageAddr(), count));
-
-
 	sr5SendResponse(tsChannel, mode, (const uint8_t *) &crc, 4);
 }
 
-/**
- * 'Write' command receives a single value at a given offset
- * @note Writing values one by one is pretty slow
- */
 static void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t page, uint16_t offset,
 		uint8_t value) {
 	UNUSED(tsChannel);
@@ -300,8 +239,6 @@ static void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_
 	UNUSED(page);
 
 	tsState.writeValueCommandCounter++;
-
-
 
 	if (validateOffsetCount(offset, 1, tsChannel)) {
 		return;
@@ -312,9 +249,7 @@ static void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_
 		previousWriteReportMs = nowMs;
 
 	}
-
 	getWorkingPageAddr()[offset] = value;
-
 	onlineApplyWorkingCopyBytes(offset, 1);
 
 }
@@ -322,14 +257,6 @@ static void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_
 static void handlePageReadCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t pageId, uint16_t offset,
 		uint16_t count) {
 	tsState.readPageCommandsCounter++;
-
-
-	if (pageId != 0) {
-		// something is not right here
-
-		return;
-	}
-
 	if (validateOffsetCount(offset, count, tsChannel)) {
 		return;
 	}
@@ -341,7 +268,11 @@ static void handlePageReadCommand(ts_channel_s *tsChannel, ts_response_format_e 
 
 void requestBurn(void) {
 #if EFI_INTERNAL_FLASH
+#if EFI_SPI_FRAM
+	writeToFlashNow();
+#else
 	setNeedToWriteConfiguration();
+#endif
 #endif
 	incrementGlobalConfigurationVersion(PASS_ENGINE_PARAMETER_SIGNATURE);
 }
@@ -352,32 +283,23 @@ static void sendResponseCode(ts_response_format_e mode, ts_channel_s *tsChannel,
 	}
 }
 
-/**
- * 'Burn' command is a command to commit the changes
- */
 static void handleBurnCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t page) {
 	UNUSED(page);
-	
-
 	tsState.burnCommandCounter++;
-
-
 #if !defined(EFI_NO_CONFIG_WORKING_COPY)
 	memcpy(&persistentState.persistentConfiguration, &configWorkingCopy, sizeof(persistent_config_s));
 #endif /* EFI_NO_CONFIG_WORKING_COPY */
-
 	requestBurn();
 	sendResponseCode(mode, tsChannel, TS_RESPONSE_BURN_OK);
-
 }
 
 static bool isKnownCommand(char command) {
 	return command == TS_HELLO_COMMAND || command == TS_READ_COMMAND || command == TS_OUTPUT_COMMAND
 			|| command == TS_PAGE_COMMAND || command == TS_BURN_COMMAND || command == TS_SINGLE_WRITE_COMMAND
-			|| command == TS_CHUNK_WRITE_COMMAND || command == TS_EXECUTE
+			|| command == TS_CHUNK_WRITE_COMMAND
+			|| command == TS_EXECUTE
 			|| command == TS_IO_TEST_COMMAND
 			|| command == TS_GET_STRUCT
-			|| command == TS_GET_FILE_RANGE
 			|| command == TS_SET_LOGGER_SWITCH
 			|| command == TS_GET_LOGGER_GET_BUFFER
 			|| command == TS_GET_COMPOSITE_BUFFER_DONE_DIFFERENTLY
@@ -403,22 +325,16 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 
 		if (!wasReady) {
 			wasReady = true;
-//			scheduleSimpleMsg(&logger, "ts channel is now ready ", hTimeNow());
 		}
 
 		tsState.totalCounter++;
-
 		uint8_t firstByte;
 		int received = sr5ReadData(tsChannel, &firstByte, 1);
 
-
 		if (received != 1) {
-
-
 			continue;
 		}
 		onDataArrived();
-
 
 		if (handlePlainCommand(tsChannel, firstByte))
 			continue;
@@ -426,57 +342,42 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 		uint8_t secondByte;
 		received = sr5ReadData(tsChannel, &secondByte, 1);
 		if (received != 1) {
-
 			continue;
 		}
-//		scheduleMsg(logger, "Got secondByte=%x=[%c]", secondByte, secondByte);
 
 		uint16_t incomingPacketSize = firstByte << 8 | secondByte;
 
 		if (incomingPacketSize == 0 || incomingPacketSize > (sizeof(tsChannel->crcReadBuffer) - CRC_WRAPPING_SIZE)) {
-
-
 			sendErrorCode(tsChannel);
 			continue;
 		}
 
 		received = sr5ReadData(tsChannel, (uint8_t* )tsChannel->crcReadBuffer, 1);
 		if (received != 1) {
-
 			continue;
 		}
 
 		char command = tsChannel->crcReadBuffer[0];
 		if (!isKnownCommand(command)) {
-
 			sendErrorCode(tsChannel);
 			continue;
 		}
-
-
-
-//		scheduleMsg(logger, "TunerStudio: reading %d+4 bytes(s)", incomingPacketSize);
 
 		received = sr5ReadData(tsChannel, (uint8_t * ) (tsChannel->crcReadBuffer + 1),
 				incomingPacketSize + CRC_VALUE_SIZE - 1);
 		int expectedSize = incomingPacketSize + CRC_VALUE_SIZE - 1;
 		if (received != expectedSize) {
-
-
 			sendResponseCode(TS_CRC, tsChannel, TS_RESPONSE_UNDERRUN);
 			continue;
 		}
 
 		uint32_t expectedCrc = *(uint32_t*) (tsChannel->crcReadBuffer + incomingPacketSize);
-
 		expectedCrc = SWAP_UINT32(expectedCrc);
 
 		uint32_t actualCrc = crc32(tsChannel->crcReadBuffer, incomingPacketSize);
 		if (actualCrc != expectedCrc) {
-
 			continue;
 		}
-
 
 		int success = tunerStudioHandleCrcCommand(tsChannel, tsChannel->crcReadBuffer, incomingPacketSize);
 		if (!success)
@@ -488,15 +389,10 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 static THD_FUNCTION(tsThreadEntryPoint, arg) {
 	(void) arg;
 	chRegSetThreadName("tunerstudio thread");
-
 	startTsPort(&tsChannel);
-
 	runBinaryProtocolLoop(&tsChannel);
 }
 
-/**
- * Copy real configuration into the communications layer working copy
- */
 void syncTunerStudioCopy(void) {
 #if !defined(EFI_NO_CONFIG_WORKING_COPY)
 	memcpy(&configWorkingCopy, &persistentState.persistentConfiguration, sizeof(persistent_config_s));
@@ -511,22 +407,13 @@ void tunerStudioError() {
 	tsState.errorCounter++;
 }
 
-/**
- * Query with CRC takes place while re-establishing connection
- * Query without CRC takes place on TunerStudio startup
- */
 void handleQueryCommand(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	tsState.queryCommandCounter++;
 	sr5SendResponse(tsChannel, mode, (const uint8_t *) TS_SIGNATURE, strlen(TS_SIGNATURE) + 1);
 }
 
-/**
- * @brief 'Output' command sends out a snapshot of current values
- * Gauges refresh
- */
 static void handleOutputChannelsCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t offset, uint16_t count) {
 	if (offset + count > sizeof(TunerStudioOutputChannels)) {
-
 		sendErrorCode(tsChannel);
 		return;
 	}
@@ -537,24 +424,18 @@ static void handleOutputChannelsCommand(ts_channel_s *tsChannel, ts_response_for
 	sr5SendResponse(tsChannel, mode, ((const uint8_t *) &tsOutputChannels) + offset, count);
 }
 
-
 static void handleGetVersion(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	static char versionBuffer[32];
-	chsnprintf(versionBuffer, sizeof(versionBuffer), "Ruud Bilelektro", getRusEfiVersion(), 12345);
+	chsnprintf(versionBuffer, sizeof(versionBuffer), "Ruud Bilelektro", getRusEfiVersion(), 123);
 	sr5SendResponse(tsChannel, mode, (const uint8_t *) versionBuffer, strlen(versionBuffer) + 1);
 }
-
 
 static void handleExecuteCommand(ts_channel_s *tsChannel, char *data, int incomingPacketSize) {
 	sr5WriteCrcPacket(tsChannel, TS_RESPONSE_COMMAND_OK, NULL, 0);
 	data[incomingPacketSize] = 0;
 
-
 }
 
-/**
- * @return true if legacy command was processed, false otherwise
- */
 bool handlePlainCommand(ts_channel_s *tsChannel, uint8_t command) {
 	// Bail fast if guaranteed not to be a plain command
 	if (command == 0)
@@ -565,19 +446,9 @@ bool handlePlainCommand(ts_channel_s *tsChannel, uint8_t command) {
 		handleQueryCommand(tsChannel, TS_PLAIN);
 		return true;
 	} else if (command == TS_COMMAND_F) {
-		/**
-		 * http://www.msextra.com/forums/viewtopic.php?f=122&t=48327
-		 * Response from TS support: This is an optional command		 *
-		 * "The F command is used to find what ini. file needs to be loaded in TunerStudio to match the controller.
-		 * If you are able to just make your firmware ignore the command that would work.
-		 * Currently on some firmware versions the F command is not used and is just ignored by the firmware as a unknown command."
-		 */
-
-		
 		sr5WriteData(tsChannel, (const uint8_t *) TS_PROTOCOL, strlen(TS_PROTOCOL));
 		return true;
 	} else {
-		// This wasn't a valid command
 		return false;
 	}
 }
@@ -592,6 +463,9 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 	data++;
 
 	const uint16_t* data16 = reinterpret_cast<uint16_t*>(data);
+
+	uint16_t offset = data16[0];
+	uint16_t count = data16[1];
 
 	switch(command)
 	{
@@ -613,9 +487,6 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 	case TS_GET_STRUCT:
 		handleGetStructContent(tsChannel, data16[0], data16[1]);
 		break;
-	case TS_GET_FILE_RANGE:
-		handleReadFileContent(tsChannel, data16[0], data16[1], data16[2]);
-		break;
 	case TS_CHUNK_WRITE_COMMAND:
 		handleWriteChunkCommand(tsChannel, TS_CRC, data16[1], data16[2], data + sizeof(TunerStudioWriteChunkRequest));
 		break;
@@ -634,8 +505,6 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 	case TS_READ_COMMAND:
 		handlePageReadCommand(tsChannel, TS_CRC, data16[0], data16[1], data16[2]);
 		break;
-	case TS_TEST_COMMAND:
-		[[fallthrough]];
 	case TS_IO_TEST_COMMAND:
 		{
 			uint16_t subsystem = SWAP_UINT16(data16[0]);
@@ -663,12 +532,9 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 			DisableToothLogger();
 			break;
 		default:
-			// dunno what that was, send NAK
 			return false;
 		}
-
 		sendOkResponse(tsChannel, TS_CRC);
-
 		break;
 		case TS_GET_COMPOSITE_BUFFER_DONE_DIFFERENTLY:
 
@@ -711,15 +577,12 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 #endif /* EFI_TOOTH_LOGGER */
 	case TS_GET_CONFIG_ERROR: {
 		char * configError = getFirmwareError();
-
 		sr5SendResponse(tsChannel, TS_CRC, reinterpret_cast<const uint8_t*>(configError), strlen(configError));
 		break;
 	}
 	default:
-
 		return false;
 	}
-
 	return true;
 }
 

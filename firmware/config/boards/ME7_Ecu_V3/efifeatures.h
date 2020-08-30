@@ -15,6 +15,9 @@
 #pragma once
 #define EFI_BOOST_CONTROL TRUE
 
+
+#undef EFI_SPI_FRAM
+#define EFI_SPI_FRAM TRUE
 // Warning! This is a test config!
 
 #define EFI_ANTILAG FALSE
@@ -73,7 +76,9 @@
 #define HAL_TRIGGER_USE_PAL TRUE
 
 #undef EFI_VEHICLE_SPEED
-#define EFI_VEHICLE_SPEED FALSE
+#define EFI_VEHICLE_SPEED TRUE
+
+#define HAL_VSS_USE_PAL TRUE
 
 #undef EFI_BLUETOOTH_SETUP
 #define EFI_BLUETOOTH_SETUP FALSE

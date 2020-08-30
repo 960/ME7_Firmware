@@ -78,9 +78,10 @@ EXTERNC int getRemainingStack(thread_t *otp) {
 void baseMCUInit(void) {
 	// looks like this holds a random value on start? Let's set a nice clean zero
 	DWT->CYCCNT = 0;
-
+#if EFI_SPI_FRAM
+	initEeprom();
+#endif
 	BOR_Set(BOR_Level_1); // one step above default value
-
 }
 
 void _unhandled_exception(void) {
@@ -226,11 +227,11 @@ static int getSpiAf(SPIDriver *driver) {
 		return EFI_SPI2_AF;
 	}
 #endif
-
+#if STM32_SPI_USE_SPI3
 	if (driver == &SPID3) {
 		return EFI_SPI3_AF;
 	}
-
+#endif
 	return -1;
 }
 
@@ -298,12 +299,12 @@ void turnOnSpi(spi_device_e device) {
 #endif /* STM32_SPI_USE_SPI2 */
 	}
 	if (device == SPI_DEVICE_3) {
-
+#if STM32_SPI_USE_SPI3
 //	scheduleMsg(&logging, "Turning on SPI3 pins");
 		initSpiModule(&SPID3, getSckPin(device),
 				getMisoPin(device),
 				getMosiPin(device));
-
+#endif /* STM32_SPI_USE_SPI3 */
 	}
 	if (device == SPI_DEVICE_4) {
 #if STM32_SPI_USE_SPI4

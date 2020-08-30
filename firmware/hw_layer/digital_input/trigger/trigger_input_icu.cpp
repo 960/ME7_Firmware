@@ -43,6 +43,7 @@ static void vvtFallingCallback(void *) {
 	}
 		LogTriggerTooth(SHAFT_SECONDARY_FALLING, now);
 	hwHandleVvtCamSignal(TV_FALL, now);
+	hwHandleVvtCamSignal(engineConfiguration->invertCamVVTSignal ? TV_RISE : TV_FALL, now);
 }
 
 /**

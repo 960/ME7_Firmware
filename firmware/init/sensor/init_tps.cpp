@@ -54,7 +54,7 @@ static bool initTpsFunc(LinearFunc& func, FunctionalSensor& sensor, adc_channel_
 	AdcSubscription::SubscribeSensor(sensor, channel, 200);
 
 	if (!sensor.Register()) {
-		warning(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for sensor \"%s\"", sensor.getSensorName());
+		firmwareError(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for sensor \"%s\"", sensor.getSensorName());
 		return false;
 	}
 
@@ -67,7 +67,7 @@ static void initTpsFuncAndRedund(RedundantSensor& redund, LinearFunc& func, Func
 	redund.configure(5.0f, !hasSecond);
 
 	if (!redund.Register()) {
-		warning(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for sensor \"%s\"", redund.getSensorName());
+		firmwareError(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for sensor \"%s\"", redund.getSensorName());
 	}
 }
 
@@ -90,7 +90,7 @@ void initTps(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	}
 
 	if (!driverIntent.Register()) {
-		warning(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for driver acc intent sensor");
+		firmwareError(CUSTOM_INVALID_TPS_SETTING, "Duplicate registration for driver acc intent sensor");
 	}
 }
 

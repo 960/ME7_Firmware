@@ -44,10 +44,37 @@ class AirmassModelBase;
 #define CYCLE_ALTERNATION 2
 
 class IEtbController;
+class IFuelComputer;
+class IInjectorModel;
 
 class TCU {
 public:
 	gear_e currentGear = NEUTRAL;
+};
+
+class PrimaryTriggerConfiguration : public TriggerConfiguration {
+public:
+	PrimaryTriggerConfiguration(Engine *engine);
+	bool isUseOnlyRisingEdgeForTrigger() const;
+	bool isSilentTriggerError() const;
+	bool isVerboseTriggerSynchDetails() const;
+	debug_mode_e getDebugMode() const;
+	trigger_type_e getType() const;
+private:
+	Engine *engine;
+};
+
+class VvtTriggerConfiguration : public TriggerConfiguration {
+public:
+	VvtTriggerConfiguration(Engine *engine);
+	bool isUseOnlyRisingEdgeForTrigger() const;
+	const char * getPrintPrefix() const;
+	bool isSilentTriggerError() const;
+	bool isVerboseTriggerSynchDetails() const;
+	debug_mode_e getDebugMode() const;
+	trigger_type_e getType() const;
+private:
+	Engine *engine;
 };
 
 class Engine : public TriggerStateListener {
@@ -56,8 +83,13 @@ public:
 	Engine();
 
 	IEtbController *etbControllers[ETB_COUNT] = {nullptr};
+	IFuelComputer *fuelComputer = nullptr;
+	IInjectorModel *injectorModel = nullptr;
 
 	cyclic_buffer<int> triggerErrorDetection;
+
+	PrimaryTriggerConfiguration primaryTriggerConfiguration;
+	VvtTriggerConfiguration vvtTriggerConfiguration;
 
 	TCU tcu;
 
@@ -195,7 +227,7 @@ public:
 	 */
 
 	/**
-	 * based on current RPM and enableAlternatorControl setting
+	 * this is based on sensorChartMode and sensorSnifferRpmThreshold settings
 	 */
 	bool enableAlternatorControl = false;
 
@@ -266,7 +298,7 @@ public:
 	void periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	void periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	void updateSlowSensors(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-	void initializeTriggerWaveform( DECLARE_ENGINE_PARAMETER_SUFFIX);
+	void initializeTriggerWaveform(DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 	bool clutchUpState = false;
 	bool clutchDownState = false;
@@ -305,7 +337,7 @@ public:
 	 * are we running any kind of functional test? this affect
 	 * some areas
 	 */
-	bool isTestMode = false;
+	bool isFunctionalTestMode = false;
 
 	bool directSelfStimulation = false;
 

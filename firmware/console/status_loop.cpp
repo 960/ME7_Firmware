@@ -53,7 +53,6 @@
 #include "idle_thread.h"
 #include "engine_configuration.h"
 #include "os_util.h"
-
 #include "engine.h"
 
 
@@ -198,6 +197,7 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 	// Set raw sensors
 	tsOutputChannels->rawTps1Primary = Sensor::getRaw(SensorType::Tps1Primary);
 	tsOutputChannels->rawPpsPrimary = Sensor::getRaw(SensorType::AcceleratorPedalPrimary);
+	tsOutputChannels->rawPpsSecondary = Sensor::getRaw(SensorType::AcceleratorPedalSecondary);
 	tsOutputChannels->rawClt = Sensor::getRaw(SensorType::Clt);
 	tsOutputChannels->rawIat = Sensor::getRaw(SensorType::Iat);
 	tsOutputChannels->rawOilPressure = Sensor::getRaw(SensorType::OilPressure);
@@ -347,10 +347,7 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 	float vehicleSpeed = getVehicleSpeed();
 	tsOutputChannels->vehicleSpeedKph = vehicleSpeed;
 	tsOutputChannels->speedToRpmRatio = vehicleSpeed / rpm;
-#else
-	float vehicleCanSpeed = getVehicleCanSpeed();
-	tsOutputChannels->vehicleSpeedKph = vehicleCanSpeed;
-	tsOutputChannels->speedToRpmRatio = vehicleCanSpeed / rpm;
+
 #endif /* EFI_VEHICLE_SPEED */
 #endif /* EFI_PROD_CODE */
 
@@ -389,7 +386,6 @@ void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_
 		break;
 	case DBG_STATUS:
 		tsOutputChannels->debugFloatField1 = timeSeconds;
-
 		break;
 	case DBG_METRICS:
 #if EFI_CLOCK_LOCKS

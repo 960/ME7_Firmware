@@ -19,7 +19,7 @@
 #include "speed_density.h"
 #include "advance_map.h"
 #include "os_util.h"
-#include "software_knock.h"
+
 #include "auxiliaries.h"
 
 
@@ -41,14 +41,41 @@
 #include "gpio/tle8888.h"
 #endif
 
-static TriggerState initState CCM_OPTIONAL;
-
-
 EXTERN_ENGINE;
 
 
-void Engine::initializeTriggerWaveform( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 
+void Engine::resetEngineSnifferIfInTestMode() {
+#if EFI_ENGINE_SNIFFER
+	if (isFunctionalTestMode) {
+		// TODO: what is the exact reasoning for the exact engine sniffer pause time I wonder
+		waveChart.pauseEngineSnifferUntilNt = getTimeNowNt() + MS2NT(300);
+		waveChart.reset();
+	}
+#endif /* EFI_ENGINE_SNIFFER */
+}
+
+trigger_type_e getVvtTriggerType(vvt_mode_e vvtMode) {
+	switch (vvtMode) {
+	case VVT_2JZ:
+		return TT_VVT_JZ;
+	case MIATA_NB2:
+		return TT_VVT_MIATA_NB2;
+	case VVT_BOSCH_QUICK_START:
+		return TT_VVT_BOSCH_QUICK_START;
+	case VVT_FIRST_HALF:
+		return TT_ONE;
+	case VVT_SECOND_HALF:
+		return TT_ONE;
+	default:
+		return TT_ONE;
+	}
+}
+
+void Engine::initializeTriggerWaveform(DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	static TriggerState initState;
+
+#if EFI_ENGINE_CONTROL && EFI_SHAFT_POSITION_INPUT
 	// we have a confusing threading model so some synchronization would not hurt
 	bool alreadyLocked = lockAnyContext();
 
@@ -56,25 +83,29 @@ void Engine::initializeTriggerWaveform( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 			engineConfiguration->ambiguousOperationMode,
 			engineConfiguration->useOnlyRisingEdgeForTrigger, &engineConfiguration->trigger));
 
-	if (TRIGGER_WAVEFORM(bothFrontsRequired) && engineConfiguration->useOnlyRisingEdgeForTrigger) {
-
-		warning(CUSTOM_ERR_BOTH_FRONTS_REQUIRED, "trigger: both fronts required");
-	}
-
-
 	if (!TRIGGER_WAVEFORM(shapeDefinitionError)) {
 		/**
-	 	 * this instance is used only to initialize 'this' TriggerWaveform instance
+	 	 * 'initState' instance of TriggerState is used only to initialize 'this' TriggerWaveform instance
 	 	 * #192 BUG real hardware trigger events could be coming even while we are initializing trigger
 	 	 */
-		initState.resetTriggerState();
 		calculateTriggerSynchPoint(&ENGINE(triggerCentral.triggerShape),
 				&initState PASS_ENGINE_PARAMETER_SUFFIX);
 
-		if (engine->triggerCentral.triggerShape.getSize() == 0) {
-			warning(CUSTOM_ERR_TRIGGER_ZERO, "triggerShape size is zero");
-		}
 		engine->engineCycleEventCount = TRIGGER_WAVEFORM(getLength());
+	}
+
+
+	if (engineConfiguration->vvtMode != VVT_INACTIVE) {
+		trigger_config_s config;
+		ENGINE(triggerCentral).vvtTriggerType = config.type = getVvtTriggerType(engineConfiguration->vvtMode);
+
+		ENGINE(triggerCentral).vvtShape.initializeTriggerWaveform(
+				engineConfiguration->ambiguousOperationMode,
+				engine->engineConfigurationPtr->vvtCamSensorUseRise, &config);
+
+		ENGINE(triggerCentral).vvtShape.initializeSyncPoint(&initState,
+				&engine->vvtTriggerConfiguration,
+				&config);
 	}
 
 	if (!alreadyLocked) {
@@ -84,7 +115,7 @@ void Engine::initializeTriggerWaveform( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	if (!TRIGGER_WAVEFORM(shapeDefinitionError)) {
 		prepareOutputSignals(PASS_ENGINE_PARAMETER_SIGNATURE);
 	}
-
+#endif /* EFI_ENGINE_CONTROL && EFI_SHAFT_POSITION_INPUT */
 }
 
 static void cylinderCleanupControl(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
@@ -99,7 +130,6 @@ static void cylinderCleanupControl(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 		engine->isCylinderCleanupMode = newValue;
 
 	}
-
 }
 
 void Engine::periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
@@ -177,11 +207,11 @@ void Engine::onTriggerSignalEvent(efitick_t nowNt) {
 	lastTriggerToothEventTimeNt = nowNt;
 }
 
-Engine::Engine() {
+Engine::Engine() : primaryTriggerConfiguration(this), vvtTriggerConfiguration(this) {
 	reset();
 }
 
-Engine::Engine(persistent_config_s *config) {
+Engine::Engine(persistent_config_s *config) : primaryTriggerConfiguration(this), vvtTriggerConfiguration(this) {
 	setConfig(config);
 	reset();
 }
@@ -239,7 +269,7 @@ void Engine::OnTriggerStateProperState(efitick_t nowNt) {
 	Engine *engine = this;
 	EXPAND_Engine;
 
-	triggerCentral.triggerState.runtimeStatistics(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
+	triggerCentral.triggerState.runtimeStatistics(&triggerCentral.triggerFormDetails, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
 
 	rpmCalculator.setSpinningUp(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
 }
@@ -369,9 +399,6 @@ int Engine::getRpmHardLimit(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 void Engine::periodicFastCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ScopePerf pc(PE::EnginePeriodicFastCallback);
 	engineState.periodicFastCallback(PASS_ENGINE_PARAMETER_SIGNATURE);
-#if EFI_SOFTWARE_KNOCK
-	processLastKnockEvent();
-#endif
 }
 
 void doScheduleStopEngine(DECLARE_ENGINE_PARAMETER_SIGNATURE) {

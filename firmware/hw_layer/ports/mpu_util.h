@@ -20,6 +20,11 @@ bool isValidSerialRxPin(brain_pin_e pin);
 
 // SPI
 #if HAL_USE_SPI
+
+
+
+
+
 void initSpiModule(SPIDriver *driver, brain_pin_e sck, brain_pin_e miso,
 		brain_pin_e mosi);
 

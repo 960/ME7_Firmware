@@ -5,14 +5,14 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  */
 
+#include "software_knock.h"
 #include "spark_logic.h"
 #include "os_access.h"
 #include "engine_math.h"
-#include "software_knock.h"
+
 #include "utlist.h"
 #include "event_queue.h"
 #include "perf_trace.h"
-
 
 
 #if EFI_TUNER_STUDIO
@@ -140,10 +140,6 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 
 	}
 #endif /* EFI_UNIT_TEST */
-#if EFI_UNIT_TEST
-	Engine *engine = event->engine;
-	EXPAND_Engine;
-#endif /* EFI_UNIT_TEST */
 	// now that we've just fired a coil let's prepare the new schedule for the next engine revolution
 
 	angle_t dwellAngleDuration = ENGINE(engineState.dwellAngle);
@@ -158,8 +154,6 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 	{
 		event->sparksRemaining--;
 
-		efitick_t nowNt = getTimeNowNt();
-
 		efitick_t nextDwellStart = nowNt + engine->engineState.multispark.delay;
 		efitick_t nextFiring = nextDwellStart + engine->engineState.multispark.dwell;
 
@@ -172,6 +166,7 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 		// If all events have been scheduled, prepare for next time.
 		prepareCylinderIgnitionSchedule(dwellAngleDuration, sparkDwell, event PASS_ENGINE_PARAMETER_SUFFIX);
 	}
+
 #if EFI_SOFTWARE_KNOCK
 	startKnockSampling(event->cylinderIndex);
 #endif
@@ -271,7 +266,7 @@ bool scheduleOrQueue(AngleBasedEvent *event,
 	}
 }
 
-__attribute__((always_inline)) inline void handleSparkEvent(bool limitedSpark, uint32_t trgEventIndex, IgnitionEvent *event,
+static ALWAYS_INLINE void handleSparkEvent(bool limitedSpark, uint32_t trgEventIndex, IgnitionEvent *event,
 		int rpm, efitick_t edgeTimestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
 
 	angle_t sparkAngle = event->sparkAngle;
@@ -354,7 +349,7 @@ void initializeIgnitionActions(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	list->isReady = true;
 }
 
-static __attribute__((always_inline)) inline void prepareIgnitionSchedule(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+static ALWAYS_INLINE void prepareIgnitionSchedule(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ScopePerf perf(PE::PrepareIgnitionSchedule);
 	
 	/**

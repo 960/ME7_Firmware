@@ -8,21 +8,13 @@ $(error Please run 'make' again. Please make sure you have 'git' command in PATH
 endif
 
 ifeq ($(PROJECT_BOARD),)
-  PROJECT_BOARD = ME7_Ecu_V2
+  PROJECT_BOARD = ME7_Ecu_V3
 endif
 
 ifeq ($(PROJECT_CPU),)
   PROJECT_CPU = ARCH_STM32F7
 endif
 -include $(PROJECT_DIR)/config/boards/$(PROJECT_BOARD)/config.mk
-
-# CPU-dependent defs
-ifeq ($(PROJECT_CPU),ARCH_STM32H7)
-CPU_STARTUP = startup_stm32h7xx.mk
-CPU_PLATFORM = STM32H7xx/platform.mk
-CPU_HWLAYER = ports/stm32/stm32h7
-MCU  = cortex-m7
-endif
 
 
 ifeq ($(PROJECT_CPU),ARCH_STM32F7)

@@ -1,4 +1,4 @@
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Thu Aug 20 12:13:02 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 30 19:19:41 CEST 2020
 // by class com.rusefi.output.CHeaderConsumer
 // begin
 #ifndef CONTROLLERS_GENERATED_ENGINE_CONFIGURATION_GENERATED_STRUCTURES_H
@@ -899,7 +899,7 @@ struct engine_configuration_s {
 	bool useTPSBasedVeTable : 1;
 	/**
 	offset 156 bit 16 */
-	bool pauseEtbControl : 1;
+	bool invertCamVVTSignal : 1;
 	/**
 	offset 156 bit 17 */
 	bool todoClutchDownPinInverted : 1;
@@ -924,7 +924,7 @@ struct engine_configuration_s {
 	bool stftIgnoreErrorMagnitude : 1;
 	/**
 	offset 156 bit 24 */
-	bool enableLoadBasedAE : 1;
+	bool silentTriggerError : 1;
 	/**
 	offset 156 bit 25 */
 	bool useSolenoidIdle : 1;
@@ -1021,7 +1021,7 @@ struct engine_configuration_s {
 	bool launchSmoothRetard : 1;
 	/**
 	offset 164 bit 18 */
-	bool setEtbErrorRpm : 1;
+	bool verboseTriggerSynchDetails : 1;
 	/**
 	offset 164 bit 19 */
 	bool sensorType : 1;
@@ -1060,10 +1060,10 @@ struct engine_configuration_s {
 	bool invertLaunchSwitch : 1;
 	/**
 	offset 164 bit 30 */
-	bool unused46 : 1;
+	bool isVerboseTriggerSynchDetails : 1;
 	/**
 	offset 164 bit 31 */
-	bool unused47 : 1;
+	bool verboseVVTDecoding : 1;
 	/**
 	 * Useful in Research&Development phase
 	 * offset 168
@@ -1265,9 +1265,105 @@ struct engine_configuration_s {
 	 */
 	brain_pin_e pinStepperEnable;
 	/**
-	 * offset 240
+	offset 240 bit 0 */
+	bool enableSoftwareKnock : 1;
+	/**
+	offset 240 bit 1 */
+	bool unusedBit_160_1 : 1;
+	/**
+	offset 240 bit 2 */
+	bool unusedBit_160_2 : 1;
+	/**
+	offset 240 bit 3 */
+	bool unusedBit_160_3 : 1;
+	/**
+	offset 240 bit 4 */
+	bool unusedBit_160_4 : 1;
+	/**
+	offset 240 bit 5 */
+	bool unusedBit_160_5 : 1;
+	/**
+	offset 240 bit 6 */
+	bool unusedBit_160_6 : 1;
+	/**
+	offset 240 bit 7 */
+	bool unusedBit_160_7 : 1;
+	/**
+	offset 240 bit 8 */
+	bool unusedBit_160_8 : 1;
+	/**
+	offset 240 bit 9 */
+	bool unusedBit_160_9 : 1;
+	/**
+	offset 240 bit 10 */
+	bool unusedBit_160_10 : 1;
+	/**
+	offset 240 bit 11 */
+	bool unusedBit_160_11 : 1;
+	/**
+	offset 240 bit 12 */
+	bool unusedBit_160_12 : 1;
+	/**
+	offset 240 bit 13 */
+	bool unusedBit_160_13 : 1;
+	/**
+	offset 240 bit 14 */
+	bool unusedBit_160_14 : 1;
+	/**
+	offset 240 bit 15 */
+	bool unusedBit_160_15 : 1;
+	/**
+	offset 240 bit 16 */
+	bool unusedBit_160_16 : 1;
+	/**
+	offset 240 bit 17 */
+	bool unusedBit_160_17 : 1;
+	/**
+	offset 240 bit 18 */
+	bool unusedBit_160_18 : 1;
+	/**
+	offset 240 bit 19 */
+	bool unusedBit_160_19 : 1;
+	/**
+	offset 240 bit 20 */
+	bool unusedBit_160_20 : 1;
+	/**
+	offset 240 bit 21 */
+	bool unusedBit_160_21 : 1;
+	/**
+	offset 240 bit 22 */
+	bool unusedBit_160_22 : 1;
+	/**
+	offset 240 bit 23 */
+	bool unusedBit_160_23 : 1;
+	/**
+	offset 240 bit 24 */
+	bool unusedBit_160_24 : 1;
+	/**
+	offset 240 bit 25 */
+	bool unusedBit_160_25 : 1;
+	/**
+	offset 240 bit 26 */
+	bool unusedBit_160_26 : 1;
+	/**
+	offset 240 bit 27 */
+	bool unusedBit_160_27 : 1;
+	/**
+	offset 240 bit 28 */
+	bool unusedBit_160_28 : 1;
+	/**
+	offset 240 bit 29 */
+	bool unusedBit_160_29 : 1;
+	/**
+	offset 240 bit 30 */
+	bool unusedBit_160_30 : 1;
+	/**
+	offset 240 bit 31 */
+	bool unusedBit_160_31 : 1;
+	/**
+	 * offset 244
 	 */
-	int unused117[2];
+	int unused117;
 	/**
 	 * offset 248
 	 */
@@ -2290,11 +2386,15 @@ struct engine_configuration_s {
 	/**
 	 * offset 1848
 	 */
-	float knockBandCustom;
+	float stoichRatioPrimary;
 	/**
 	 * offset 1852
 	 */
-	int mainUnusedEnd[437];
+	float knockBandCustom;
+	/**
+	 * offset 1856
+	 */
+	int mainUnusedEnd[436];
 	/** total size 3600*/
 };
 
@@ -2547,15 +2647,15 @@ struct persistent_config_s {
 	/**
 	 * offset 7992
 	 */
-	ignition_table_t ignitionTable;
+	ignition_table_t advanceTable;
 	/**
 	 * offset 9016
 	 */
-	float ignitionLoadBins[IGN_LOAD_COUNT];
+	float smap_table[IGN_LOAD_COUNT];
 	/**
 	 * offset 9080
 	 */
-	float ignitionRpmBins[IGN_RPM_COUNT];
+	float srpm_table[IGN_RPM_COUNT];
 	/**
 	 * offset 9144
 	 */
@@ -2563,11 +2663,11 @@ struct persistent_config_s {
 	/**
 	 * offset 10168
 	 */
-	float veLoadBins[FUEL_LOAD_COUNT];
+	float fmap_table[FUEL_LOAD_COUNT];
 	/**
 	 * offset 10232
 	 */
-	float veRpmBins[FUEL_RPM_COUNT];
+	float frpm_table[FUEL_RPM_COUNT];
 	/**
 	 * offset 10296
 	 */
@@ -2599,4 +2699,4 @@ typedef struct persistent_config_s persistent_config_s;
 
 #endif
 // end
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Thu Aug 20 12:13:02 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 30 19:19:41 CEST 2020

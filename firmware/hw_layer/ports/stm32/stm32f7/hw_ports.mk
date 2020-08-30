@@ -9,6 +9,5 @@ HW_LAYER_EMS_CPP += $(PROJECT_DIR)/hw_layer/ports/stm32/stm32f7/mpu_util.cpp \
 	
 RUSEFIASM = $(PROJECT_DIR)/hw_layer/ports/stm32/rusEfiStartup.S
 
-HW_INC += $(PROJECT_DIR)/hw_layer/ports/stm32 
-
+HW_INC += $(PROJECT_DIR)/hw_layer/ports/stm32
 	

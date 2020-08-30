@@ -78,9 +78,11 @@ void addTriggerEventListener(ShaftPositionListener listener, const char *name, E
 	engine->triggerCentral.addEventListener(listener, name, engine);
 }
 
-#define miataNb2VVTRatioFrom (8.50 * 0.75)
-#define miataNb2VVTRatioTo (14)
 #define miataNbIndex (0)
+
+static bool vvtWithRealDecoder(vvt_mode_e vvtMode) {
+	return vvtMode == MIATA_NB2 || vvtMode == VVT_BOSCH_QUICK_START;
+}
 
 void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	TriggerCentral *tc = &engine->triggerCentral;
@@ -100,7 +102,9 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 #endif /* EFI_TOOTH_LOGGER */
 	}
 
-	if (CONFIG(vvtCamSensorUseRise) ^ (front != TV_FALL)) {
+
+	if (!vvtWithRealDecoder(engineConfiguration->vvtMode) && (CONFIG(vvtCamSensorUseRise) ^ (front != TV_FALL))) {
+		// todo: there should be a way to always use real trigger code for this logic?
 		return;
 	}
 
@@ -115,13 +119,21 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 		return;
 	}
 
+	ENGINE(triggerCentral).vvtState.decodeTriggerEvent(
+			&ENGINE(triggerCentral).vvtShape,
+			nullptr,
+			nullptr,
+			&engine->vvtTriggerConfiguration,
+			front == TV_RISE ? SHAFT_PRIMARY_RISING : SHAFT_PRIMARY_FALLING, nowNt);
+
+
 	tc->vvtCamCounter++;
 
 	efitick_t offsetNt = nowNt - tc->timeAtVirtualZeroNt;
 	angle_t currentPosition = NT2US(offsetNt) / oneDegreeUs;
 	// convert engine cycle angle into trigger cycle angle
 	currentPosition -= tdcPosition();
-	fixAngle(currentPosition, "currentPosition", CUSTOM_ERR_6558);
+	// https://github.com/rusefi/rusefi/issues/1713 currentPosition could be negative that's expected
 
 	tc->currentVVTEventPosition = currentPosition;
 	if (engineConfiguration->debugMode == DBG_VVT) {
@@ -140,25 +152,12 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 		}
 		break;
 	case MIATA_NB2:
+	case VVT_BOSCH_QUICK_START:
 	 {
-		uint32_t currentDuration = nowNt - tc->previousVvtCamTime;
-		float ratio = ((float) currentDuration) / tc->previousVvtCamDuration;
-
-		if (engineConfiguration->debugMode == DBG_VVT) {
-#if EFI_TUNER_STUDIO
-			tsOutputChannels.debugFloatField2 = ratio;
-#endif /* EFI_TUNER_STUDIO */
-		}
-
-
-		tc->previousVvtCamDuration = currentDuration;
-		tc->previousVvtCamTime = nowNt;
-
-		if (ratio < miataNb2VVTRatioFrom || ratio > miataNb2VVTRatioTo) {
+		if (engine->triggerCentral.vvtState.currentCycle.current_index != 0) {
 			// this is not NB2 sync tooth - exiting
 			return;
 		}
-
 		if (engineConfiguration->debugMode == DBG_VVT) {
 #if EFI_TUNER_STUDIO
 			tsOutputChannels.debugIntField1++;
@@ -238,11 +237,17 @@ uint32_t triggerMaxDuration = 0;
 
 void hwHandleShaftSignal(trigger_event_e signal, efitick_t timestamp) {
 	ScopePerf perf(PE::HandleShaftSignal);
+		LogTriggerTooth(signal, timestamp PASS_ENGINE_PARAMETER_SUFFIX);
 	// for effective noise filtering, we need both signal edges, 
 	// so we pass them to handleShaftSignal() and defer this test
-	LogTriggerTooth(signal, timestamp PASS_ENGINE_PARAMETER_SUFFIX);
+	
 	if (!CONFIG(enableTriggerFilter)) {
-		if (!isUsefulSignal(signal PASS_CONFIG_PARAMETER_SUFFIX)) {
+		
+		const TriggerConfiguration * triggerConfiguration = &engine->primaryTriggerConfiguration;
+		if (!isUsefulSignal(signal, triggerConfiguration)) {
+			/**
+			 * no need to process VR falls further
+			 */
 			return;
 		}
 	}
@@ -355,8 +360,9 @@ void TriggerCentral::handleShaftSignal(trigger_event_e signal, efitick_t timesta
 		if (!noiseFilter.noiseFilter(timestamp, &triggerState, signal PASS_ENGINE_PARAMETER_SUFFIX)) {
 			return;
 		}
+		const TriggerConfiguration * triggerConfiguration = &engine->primaryTriggerConfiguration;
 		// moved here from hwHandleShaftSignal()
-		if (!isUsefulSignal(signal PASS_CONFIG_PARAMETER_SUFFIX)) {
+		if (!isUsefulSignal(signal, triggerConfiguration)) {
 			return;
 		}
 	}
@@ -372,7 +378,10 @@ void TriggerCentral::handleShaftSignal(trigger_event_e signal, efitick_t timesta
 	 * This invocation changes the state of triggerState
 	 */
 	triggerState.decodeTriggerEvent(&triggerShape,
-			nullptr, engine, signal, timestamp PASS_CONFIG_PARAMETER_SUFFIX);
+			nullptr,
+			engine,
+			&engine->primaryTriggerConfiguration,
+			signal, timestamp);
 
 	/**
 	 * If we only have a crank position sensor with four stroke, here we are extending crank revolutions with a 360 degree
@@ -512,6 +521,11 @@ void triggerInfo(void) {
 #endif /* EFI_PROD_CODE */
 }
 
+static void resetRunningTriggerCounters() {
+#if !EFI_UNIT_TEST
+	engine->triggerCentral.resetCounters();
+#endif
+}
 
 void onConfigurationChangeTriggerCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	bool changed = false;
@@ -566,4 +580,10 @@ void initTriggerCentral() {
 
 }
 
+/**
+ * @return TRUE is something is wrong with trigger decoding
+ */
+bool isTriggerDecoderError(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	return engine->triggerErrorDetection.sum(6) > 4;
+}
 

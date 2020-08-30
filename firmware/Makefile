@@ -13,6 +13,7 @@ include rusefi_rules.mk
 PROJECT = firmware
 PROJECT_DIR = .
 
+
 # Imported source files and paths
 CHIBIOS_CONTRIB = ChibiOS-Contrib
 
@@ -23,10 +24,10 @@ include rusefi.mk
 
 ifeq ($(DEBUG_LEVEL_OPT),)
   # Default to a release build - but leave in debug info.  It doesn't change the hex/bin output.
-  DEBUG_LEVEL_OPT = -O2 -ggdb -g3
+   #  DEBUG_LEVEL_OPT = -O2 -ggdb -g3
   # Comment the above and uncomment the line below if you want to debug the firmware (it's difficult-to-impossible
   # to debug firmware with optimization enabled).
-   #    DEBUG_LEVEL_OPT = -O0 -ggdb -g3
+DEBUG_LEVEL_OPT = -O0 -ggdb -g3
 endif
 DDEFS += -D$(PROJECT_BOARD)
 
@@ -162,7 +163,6 @@ ifeq ($(USE_FATFS),yes)
 include $(PROJECT_DIR)/ext/fatfs.mk
 endif
 
-
 include $(PROJECT_DIR)/console/console.mk
 include $(PROJECT_DIR)/controllers/controllers.mk
 include $(PROJECT_DIR)/development/development.mk
@@ -199,12 +199,12 @@ CSRC = $(STARTUPSRC) \
 	$(PLATFORMSRC_CONTRIB) \
 	$(BOARDSRC) \
 	$(BOOTLOADERSRC) \
-	$(CHIBIOS)/os/ex/ST/lis302dl.c \
 	$(CHIBIOS)/os/various/syscalls.c \
 	$(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	${HW_MASS_STORAGE_SRC_C} \
 	$(UTILSRC) \
+	$(ENGINES_SRC) \
 	$(CONSOLESRC) \
 	$(DEV_SRC) \
 	$(HW_LAYER_EMS) \

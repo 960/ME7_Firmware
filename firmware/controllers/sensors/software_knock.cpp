@@ -1,32 +1,46 @@
 
 #include "global.h"
-#include "hal.h"
 #include "engine.h"
-
+#include "biquad.h"
+#include "perf_trace.h"
+#include "thread_controller.h"
 #include "software_knock.h"
+
+#if EFI_SOFTWARE_KNOCK
 
 EXTERN_ENGINE;
 
+#include "knock_config.h"
 
-adcsample_t sampleBuffer[8000];
-
-
+adcsample_t sampleBuffer[2000];
+Biquad knockFilter;
 
 static volatile bool knockIsSampling = false;
 static volatile bool knockNeedsProcess = false;
 static volatile size_t sampleCount = 0;
 
-static void completionCallback(ADCDriver*, adcsample_t*, size_t) {
-	knockNeedsProcess = true;
+binary_semaphore_t knockSem;
+
+static void completionCallback(ADCDriver* adcp, adcsample_t*, size_t) {
+	palClearPad(GPIOF, 4);
+
+	if (adcp->state == ADC_COMPLETE) {
+		knockNeedsProcess = true;
+
+		// Notify the processing thread that it's time to process this sample
+		chSysLockFromISR();
+		chBSemSignalI(&knockSem);
+		chSysUnlockFromISR();
+	}
 }
 
 static void errorCallback(ADCDriver*, adcerror_t err) {
 }
 
-static ADCConversionGroup adcConvGroup = { FALSE, 1, &completionCallback, &errorCallback,
+static const ADCConversionGroup adcConvGroup = { FALSE, 1, &completionCallback, &errorCallback,
 	0,
 	ADC_CR2_SWSTART,
-	ADC_SMPR1_SMP_AN14(ADC_SAMPLE_84), // sample times for channels 10...18
+	ADC_SMPR1_SMP_AN14(KNOCK_SAMPLE_TIME), // sample times for channels 10...18
 	0,
 
 	0,	// htr
@@ -34,69 +48,54 @@ static ADCConversionGroup adcConvGroup = { FALSE, 1, &completionCallback, &error
 
 	0,	// sqr1
 	0,	// sqr2
-	ADC_SQR3_SQ1_N(ADC_CHANNEL_IN14)	// knock 1 - pin PF4
+	ADC_SQR3_SQ1_N(KNOCK_ADC_CH1)
 };
 
 void startKnockSampling(uint8_t cylinderIndex) {
-	if (cylinderIndex == 2) {
+	if (!CONFIG(enableSoftwareKnock)) {
 		return;
 	}
 
 	// Cancel if ADC isn't ready
-	if (!((ADCD3.state == ADC_READY) ||
-			(ADCD3.state == ADC_COMPLETE) ||
-			(ADCD3.state == ADC_ERROR))) {
+	if (!((KNOCK_ADC.state == ADC_READY) ||
+			(KNOCK_ADC.state == ADC_COMPLETE) ||
+			(KNOCK_ADC.state == ADC_ERROR))) {
 		return;
 	}
 
-	// If there's pending processing, skip
+	// If there's pending processing, skip this event
 	if (knockNeedsProcess) {
 		return;
 	}
 
-	// Sample for 60 degrees
+	// Sample for 45 degrees
 	float samplingSeconds = ENGINE(rpmCalculator).oneDegreeUs * 45 * 1e-6;
-	constexpr int sampleRate = 217000;
+	constexpr int sampleRate = KNOCK_SAMPLE_RATE;
 	sampleCount = 0xFFFFFFFE & static_cast<size_t>(clampF(100, samplingSeconds * sampleRate, efi::size(sampleBuffer)));
 
-	adcStartConversionI(&ADCD3, &adcConvGroup, sampleBuffer, sampleCount);
+	adcStartConversionI(&KNOCK_ADC, &adcConvGroup, sampleBuffer, sampleCount);
 }
 
-struct biquad {
-	float a0, a1, a2, b1, b2;
-
-	float z1 = 0;
-	float z2 = 0;
-
-	void reset() {
-		z1 = 0;
-		z2 = 0;
-	}
-
-	float filter(float input) {
-		float result = input * a0 + z1;
-		z1 = input * a1 + z2 - b1 * result;
-		z2 = input * a2 - b2 * result;
-		return result;
-	}
-
-	void configureBandpass(float samplingFrequency, float centerFrequency, float Q) {
-		float K = tanf(3.14159 * centerFrequency / samplingFrequency);
-		float norm = 1 / (1 + K / Q + K * K);
-
-		a0 = K / Q * norm;
-		a1 = 0;
-		a2 = -a0;
-		b1 = 2 * (K * K - 1) * norm;
-		b2 = (1 - K / Q + K * K) * norm;
-	}
+class KnockThread : public ThreadController<256> {
+public:
+	KnockThread() : ThreadController("knock", NORMALPRIO - 10) {}
+	void ThreadTask() override;
 };
 
-biquad biquadFilter;
+KnockThread kt;
 
 void initSoftwareKnock() {
-	biquadFilter.configureBandpass(217000, CONFIG(knockBandCustom), 3);
-	adcStart(&ADCD3, nullptr);
+	chBSemObjectInit(&knockSem, TRUE);
+
+	if (CONFIG(enableSoftwareKnock)) {
+		knockFilter.configureBandpass(KNOCK_SAMPLE_RATE, 1000 * CONFIG(knockBandCustom), 3);
+		adcStart(&KNOCK_ADC, nullptr);
+
+		efiSetPadMode("knock ch1", KNOCK_PIN_CH1, PAL_MODE_INPUT_ANALOG);
+		efiSetPadMode("knock ch2", KNOCK_PIN_CH2, PAL_MODE_INPUT_ANALOG);
+
+		kt.Start();
+	}
 }
 
 void processLastKnockEvent() {
@@ -104,26 +103,28 @@ void processLastKnockEvent() {
 		return;
 	}
 
-	float sum = 0;
 	float sumSq = 0;
 
 	constexpr float ratio = 3.3f / 4095.0f;
 
-	biquadFilter.reset();
-	biquadFilter.configureBandpass(217000, 11000, 10);
+	size_t localCount = sampleCount;
 
-	// Compute the sum and sum of squares
-	for (size_t i = 0; i < sampleCount; i++)
+	// Prepare the steady state at vcc/2 so that there isn't a step
+	// when samples begin
+	knockFilter.cookSteadyState(3.3f / 2);
+
+	// Compute the sum of squares
+	for (size_t i = 0; i < localCount; i++)
 	{
-		float volts = ratio * (sampleBuffer[i] - 2048);
+		float volts = ratio * sampleBuffer[i];
 
-		float filtered = biquadFilter.filter(volts);
+		float filtered = knockFilter.filter(volts);
 
 		sumSq += filtered * filtered;
 	}
 
 	// mean of squares (not yet root)
-	float meanSquares = sumSq / sampleCount;
+	float meanSquares = sumSq / localCount;
 
 	// RMS
 	float db = 10 * log10(meanSquares);
@@ -132,3 +133,14 @@ void processLastKnockEvent() {
 
 	knockNeedsProcess = false;
 }
+
+void KnockThread::ThreadTask() {
+	while(1) {
+		chBSemWait(&knockSem);
+
+		ScopePerf perf(PE::SoftwareKnockProcess);
+		processLastKnockEvent();
+	}
+}
+
+#endif // EFI_SOFTWARE_KNOCK

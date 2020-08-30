@@ -149,12 +149,9 @@ AirmassModelBase* getAirmassModel(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 			return &sdAirmass;
 /* todo: this should be the implementation
 			return nullptr;
-		default: return nullptr; */
+*/
 	}
 }
-
-static FuelComputer fuelComputer(afrMap);
-static InjectorModel injectorModel;
 
 /**
  * per-cylinder fuel amount
@@ -179,7 +176,7 @@ floatms_t getBaseFuel(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// TODO: independently selectable ignition load mode
 	ENGINE(engineState.ignitionLoad) = airmass.EngineLoadPercent;
 
-	float baseFuelMass = fuelComputer.getCycleFuel(airmass.CylinderAirmass, rpm, airmass.EngineLoadPercent);
+	float baseFuelMass = ENGINE(fuelComputer)->getCycleFuel(airmass.CylinderAirmass, rpm, airmass.EngineLoadPercent);
 	float baseFuel = getInjectionDurationForFuelMass(baseFuelMass PASS_ENGINE_PARAMETER_SUFFIX) * 1000;
 	if (cisnan(baseFuel)) {
 		// todo: we should not have this here but https://github.com/rusefi/rusefi/issues/1690
@@ -323,6 +320,9 @@ floatms_t getInjectorLag(float vBatt DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	return interpolate2d("lag", vBatt, engineConfiguration->injector.battLagCorrBins, engineConfiguration->injector.battLagCorr);
 }
 
+static FuelComputer fuelComputer(afrMap);
+static InjectorModel injectorModel;
+
 /**
  * @brief	Initialize fuel map data structure
  * @note this method has nothing to do with fuel map VALUES - it's job
@@ -335,6 +335,9 @@ void initFuelMap(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	INJECT_ENGINE_REFERENCE(&fuelComputer);
 	INJECT_ENGINE_REFERENCE(&injectorModel);
+
+	ENGINE(fuelComputer) = &fuelComputer;
+	ENGINE(injectorModel) = &injectorModel;
 
 #if (IGN_LOAD_COUNT == FUEL_LOAD_COUNT) && (IGN_RPM_COUNT == FUEL_RPM_COUNT)
 	fuelPhaseMap.init(config->injectionPhase, config->injPhaseLoadBins, config->injPhaseRpmBins);

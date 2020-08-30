@@ -10,4 +10,3 @@
 #include "trigger_structure.h"
 
 void setVwConfiguration(TriggerWaveform *s);
-void setVwVvtConfiguration(TriggerWaveform *s);

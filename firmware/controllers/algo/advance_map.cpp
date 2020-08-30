@@ -276,8 +276,8 @@ void setDefaultIatTimingCorrection(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 void initTimingMap(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// We init both tables in RAM because here we're at a very early stage, with no config settings loaded.
-	advanceMap.init(config->ignitionTable, config->ignitionLoadBins,
-			config->ignitionRpmBins);
+	advanceMap.init(config->advanceTable, config->smap_table,
+			config->srpm_table);
 	iatAdvanceCorrectionMap.init(config->ignitionIatCorrTable, config->ignitionIatCorrLoadBins,
 			config->ignitionIatCorrRpmBins);
 	// init timing PID
@@ -355,10 +355,10 @@ void buildTimingMap(float advanceMax DECLARE_CONFIG_PARAMETER_SUFFIX) {
 	 * good enough (but do not trust us!) default timing map in case of MAP-based engine load
 	 */
 	for (int loadIndex = 0; loadIndex < IGN_LOAD_COUNT; loadIndex++) {
-		float load = config->ignitionLoadBins[loadIndex];
+		float load = config->smap_table[loadIndex];
 		for (int rpmIndex = 0;rpmIndex<IGN_RPM_COUNT;rpmIndex++) {
-			float rpm = config->ignitionRpmBins[rpmIndex];
-			config->ignitionTable[loadIndex][rpmIndex] = getInitialAdvance(rpm, load, advanceMax);
+			float rpm = config->srpm_table[rpmIndex];
+			config->advanceTable[loadIndex][rpmIndex] = getInitialAdvance(rpm, load, advanceMax);
 		}
 	}
 }

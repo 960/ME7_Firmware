@@ -19,6 +19,13 @@
 #include "closed_loop_fuel.h"
 #include "sensor.h"
 
+#if EFI_PROD_CODE
+
+#endif
+
+#if ! EFI_UNIT_TEST
+#include "status_loop.h"
+#endif
 
 extern fuel_Map3D_t veMap;
 extern afr_Map3D_t afrMap;
@@ -26,7 +33,6 @@ extern afr_Map3D_t afrMap;
 EXTERN_ENGINE;
 
 // this does not look exactly right
-
 
 WarningCodeState::WarningCodeState() {
 	clear();
@@ -237,4 +243,60 @@ void StartupFuelPumping::update(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	}
 }
 
+#if EFI_SIMULATOR
+#define VCS_VERSION "123"
+#endif
 
+
+PrimaryTriggerConfiguration::PrimaryTriggerConfiguration(Engine *engine) {
+	this->engine = engine;
+}
+
+bool PrimaryTriggerConfiguration::isUseOnlyRisingEdgeForTrigger() const {
+	return engine->engineConfigurationPtr->useOnlyRisingEdgeForTrigger;
+}
+
+debug_mode_e PrimaryTriggerConfiguration::getDebugMode() const {
+	return engine->engineConfigurationPtr->debugMode;
+}
+
+trigger_type_e PrimaryTriggerConfiguration::getType() const {
+	return engine->engineConfigurationPtr->trigger.type;
+}
+
+bool PrimaryTriggerConfiguration::isSilentTriggerError() const {
+	return engine->engineConfigurationPtr->silentTriggerError;
+}
+
+
+bool PrimaryTriggerConfiguration::isVerboseTriggerSynchDetails() const {
+	return engine->engineConfigurationPtr->verboseTriggerSynchDetails;
+}
+
+VvtTriggerConfiguration::VvtTriggerConfiguration(Engine *engine) {
+	this->engine = engine;
+}
+
+bool VvtTriggerConfiguration::isUseOnlyRisingEdgeForTrigger() const {
+	return engine->engineConfigurationPtr->vvtCamSensorUseRise;
+}
+
+const char * VvtTriggerConfiguration::getPrintPrefix() const {
+	return "VVT ";
+}
+
+debug_mode_e VvtTriggerConfiguration::getDebugMode() const {
+	return engine->engineConfigurationPtr->debugMode;
+}
+
+trigger_type_e VvtTriggerConfiguration::getType() const {
+	return engine->triggerCentral.vvtTriggerType;
+}
+
+bool VvtTriggerConfiguration::isSilentTriggerError() const {
+	return engine->engineConfigurationPtr->silentTriggerError;
+}
+
+bool VvtTriggerConfiguration::isVerboseTriggerSynchDetails() const {
+	return engine->engineConfigurationPtr->verboseVVTDecoding;
+}

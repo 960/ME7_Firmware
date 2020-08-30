@@ -391,7 +391,7 @@ void prepareOutputSignals(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	for (int rpmIndex = 0;rpmIndex<IGN_RPM_COUNT;rpmIndex++) {
 		for (int l = 0;l<IGN_LOAD_COUNT;l++) {
 			maxTimingCorrMap = maxF(maxTimingCorrMap, config->ignitionIatCorrTable[l][rpmIndex]);
-			maxTimingMap = maxF(maxTimingMap, config->ignitionTable[l][rpmIndex]);
+			maxTimingMap = maxF(maxTimingMap, config->advanceTable[l][rpmIndex]);
 		}
 	}
 
@@ -402,16 +402,15 @@ void prepareOutputSignals(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	prepareIgnitionPinIndices(CONFIG(ignitionMode) PASS_ENGINE_PARAMETER_SUFFIX);
 
-	TRIGGER_WAVEFORM(prepareShape());
+	TRIGGER_WAVEFORM(prepareShape(&ENGINE(triggerCentral.triggerFormDetails) PASS_ENGINE_PARAMETER_SUFFIX));
 }
 
-
 void setTimingRpmBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
-	setRpmBin(config->ignitionRpmBins, IGN_RPM_COUNT, from, to);
+	setRpmBin(config->srpm_table, IGN_RPM_COUNT, from, to);
 }
 
 void setTimingLoadBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
-	setLinearCurve(config->ignitionLoadBins, from, to);
+	setLinearCurve(config->smap_table, from, to);
 }
 
 /**
@@ -420,7 +419,7 @@ void setTimingLoadBin(float from, float to DECLARE_CONFIG_PARAMETER_SUFFIX) {
 void setAlgorithm(engine_load_mode_e algo DECLARE_CONFIG_PARAMETER_SUFFIX) {
 	engineConfiguration->fuelAlgorithm = algo;
 	if (algo == LM_SPEED_DENSITY) {
-		setLinearCurve(config->ignitionLoadBins, 20, 120, 3);
+		setLinearCurve(config->smap_table, 20, 120, 3);
 		buildTimingMap(35 PASS_CONFIG_PARAMETER_SUFFIX);
 	}
 }

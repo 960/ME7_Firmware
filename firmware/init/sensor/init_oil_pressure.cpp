@@ -38,6 +38,7 @@ void initOilPressure(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	// Subscribe the sensor to the ADC
 	AdcSubscription::SubscribeSensor(oilpSensor, channel, 10);
+
 	if (!oilpSensor.Register()) {
 		warning(OBD_Oil_Pressure_Sensor_Malfunction, "Duplicate oilp sensor registration, ignoring");
 	}

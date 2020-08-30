@@ -56,8 +56,8 @@ void TriggerEmulatorHelper::handleEmulatorCallback(PwmConfig *state, int stateIn
 		if (needEvent(stateIndex, state->phaseCount, &state->multiChannelStateSequence, i)) {
 			pin_state_t currentValue = multiChannelStateSequence->getChannelState(/*phaseIndex*/i, stateIndex);
 			
-			constexpr trigger_event_e riseEvents[] = { SHAFT_PRIMARY_FALLING, SHAFT_SECONDARY_RISING, SHAFT_3RD_RISING };
-			constexpr trigger_event_e fallEvents[] = { SHAFT_PRIMARY_RISING, SHAFT_SECONDARY_FALLING, SHAFT_3RD_FALLING };
+			constexpr trigger_event_e riseEvents[] = { SHAFT_PRIMARY_RISING, SHAFT_SECONDARY_RISING, SHAFT_3RD_RISING };
+			constexpr trigger_event_e fallEvents[] = { SHAFT_PRIMARY_FALLING, SHAFT_SECONDARY_FALLING, SHAFT_3RD_FALLING };
 
 			trigger_event_e event = (currentValue ? riseEvents : fallEvents)[i];
 
@@ -77,22 +77,16 @@ static SingleChannelStateSequence waves[PWM_PHASE_MAX_WAVE_PER_PWM] = { SingleCh
 		SingleChannelStateSequence(pinStates3) };
 static SingleChannelStateSequence sr[PWM_PHASE_MAX_WAVE_PER_PWM] = { waves[0], waves[1], waves[2] };
 
-static float switchTimesBuffer[PWM_PHASE_MAX_COUNT];
+static float pwmSwitchTimesBuffer[PWM_PHASE_MAX_COUNT];
 
-PwmConfig triggerSignal(switchTimesBuffer, sr);
+PwmConfig triggerSignal(pwmSwitchTimesBuffer, sr);
 
 #define DO_NOT_STOP 999999999
 
 static int stopEmulationAtIndex = DO_NOT_STOP;
 static bool isEmulating = true;
 
-
 static int atTriggerVersion = 0;
-
-#if EFI_ENGINE_SNIFFER
-#include "engine_sniffer.h"
-extern WaveChart waveChart;
-#endif /* EFI_ENGINE_SNIFFER */
 
 void setTriggerEmulatorRPM(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	engineConfiguration->triggerSimulatorFrequency = rpm;
@@ -107,6 +101,7 @@ void setTriggerEmulatorRPM(int rpm DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		float rPerSecond = rpm * rpmM / 60.0; // per minute converted to per second
 		triggerSignal.setFrequency(rPerSecond);
 	}
+	engine->resetEngineSnifferIfInTestMode();
 
 
 }
@@ -190,7 +185,7 @@ void initTriggerEmulator( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 
 
 	initTriggerEmulatorLogic();
-	initTriggerEmulatorLogic();
+
 }
 
 #endif /* EFI_EMULATE_POSITION_SENSORS */

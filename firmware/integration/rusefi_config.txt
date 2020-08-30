@@ -130,6 +130,7 @@ struct_no_prefix engine_configuration_s
 #define PACK_MULT_MASS_FLOW 10
 #define TPS_1_BYTE_PACKING_MULT 2
 #define LOAD_1_BYTE_PACKING_MULT 2
+#define PACK_MULT_AFR_CFG 10
 #define FSIO_TABLE_8 8
 
 #define TPS_TPS_ACCEL_TABLE 8
@@ -174,7 +175,7 @@ custom ego_sensor_e 4 bits, S32, @OFFSET@, [0:3], @@ego_sensor_e_enum@@
 #define debug_mode_e_enum "Alternator PID", "TPS acceleration enrichment", "INVALID", "Idle Control", "Engine Load accl enrich", "Trigger Counters", "FSIO_ADC", "AUX_PID_1", "VVT input", "Cranking", "Timing", "Closed-loop fuel corr PID", "VSS", "SD card", "sr5", "Knock", "mode16", "Electronic Throttle", "Executor", "Bench Test / TS commands", "Aux Valves", "Analog inputs #1", "INSTANT_RPM", "FSIO_EXPRESSION", "Status", "CJ125", "CAN", "MAP", "Metrics", "ETB#2", "Ion Sense", "TLE8888", "Analog inputs #2", "Dwell Metric", "INVALID", "ETB Logic", "Boost Control", "Start/Stop", "Launch", "ETB Autotune", "Trigger Timing"
 custom debug_mode_e 4 bits,    U32,   @OFFSET@, [0:7], @@debug_mode_e_enum@@
 
-#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "mode5", "mode6", "mode7"
+#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "Bosch Quick-Start", "mode6", "mode7"
 custom vvt_mode_e 4 bits,    U32,   @OFFSET@, [0:4], @@vvt_mode_e_enum@@
 
 #define launchActivationMode_e_enum "Switch Input", "Clutch Input", "Always Active(Disabled By Speed)","INVALID"
@@ -533,7 +534,7 @@ int unused99
 	bit useIdleTimingPidControl,Yes,No
 	bit useTPSBasedVeTable,Yes,No
 
-	bit pauseEtbControl,Yes,No
+	bit invertCamVVTSignal,Yes,No
 	bit todoClutchDownPinInverted,Yes,No
 	bit useHbridges,Yes,No
 	bit multisparkEnable,Yes,No
@@ -543,7 +544,7 @@ int unused99
 	bit enableLaunchBoost,Yes,No
 	bit stftIgnoreErrorMagnitude;+If enabled, adjust at a constant rate instead of a rate proportional to the current lambda error.  This mode may be easier to tune, and more tolerant of sensor noise.  Use of this mode is required if you have a narrowband O2 sensor.
 	
-	bit enableLoadBasedAE,Yes,No
+	bit silentTriggerError,Yes,No
 	bit useSolenoidIdle,Yes,No
 	bit useSecondEtb,Yes,No
 	bit enableAntiLagAir,Yes,No
@@ -578,7 +579,7 @@ int unused75
 
 	bit isBoostControlEnabled,Yes,No
 	bit launchSmoothRetard,Yes,No;+Interpolates the Ignition Retard from 0 to 100% within the RPM Range	
-	bit setEtbErrorRpm,Yes,No
+	bit verboseTriggerSynchDetails,Yes,No
 	bit sensorType,Hall,VR
 
 	bit dcMotorIdleValve;+Used on some German vehicles around late 90s: cable-operated throttle and DC motor idle air valve.\nSet the primary TPS to the cable-operated throttle's sensor\nSet the secondary TPS to the mini ETB's position sensor(s).
@@ -593,8 +594,8 @@ int unused75
 	
 	bit enableLaunchFuel,Yes,No
 	bit invertLaunchSwitch,Yes,No
-	bit unused46
-	bit unused47
+	bit isVerboseTriggerSynchDetails
+	bit verboseVVTDecoding
 
 	adc_channel_e auxFastSensor1_adcChannel;Useful in Research&Development phase
 	adc_channel_e tps1_2AdcChannel;First throttle body, second sensor.
@@ -656,8 +657,10 @@ int unused75
 	
 	uint8_t[3] unused17
 	brain_pin_e pinStepperEnable;
-	
-	int[2] unused117;
+
+	bit enableSoftwareKnock
+
+	int[1] unused117;
 	
 	brain_pin_e canTxPin;
 	brain_pin_e canRxPin;
@@ -1033,8 +1036,11 @@ float syncRatioFrom;;"",        1,     0,  0,    10,  2
 float syncRatioTo;;"",        1,     0,  0,    10,  2
 float idle_antiwindupFreq;+0.1 is a good default value;    "x",    1,      0.0,       -1000000,  1000000, 1       
 float idle_derivativeFilterLoss;+0.1 is a good default value;    "x",    1,      0.0,       -1000000,  1000000, 1        
-float knockBandCustom;;"",        1,     0,  0,    20000,  0	
-	int[437] mainUnusedEnd;
+
+float stoichRatioPrimary;;"",        1,     0,  0,    20,  1
+
+float knockBandCustom;;"",        1,     0,  0,    30000,  
+	int[436] mainUnusedEnd;
 
 ! end of engine_configuration_s
 end_struct
@@ -1125,13 +1131,13 @@ angle_table_t injectionPhase;
 float[FUEL_LOAD_COUNT] injPhaseLoadBins;;"Load",   1,   0.0,        0,  500.0,   2
 float[FUEL_RPM_COUNT] injPhaseRpmBins;;"RPM",	   1,   0.0,        0,  18000.0, 2
 
-ignition_table_t ignitionTable;
-float[IGN_LOAD_COUNT] ignitionLoadBins;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },   1,   0.0,        0,  500.0,   1
-float[IGN_RPM_COUNT] ignitionRpmBins;;"RPM",	   1,   0.0,        0,  18000.0, 2
+ignition_table_t advanceTable;
+float[IGN_LOAD_COUNT] smap_table;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },   1,   0.0,        0,  500.0,   1
+float[IGN_RPM_COUNT] srpm_table;;"RPM",	   1,   0.0,        0,  18000.0, 2
 
 ve_table_t veTable;
-float[FUEL_LOAD_COUNT] veLoadBins;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },	1,   0.0,        0,  400.0,   1
-float[FUEL_RPM_COUNT] veRpmBins;;"RPM",	   1,   0.0,        0,  18000.0, 2
+float[FUEL_LOAD_COUNT] fmap_table;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },	1,   0.0,        0,  400.0,   1
+float[FUEL_RPM_COUNT] frpm_table;;"RPM",	   1,   0.0,        0,  18000.0, 2
 
 afr_table_t afrTable;		
 float[FUEL_LOAD_COUNT] afrLoadBins;;"",	1,   0.0,        0,  500.0,   2
@@ -1279,18 +1285,6 @@ end_struct
 #define PROTOCOL_WA_CHANNEL_4 "input4"
 
 
-#define TS_PROTOCOL "001"
-#define TS_OUTPUT_COMMAND 'O'
-#define TS_HELLO_COMMAND 'S'
-#define TS_CRC_CHECK_COMMAND 'k'
-#define TS_GET_COMPOSITE_BUFFER_DONE_DIFFERENTLY '8'
-
-#define TS_COMPOSITE_ENABLE 1
-#define TS_COMPOSITE_DISABLE 2
-#define TS_GET_FIRMWARE_VERSION 'V'
-#define TS_GET_CONFIG_ERROR 'e'
-#define TS_SET_LOGGER_SWITCH   'l'
-#define TS_GET_LOGGER_GET_BUFFER 'L'
 
 #define PROTOCOL_COIL1_SHORT_NAME "c1"
 #define PROTOCOL_INJ1_SHORT_NAME "i1"

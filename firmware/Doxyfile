@@ -760,7 +760,7 @@ INPUT_ENCODING         = UTF-8
 # FILE_PATTERNS tag to specify one or more wildcard patterns (like *.cpp and
 # *.h) to filter out the source-files in the directories. If left blank the
 # following patterns are tested:*.c, *.cc, *.cxx, *.cpp, *.c++, *.java, *.ii,
-# *.ixx, *.ipp, *.i++, *.inl, *.idl, *.ddl, *.odl, *.h, *.hh, *.hxx, *.h,
+# *.ixx, *.ipp, *.i++, *.inl, *.idl, *.ddl, *.odl, *.h, *.hh, *.hxx, *.hpp,
 # *.h++, *.cs, *.d, *.php, *.php4, *.php5, *.phtml, *.inc, *.m, *.markdown,
 # *.md, *.mm, *.dox, *.py, *.f90, *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf,
 # *.qsf, *.as and *.js.
@@ -1941,7 +1941,7 @@ SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = ../
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
-# patterns (like *.h and *.h) to filter out the header-files in the
+# patterns (like *.h and *.hpp) to filter out the header-files in the
 # directories. If left blank, the patterns specified with FILE_PATTERNS will be
 # used.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.

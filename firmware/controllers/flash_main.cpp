@@ -22,7 +22,6 @@
 #include "tunerstudio.h"
 #endif
 
-
 #include "engine_controller.h"
 
 static bool needToWriteConfiguration = false;
@@ -33,19 +32,11 @@ extern persistent_config_container_s persistentState;
 
 extern engine_configuration_s *engineConfiguration;
 
-/**
- * https://sourceforge.net/p/rusefi/tickets/335/
- *
- * In order to preserve at least one copy of the tune in case of electrical issues address of second configuration copy
- * should be in a different sector of flash since complete flash sectors are erased on write.
- */
-
 crc_t flashStateCrc(persistent_config_container_s *state) {
 	return calc_crc((const crc_t*) &state->persistentConfiguration, sizeof(persistent_config_s));
 }
 
 void setNeedToWriteConfiguration(void) {
-
 	needToWriteConfiguration = true;
 }
 
@@ -57,9 +48,7 @@ void writeToFlashIfPending() {
 	if (!getNeedToWriteConfiguration()) {
 		return;
 	}
-	// todo: technically we need a lock here, realistically we should be fine.
 	needToWriteConfiguration = false;
-
 	writeToFlashNow();
 }
 
@@ -73,27 +62,26 @@ int eraseAndFlashCopy(flashaddr_t storageAddress, const TStorage& data)
 }
 
 void writeToFlashNow(void) {
-
 	// Set up the container
 	persistentState.size = sizeof(persistentState);
 	persistentState.version = FLASH_DATA_VERSION;
 	persistentState.value = flashStateCrc(&persistentState);
-
+#if EFI_SPI_FRAM
 	// Flash two copies
+	int result1 = writeFullEeprom(0x30000, sizeof(persistentState), (char *) &persistentState);
+	chThdSleepMilliseconds(10);
+	int result2 = true; //writeFullEeprom(0x60000, sizeof(persistentState), (char *) &persistentState);
+	//chThdSleepMilliseconds(10);
+#else
 	int result1 = eraseAndFlashCopy(getFlashAddrFirstCopy(), persistentState);
 	int result2 = eraseAndFlashCopy(getFlashAddrSecondCopy(), persistentState);
-
+#endif
 	// handle success/failure
 	bool isSuccess = (result1 == FLASH_RETURN_SUCCESS) && (result2 == FLASH_RETURN_SUCCESS);
-
 	if (isSuccess) {
-
 	} else {
-
 	}
 	assertEngineReference();
-
-
 	resetMaxValues();
 
 }
@@ -110,10 +98,21 @@ static void doResetConfiguration(void) {
 
 persisted_configuration_state_e flashState;
 
+static persisted_configuration_state_e doReadEEConfiguration(flashaddr_t address) {
+	readFullEeprom(address, (char *) &persistentState, sizeof(persistentState));
+
+	if (!isValidCrc(&persistentState)) {
+		return CRC_FAILED;
+	} else if (persistentState.version != FLASH_DATA_VERSION || persistentState.size != sizeof(persistentState)) {
+		return INCOMPATIBLE_VERSION;
+	} else {
+		return PC_OK;
+	}
+}
+
+
 static persisted_configuration_state_e doReadConfiguration(flashaddr_t address) {
-
 	intFlashRead(address, (char *) &persistentState, sizeof(persistentState));
-
 	if (!isValidCrc(&persistentState)) {
 		return CRC_FAILED;
 	} else if (persistentState.version != FLASH_DATA_VERSION || persistentState.size != sizeof(persistentState)) {
@@ -129,52 +128,40 @@ static persisted_configuration_state_e doReadConfiguration(flashaddr_t address) 
  */
 persisted_configuration_state_e readConfiguration() {
 	efiAssert(CUSTOM_ERR_ASSERT, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "read f", PC_ERROR);
+#if EFI_SPI_FRAM
+	persisted_configuration_state_e result = doReadEEConfiguration(0x30000);
+#else
 	persisted_configuration_state_e result = doReadConfiguration(getFlashAddrFirstCopy());
+#endif
 	if (result != PC_OK) {
-
+#if EFI_SPI_FRAM
+	//result = doReadEEConfiguration(0x60000);
+#else
 		result = doReadConfiguration(getFlashAddrSecondCopy());
+#endif
 	}
-
 	if (result == CRC_FAILED) {
-//		warning(CUSTOM_ERR_FLASH_CRC_FAILED, "flash CRC failed");
 		resetConfigurationExt(PASS_ENGINE_PARAMETER_SUFFIX);
 	} else if (result == INCOMPATIBLE_VERSION) {
 		resetConfigurationExt(PASS_ENGINE_PARAMETER_SUFFIX);
 	} else {
-		/**
-		 * At this point we know that CRC and version number is what we expect. Safe to assume it's a valid configuration.
-		 */
 		applyNonPersistentConfiguration(PASS_ENGINE_PARAMETER_SUFFIX);
 	}
-	// we can only change the state after the CRC check
 	validateConfiguration(PASS_ENGINE_PARAMETER_SIGNATURE);
 	return result;
 }
 
 void readFromFlash(void) {
 	persisted_configuration_state_e result = readConfiguration();
-
 	if (result == CRC_FAILED) {
-
 	} else if (result == INCOMPATIBLE_VERSION) {
-
 	} else {
-
 	}
 }
 
 
 void initFlash() {
 	
-
-
-#if EFI_TUNER_STUDIO
-	/**
-	 * This would schedule write to flash once the engine is stopped
-	 */
-
-#endif
-
 }
 
 #endif /* EFI_INTERNAL_FLASH */

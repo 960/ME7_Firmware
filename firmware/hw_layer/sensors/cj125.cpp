@@ -180,10 +180,6 @@ void CJ125::calibrate(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	uint32_t storedLambda = get16bitFromVoltage(vUaCal);
 	uint32_t storedHeater = get16bitFromVoltage(vUrCal);
 
-#if !EFI_SPI_FRAM
-	backupRamSave(BACKUP_CJ125_CALIBRATION_LAMBDA, storedLambda);
-	backupRamSave(BACKUP_CJ125_CALIBRATION_HEATER, storedHeater);
-#endif /* EFI_PROD_CODE */
 	CONFIG(storedLambda) = storedLambda;
 	CONFIG(storedHeater) = storedHeater;
 	state = CJ125_IDLE;
@@ -196,13 +192,10 @@ static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	globalInstance.cjIdentify(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	// Load calibration values
-#if !EFI_SPI_FRAM
-	uint32_t storedLambda = backupRamLoad(BACKUP_CJ125_CALIBRATION_LAMBDA);
-	uint32_t storedHeater = backupRamLoad(BACKUP_CJ125_CALIBRATION_HEATER);
-#else
+
 	uint32_t storedLambda = CONFIG(storedLambda);
 	uint32_t storedHeater = CONFIG(storedHeater);
-#endif
+
 	// if no calibration, try to calibrate now and store new values
 	if (storedLambda == 0 || storedHeater == 0) {
 		/**

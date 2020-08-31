@@ -286,16 +286,11 @@ void initHardware() {
 	}
 
 	initFlash();
-	/**
-	 * this call reads configuration from flash memory or sets default configuration
-	 * if flash state does not look right.
-	 *
-	 * interesting fact that we have another read from flash before we get here
-	 */
+
 	chThdSleepMilliseconds(2);
 	readFromFlash();
 	chThdSleepMilliseconds(2);
-	// it's important to initialize this pretty early in the game before any scheduling usages
+
 	initSingleTimerExecutorHardware();
 	if (hasFirmwareError()) {
 		return;
@@ -303,7 +298,6 @@ void initHardware() {
 
 #if HAL_USE_ADC
 	initAdcInputs();
-	// wait for first set of ADC values so that we do not produce invalid sensor data
 	waitForSlowAdc(1);
 #endif /* HAL_USE_ADC */
 
@@ -327,7 +321,6 @@ void initHardware() {
 				getInputMode(CONFIG(startStopButtonMode)));
 	}
 
-	// output pins potentially depend on 'initSmartGpio'
 	initOutputPins(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 #if EFI_MC33816
@@ -377,5 +370,4 @@ int getSpiPrescaler(spi_speed_e speed, spi_device_e device) {
 		return 0;
 	}
 }
-
 #endif /* HAL_USE_SPI */

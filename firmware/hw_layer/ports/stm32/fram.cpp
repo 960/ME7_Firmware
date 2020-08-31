@@ -35,10 +35,8 @@ extern persistent_config_s *config;
 #define FRAM_CMD_WRITE 0x02
 
 #define TS_SIZE TS_CONFIG_SIZE + 12
-static uint8_t txbuf[TS_SIZE]NO_CACHE;
 
-uint16_t tx[2] NO_CACHE;
-uint16_t cmd[1] NO_CACHE;
+uint8_t tx[4] NO_CACHE;
 uint8_t rbuf[32] NO_CACHE;
 
 static SPIDriver *spid;
@@ -64,7 +62,6 @@ public:
 	}
 
 	bool read(uint32_t offset, size_t size, uint8_t *buf) {
-
 		for (uint8_t r = 0; r < FRAM_RETRIES; r++) {
 			if (r != 0) {
 				chThdSleepMilliseconds(FRAM_DELAY_MS);
@@ -95,7 +92,6 @@ public:
 	}
 
 	bool write(uint32_t offset, size_t size, const uint8_t *buf) {
-
 		for (uint8_t r = 0; r < FRAM_RETRIES; r++) {
 			if (r != 0) {
 				chThdSleepMilliseconds(FRAM_DELAY_MS);
@@ -133,7 +129,6 @@ public:
 static EeSpi spi;
 
 int writeEeprom(uint32_t offset, size_t size, const uint8_t *buffer) {
-
 	int ret = spi.write(offset, size, buffer);
 	bool result = (ret == true);
 	if (result == false) {
@@ -143,7 +138,6 @@ int writeEeprom(uint32_t offset, size_t size, const uint8_t *buffer) {
 }
 
 int readEeprom(uint32_t offset, size_t size, uint8_t *buffer) {
-
 	int result = spi.read(offset, size, buffer);
 	if (result == false) {
 		return FLASH_RETURN_BAD_FLASH;

@@ -93,6 +93,10 @@
 //(8 * 32768)
 
 
+#define SPI_CJ125_SPI &SPID2
+#define SPI_CJ125_CS_GPIO GPIOE
+#define SPI_CJ125_CS_PIN 13
+#define SPI_CJ125_SPEED SPI_BAUDRATEPRESCALER_128
 /*
  * Board voltages.
  * Required for performance limits calculation.

@@ -1,4 +1,4 @@
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 30 19:19:41 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Aug 31 12:07:24 CEST 2020
 // by class com.rusefi.output.CHeaderConsumer
 // begin
 #ifndef CONTROLLERS_GENERATED_ENGINE_CONFIGURATION_GENERATED_STRUCTURES_H
@@ -2394,7 +2394,15 @@ struct engine_configuration_s {
 	/**
 	 * offset 1856
 	 */
-	int mainUnusedEnd[436];
+	uint32_t storedLambda;
+	/**
+	 * offset 1860
+	 */
+	uint32_t storedHeater;
+	/**
+	 * offset 1864
+	 */
+	int mainUnusedEnd[434];
 	/** total size 3600*/
 };
 
@@ -2699,4 +2707,4 @@ typedef struct persistent_config_s persistent_config_s;
 
 #endif
 // end
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Sun Aug 30 19:19:41 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Aug 31 12:07:24 CEST 2020

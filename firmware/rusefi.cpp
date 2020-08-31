@@ -119,7 +119,6 @@
 #include "status_loop.h"
 #include "pin_repository.h"
 #include "flash_main.h"
-
 #include "engine_math.h"
 #include "mpu_util.h"
 
@@ -128,65 +127,33 @@
 #include "engine_emulator.h"
 #endif /* EFI_ENGINE_EMULATOR */
 
-
-
 bool main_loop_started = false;
 
 static char panicMessage[200];
 
-
-
 EXTERN_ENGINE;
 
-// todo: move this into a hw-specific file
 void rebootNow(void) {
 	NVIC_SystemReset();
 }
-
-/**
- * Some configuration changes require full firmware reset.
- * Once day we will write graceful shutdown, but that would be one day.
- */
 
 void runRusEfi(void) {
 	efiAssertVoid(CUSTOM_RM_STACK_1, getCurrentRemainingStack() > 512, "init s");
 	assertEngineReference();
 	engine->setConfig(config);
-
-
-	/**
-	 * we need to initialize table objects before default configuration can set values
-	 */
 	initDataStructures(PASS_ENGINE_PARAMETER_SIGNATURE);
-
-	/**
-	 * First data structure keeps track of which hardware I/O pins are used by whom
-	 */
 	initPinRepository();
 
 #if EFI_INTERNAL_FLASH
-	/**
-	 * First thing is reading configuration from flash memory.
-	 * In order to have complete flexibility configuration has to go before anything else.
-	 */
+	chThdSleepMilliseconds(10);
 	readConfiguration();
 #endif /* EFI_INTERNAL_FLASH */
 
 #ifndef EFI_ACTIVE_CONFIGURATION_IN_FLASH
-	// TODO: need to fix this place!!! should be a version of PASS_ENGINE_PARAMETER_SIGNATURE somehow
 	prepareVoidConfiguration(&activeConfiguration);
 #endif /* EFI_ACTIVE_CONFIGURATION_IN_FLASH */
 
-	/**
-	 * Initialize hardware drivers
-	 */
 	initHardware();
-
-
-	/**
-	 * Now let's initialize actual engine control logic
-	 * todo: should we initialize some? most? controllers before hardware?
-	 */
 	initEngineContoller(PASS_ENGINE_PARAMETER_SIGNATURE);
 	rememberCurrentConfiguration();
 	startStatusThreads();
@@ -198,17 +165,10 @@ void runRusEfi(void) {
 	initEngineEmulator(PASS_ENGINE_PARAMETER_SIGNATURE);
 #endif
 
-
-
-
 	main_loop_started = true;
-	/**
-	 * This loop is the closes we have to 'main loop' - but here we only publish the status. The main logic of engine
-	 * control is around main_trigger_callback
-	 */
+
 	while (true) {
 		efiAssertVoid(CUSTOM_RM_STACK, getCurrentRemainingStack() > 128, "stack#1");
-
 
 		chThdSleepMilliseconds(200);
 	}

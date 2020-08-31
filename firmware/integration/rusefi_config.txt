@@ -1039,8 +1039,13 @@ float idle_derivativeFilterLoss;+0.1 is a good default value;    "x",    1,     
 
 float stoichRatioPrimary;;"",        1,     0,  0,    20,  1
 
-float knockBandCustom;;"",        1,     0,  0,    30000,  
-	int[436] mainUnusedEnd;
+float knockBandCustom;;"",        1,     0,  0,    30,  1
+
+uint32_t storedLambda;
+uint32_t storedHeater;
+
+
+	int[434] mainUnusedEnd;
 
 ! end of engine_configuration_s
 end_struct

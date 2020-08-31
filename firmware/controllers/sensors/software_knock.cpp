@@ -13,6 +13,7 @@ EXTERN_ENGINE;
 #include "knock_config.h"
 
 adcsample_t sampleBuffer[2000];
+int8_t currentCylinderIndex = 0;
 Biquad knockFilter;
 
 static volatile bool knockIsSampling = false;
@@ -22,7 +23,7 @@ static volatile size_t sampleCount = 0;
 binary_semaphore_t knockSem;
 
 static void completionCallback(ADCDriver* adcp, adcsample_t*, size_t) {
-	palClearPad(GPIOF, 4);
+	palClearPad(GPIOD, 2);
 
 	if (adcp->state == ADC_COMPLETE) {
 		knockNeedsProcess = true;
@@ -56,6 +57,8 @@ void startKnockSampling(uint8_t cylinderIndex) {
 		return;
 	}
 
+	if (engine->rpmCalculator.getRpm() < 500) return;
+
 	// Cancel if ADC isn't ready
 	if (!((KNOCK_ADC.state == ADC_READY) ||
 			(KNOCK_ADC.state == ADC_COMPLETE) ||
@@ -73,6 +76,7 @@ void startKnockSampling(uint8_t cylinderIndex) {
 	constexpr int sampleRate = KNOCK_SAMPLE_RATE;
 	sampleCount = 0xFFFFFFFE & static_cast<size_t>(clampF(100, samplingSeconds * sampleRate, efi::size(sampleBuffer)));
 
+	currentCylinderIndex = cylinderIndex;
 	adcStartConversionI(&KNOCK_ADC, &adcConvGroup, sampleBuffer, sampleCount);
 }
 
@@ -129,6 +133,7 @@ void processLastKnockEvent() {
 	// RMS
 	float db = 10 * log10(meanSquares);
 
+	tsOutputChannels.knockLevels[currentCylinderIndex] = roundf(clampF(-100, db, 100));
 	tsOutputChannels.knockLevel = db;
 
 	knockNeedsProcess = false;

@@ -14,7 +14,7 @@
 void turnVvtControlOn(void);
 void startVvtPin(void);
 void stopVvtPin(void);
-void initBoostCtrl();
+
 void setVvtPFactor(float value);
 void setVvtIFactor(float value);
 void setVvtDFactor(float value);

@@ -95,7 +95,7 @@ static void prepareCylinderIgnitionSchedule(angle_t dwellAngleDuration, floatms_
 	event->outputs[0] = output;
 	event->outputs[1] = secondOutput;
 	event->sparkAngle = sparkAngle;
-
+	event->cylinderNumber = coilIndex;
 	angle_t dwellStartAngle = sparkAngle - dwellAngleDuration;
 	efiAssertVoid(CUSTOM_ERR_6590, !cisnan(dwellStartAngle), "findAngle#5");
 	assertAngleRange(dwellStartAngle, "findAngle#a6", CUSTOM_ERR_6550);
@@ -168,18 +168,14 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 	}
 
 #if EFI_SOFTWARE_KNOCK
-	startKnockSampling(event->cylinderIndex);
+	startKnockSampling(event->cylinderNumber);
 #endif
 }
 
 static void startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutputPin *output) {
-#if EFI_UNIT_TEST
-	Engine *engine = event->engine;
-	EXPAND_Engine;
-#endif /* EFI_UNIT_TEST */
 
-	// todo: no reason for this to be disabled in unit_test mode?!
-#if ! EFI_UNIT_TEST
+
+
 
 	if (GET_RPM_VALUE > 2 * engineConfiguration->cranking.rpm) {
 		const char *outputName = output->getName();
@@ -188,7 +184,7 @@ static void startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutput
 		}
 		prevSparkName = outputName;
 	}
-#endif /* EFI_UNIT_TEST */
+
 
 
 

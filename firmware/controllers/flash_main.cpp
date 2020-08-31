@@ -51,7 +51,12 @@ void writeToFlashIfPending() {
 	needToWriteConfiguration = false;
 	writeToFlashNow();
 }
+template <typename EEtorage>
+int writeToFram(uint32_t storageAddress, const EEtorage& data)
+{
+	return writeEeprom(storageAddress, reinterpret_cast<const uint8_t*>(&data), sizeof(data));
 
+}
 // Erase and write a copy of the configuration at the specified address
 template <typename TStorage>
 int eraseAndFlashCopy(flashaddr_t storageAddress, const TStorage& data)
@@ -66,12 +71,10 @@ void writeToFlashNow(void) {
 	persistentState.size = sizeof(persistentState);
 	persistentState.version = FLASH_DATA_VERSION;
 	persistentState.value = flashStateCrc(&persistentState);
+
 #if EFI_SPI_FRAM
-	// Flash two copies
-	int result1 = writeFullEeprom(0x30000, sizeof(persistentState), (char *) &persistentState);
-	chThdSleepMilliseconds(10);
-	int result2 = true; //writeFullEeprom(0x60000, sizeof(persistentState), (char *) &persistentState);
-	//chThdSleepMilliseconds(10);
+	int result1 = writeEeprom(getFramAddrFirstCopy(), sizeof(persistentState), (uint8_t *) &persistentState);
+	int result2 = writeEeprom(getFramAddrSecondCopy(), sizeof(persistentState), (uint8_t *) &persistentState);
 #else
 	int result1 = eraseAndFlashCopy(getFlashAddrFirstCopy(), persistentState);
 	int result2 = eraseAndFlashCopy(getFlashAddrSecondCopy(), persistentState);
@@ -98,9 +101,8 @@ static void doResetConfiguration(void) {
 
 persisted_configuration_state_e flashState;
 
-static persisted_configuration_state_e doReadEEConfiguration(flashaddr_t address) {
-	readFullEeprom(address, (char *) &persistentState, sizeof(persistentState));
-
+static persisted_configuration_state_e doReadEEConfiguration(uint32_t address) {
+	readEeprom(address, sizeof(persistentState),(uint8_t *) &persistentState);
 	if (!isValidCrc(&persistentState)) {
 		return CRC_FAILED;
 	} else if (persistentState.version != FLASH_DATA_VERSION || persistentState.size != sizeof(persistentState)) {
@@ -129,13 +131,13 @@ static persisted_configuration_state_e doReadConfiguration(flashaddr_t address) 
 persisted_configuration_state_e readConfiguration() {
 	efiAssert(CUSTOM_ERR_ASSERT, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "read f", PC_ERROR);
 #if EFI_SPI_FRAM
-	persisted_configuration_state_e result = doReadEEConfiguration(0x30000);
+	persisted_configuration_state_e result = doReadEEConfiguration(getFramAddrFirstCopy());
 #else
 	persisted_configuration_state_e result = doReadConfiguration(getFlashAddrFirstCopy());
 #endif
 	if (result != PC_OK) {
 #if EFI_SPI_FRAM
-	//result = doReadEEConfiguration(0x60000);
+	result = doReadEEConfiguration(getFramAddrSecondCopy());
 #else
 		result = doReadConfiguration(getFlashAddrSecondCopy());
 #endif

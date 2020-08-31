@@ -8,8 +8,6 @@
 
 #include "global.h"
 
-
-#if EFI_PROD_CODE
 #include "os_access.h"
 #include "trigger_input.h"
 #include "fram.h"
@@ -20,26 +18,17 @@
 #include "os_util.h"
 #include "bench_test.h"
 #include "vehicle_speed.h"
-
 #include "pin_repository.h"
-
 #include "smart_gpio.h"
-
-
-
-
 #include "serial_hw.h"
 #include "board.h"
 #include "mpu_util.h"
-//#include "usb_msd.h"
-
 #include "AdcConfiguration.h"
 #include "idle_thread.h"
 #include "histogram.h"
 #include "cj125.h"
 #include "trigger_central.h"
 #include "engine_configuration.h"
-
 #include "perf_trace.h"
 #include "boost_control.h"
 #include "vvt_control.h"
@@ -84,12 +73,10 @@ void unlockSpi(spi_device_e device) {
 
 static void initSpiModules(engine_configuration_s *engineConfiguration) {
 	UNUSED(engineConfiguration);
-
-
 	setPinConfigurationOverrides(PASS_ENGINE_PARAMETER_SUFFIX);
 
 	if (engine->is_enabled_spi_1) {
-		 turnOnSpi(SPI_DEVICE_1);
+		turnOnSpi(SPI_DEVICE_1);
 	}
 	if (engine->is_enabled_spi_2) {
 		turnOnSpi(SPI_DEVICE_2);
@@ -101,11 +88,10 @@ static void initSpiModules(engine_configuration_s *engineConfiguration) {
 		turnOnSpi(SPI_DEVICE_4);
 	}
 }
-
 /**
  * @return NULL if SPI device not specified
  */
-SPIDriver * getSpiDevice(spi_device_e spiDevice) {
+SPIDriver* getSpiDevice(spi_device_e spiDevice) {
 	if (spiDevice == SPI_NONE) {
 		return NULL;
 	}
@@ -134,12 +120,6 @@ SPIDriver * getSpiDevice(spi_device_e spiDevice) {
 }
 #endif
 
-
-
-
-
-#if EFI_PROD_CODE
-
 #define TPS_IS_SLOW -1
 
 static int fastMapSampleIndex;
@@ -157,7 +137,6 @@ void adc_callback_fast(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 	(void) n;
 
 	ScopePerf perf(PE::AdcCallbackFast);
-
 	/**
 	 * Note, only in the ADC_COMPLETE state because the ADC driver fires an
 	 * intermediate callback when the buffer is half full.
@@ -170,9 +149,8 @@ void adc_callback_fast(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 		/**
 		 * this callback is executed 10 000 times a second, it needs to be as fast as possible
 		 */
-		efiAssertVoid(CUSTOM_ERR_6676, getCurrentRemainingStack() > 128, "lowstck#9b");
-
-
+		efiAssertVoid(CUSTOM_ERR_6676, getCurrentRemainingStack() > 128,
+				"lowstck#9b");
 
 //		if (tpsSampleIndex != TPS_IS_SLOW) {
 //			tpsFastAdc = fastAdc.samples[tpsSampleIndex];
@@ -183,14 +161,15 @@ void adc_callback_fast(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 
 static void calcFastAdcIndexes(void) {
 #if HAL_USE_ADC
-	fastMapSampleIndex = fastAdc.internalAdcIndexByHardwareIndex[engineConfiguration->map.sensor.hwChannel];
+	fastMapSampleIndex =
+			fastAdc.internalAdcIndexByHardwareIndex[engineConfiguration->map.sensor.hwChannel];
 
 	if (engineConfiguration->tps1_1AdcChannel != EFI_ADC_NONE) {
-		tpsSampleIndex = fastAdc.internalAdcIndexByHardwareIndex[engineConfiguration->tps1_1AdcChannel];
+		tpsSampleIndex =
+				fastAdc.internalAdcIndexByHardwareIndex[engineConfiguration->tps1_1AdcChannel];
 	} else {
 		tpsSampleIndex = TPS_IS_SLOW;
 	}
-
 #endif/* HAL_USE_ADC */
 }
 
@@ -201,9 +180,7 @@ static void adcConfigListener(Engine *engine) {
 }
 
 void turnOnHardware() {
-
 	turnOnTriggerInputPins();
-
 }
 
 void stopSpi(spi_device_e device) {
@@ -217,20 +194,15 @@ void stopSpi(spi_device_e device) {
 	brain_pin_markUnused(getMosiPin(device));
 #endif /* HAL_USE_SPI */
 }
-
 /**
  * this method is NOT currently invoked on ECU start
  * todo: maybe start invoking this method on ECU start so that peripheral start-up initialization and restart are unified?
  */
 void applyNewHardwareSettings(void) {
-    // all 'stop' methods need to go before we begin starting pins
-
-
+	// all 'stop' methods need to go before we begin starting pins
 	stopTriggerInputPins();
-
-	
 	enginePins.stopInjectionPins();
-    enginePins.stopIgnitionPins();
+	enginePins.stopIgnitionPins();
 #if EFI_CAN_SUPPORT
 	stopCanPins();
 #endif /* EFI_CAN_SUPPORT */
@@ -238,7 +210,6 @@ void applyNewHardwareSettings(void) {
 #if EFI_AUX_SERIAL
 	stopAuxSerialPins();
 #endif /* EFI_AUX_SERIAL */
-
 
 #if EFI_IDLE_CONTROL
 	bool isIdleRestartNeeded = isIdleHardwareRestartNeeded();
@@ -250,24 +221,6 @@ void applyNewHardwareSettings(void) {
 #if EFI_VEHICLE_SPEED
 	stopVSSPins();
 #endif /* EFI_VEHICLE_SPEED */
-
-
-//	if (isConfigurationChanged(is_enabled_spi_1)) {
-//		stopSpi(SPI_DEVICE_1);
-//	}
-
-//	if (isConfigurationChanged(is_enabled_spi_2)) {
-//		stopSpi(SPI_DEVICE_2);
-//	}
-
-//	if (isConfigurationChanged(is_enabled_spi_3)) {
-//		stopSpi(SPI_DEVICE_3);
-//	}
-
-//	if (isConfigurationChanged(is_enabled_spi_4)) {
-//		stopSpi(SPI_DEVICE_4);
-//	}
-
 
 #if EFI_BOOST_CONTROL
 	stopBoostPin();
@@ -286,24 +239,17 @@ void applyNewHardwareSettings(void) {
 	}
 
 	enginePins.unregisterPins();
-
-
 	startTriggerInputPins();
-
 	engine->setHardCodedPins(PASS_ENGINE_PARAMETER_SIGNATURE);
-
 	enginePins.startInjectionPins();
 	enginePins.startIgnitionPins();
 #if EFI_CAN_SUPPORT
 	startCanPins();
 #endif /* EFI_CAN_SUPPORT */
 
-
-
-
 #if EFI_IDLE_CONTROL
 	if (isIdleRestartNeeded) {
-		 initIdleHardware();
+		initIdleHardware();
 	}
 #endif
 
@@ -318,27 +264,21 @@ void applyNewHardwareSettings(void) {
 #if EFI_VVT_CONTROL
 	startVvtPin();
 #endif
-#if EFI_CJ125
-	cjStartCalibration();
-#endif
+
 	adcConfigListener(engine);
 }
 
 void setBor(int borValue) {
-
-	BOR_Set((BOR_Level_t)borValue);
-
+	BOR_Set((BOR_Level_t) borValue);
 }
 
-
 void initHardware() {
-	efiAssertVoid(CUSTOM_IH_STACK, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "init h");
-
+	efiAssertVoid(CUSTOM_IH_STACK,
+			getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "init h");
 	engine_configuration_s *engineConfiguration = engine->engineConfigurationPtr;
-	efiAssertVoid(CUSTOM_EC_NULL, engineConfiguration!=NULL, "engineConfiguration");
-	
+	efiAssertVoid(CUSTOM_EC_NULL, engineConfiguration != NULL,
+			"engineConfiguration");
 	chMtxObjectInit(&spiMtx);
-
 	initPrimaryPins();
 
 	if (hasFirmwareError()) {
@@ -352,7 +292,9 @@ void initHardware() {
 	 *
 	 * interesting fact that we have another read from flash before we get here
 	 */
+	chThdSleepMilliseconds(2);
 	readFromFlash();
+	chThdSleepMilliseconds(2);
 	// it's important to initialize this pretty early in the game before any scheduling usages
 	initSingleTimerExecutorHardware();
 	if (hasFirmwareError()) {
@@ -399,29 +341,9 @@ void initHardware() {
 	initTriggerCentral();
 	turnOnHardware();
 
-
-
-#if ADC_SNIFFER
-	initAdcDriver();
-#endif
-
-
 #if EFI_AUX_SERIAL
 	initAuxSerial();
 #endif /* EFI_AUX_SERIAL */
-
-//	USBMassStorageDriver UMSD1;
-
-//	while (true) {
-//		for (int addr = 0x20; addr < 0x28; addr++) {
-//			sendI2Cbyte(addr, 0);
-//			int err = i2cGetErrors(&I2CD1);
-//			print("I2C: err=%x from %d\r\n", err, addr);
-//			chThdSleepMilliseconds(5);
-//			sendI2Cbyte(addr, 255);
-//			chThdSleepMilliseconds(5);
-//		}
-//	}
 
 #if EFI_VEHICLE_SPEED
 	initVehicleSpeed();
@@ -433,20 +355,19 @@ void initHardware() {
 	calcFastAdcIndexes();
 }
 
-#endif /* EFI_PROD_CODE */
-
-#endif  /* EFI_PROD_CODE || EFI_SIMULATOR */
-
 #if HAL_USE_SPI
 // this is F4 implementation but we will keep it here for now for simplicity
 int getSpiPrescaler(spi_speed_e speed, spi_device_e device) {
 	switch (speed) {
 	case _5MHz:
-		return device == SPI_DEVICE_1 ? SPI_BaudRatePrescaler_16 : SPI_BaudRatePrescaler_8;
+		return device == SPI_DEVICE_1 ?
+				SPI_BaudRatePrescaler_16 : SPI_BaudRatePrescaler_8;
 	case _2_5MHz:
-		return device == SPI_DEVICE_1 ? SPI_BaudRatePrescaler_32 : SPI_BaudRatePrescaler_16;
+		return device == SPI_DEVICE_1 ?
+				SPI_BaudRatePrescaler_32 : SPI_BaudRatePrescaler_16;
 	case _1_25MHz:
-		return device == SPI_DEVICE_1 ? SPI_BaudRatePrescaler_64 : SPI_BaudRatePrescaler_32;
+		return device == SPI_DEVICE_1 ?
+				SPI_BaudRatePrescaler_64 : SPI_BaudRatePrescaler_32;
 
 	case _150KHz:
 		// SPI1 does not support 150KHz, it would be 300KHz for SPI1

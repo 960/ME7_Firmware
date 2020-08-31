@@ -65,7 +65,8 @@ typedef uint8_t flashsector_t;
  * @return @p sector size in bytes.
  */
 size_t flashSectorSize(flashsector_t sector);
-
+uintptr_t getFramAddrFirstCopy(void);
+uintptr_t getFramAddrSecondCopy(void);
 uintptr_t getFlashAddrFirstCopy(void);
 uintptr_t getFlashAddrSecondCopy(void);
 

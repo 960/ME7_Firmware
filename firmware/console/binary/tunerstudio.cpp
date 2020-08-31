@@ -133,23 +133,18 @@ static constexpr size_t getTunerStudioPageSize() {
 	return TOTAL_CONFIG_SIZE;
 }
 
-static void sendOkResponse(ts_channel_s *tsChannel, ts_response_format_e mode) {
+void sendOkResponse(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	sr5SendResponse(tsChannel, mode, NULL, 0);
 }
 
-static void sendErrorCode(ts_channel_s *tsChannel) {
-	sr5WriteCrcPacket(tsChannel, TS_RESPONSE_CRC_FAILURE, NULL, 0);
+static void sendErrorCode(ts_channel_s *tsChannel, uint8_t code) {
+	sr5WriteCrcPacket(tsChannel, code, NULL, 0);
 }
 
 static void handlePageSelectCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t pageId) {
 	tsState.pageCommandCounter++;
 
-
-	if (pageId == 0) {
-		sendOkResponse(tsChannel, mode);
-	} else {
-		sendErrorCode(tsChannel);
-	}
+	sendOkResponse(tsChannel, mode);
 }
 
 static void onlineApplyWorkingCopyBytes(uint32_t offset, int count) {
@@ -204,9 +199,12 @@ static void handleGetStructContent(ts_channel_s *tsChannel, int structId, int si
 
 static bool validateOffsetCount(size_t offset, size_t count, ts_channel_s *tsChannel) {
 	if (offset + count > getTunerStudioPageSize()) {
-		sendErrorCode(tsChannel);
+
+
+		sendErrorCode(tsChannel, TS_RESPONSE_OUT_OF_RANGE);
 		return true;
 	}
+
 	return false;
 }
 
@@ -221,6 +219,7 @@ static void handleWriteChunkCommand(ts_channel_s *tsChannel, ts_response_format_
 	uint8_t * addr = (uint8_t *) (getWorkingPageAddr() + offset);
 	memcpy(addr, content, count);
 	onlineApplyWorkingCopyBytes(offset, count);
+
 	sendOkResponse(tsChannel, mode);
 }
 
@@ -249,7 +248,9 @@ static void handleWriteValueCommand(ts_channel_s *tsChannel, ts_response_format_
 		previousWriteReportMs = nowMs;
 
 	}
+
 	getWorkingPageAddr()[offset] = value;
+
 	onlineApplyWorkingCopyBytes(offset, 1);
 
 }
@@ -283,8 +284,8 @@ static void sendResponseCode(ts_response_format_e mode, ts_channel_s *tsChannel,
 	}
 }
 
-static void handleBurnCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t page) {
-	UNUSED(page);
+
+static void handleBurnCommand(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	tsState.burnCommandCounter++;
 #if !defined(EFI_NO_CONFIG_WORKING_COPY)
 	memcpy(&persistentState.persistentConfiguration, &configWorkingCopy, sizeof(persistent_config_s));
@@ -348,7 +349,8 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 		uint16_t incomingPacketSize = firstByte << 8 | secondByte;
 
 		if (incomingPacketSize == 0 || incomingPacketSize > (sizeof(tsChannel->crcReadBuffer) - CRC_WRAPPING_SIZE)) {
-			sendErrorCode(tsChannel);
+	
+			sendErrorCode(tsChannel, TS_RESPONSE_UNDERRUN);
 			continue;
 		}
 
@@ -359,7 +361,8 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 
 		char command = tsChannel->crcReadBuffer[0];
 		if (!isKnownCommand(command)) {
-			sendErrorCode(tsChannel);
+		
+			sendErrorCode(tsChannel, TS_RESPONSE_UNRECOGNIZED_COMMAND);
 			continue;
 		}
 
@@ -367,15 +370,17 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 				incomingPacketSize + CRC_VALUE_SIZE - 1);
 		int expectedSize = incomingPacketSize + CRC_VALUE_SIZE - 1;
 		if (received != expectedSize) {
-			sendResponseCode(TS_CRC, tsChannel, TS_RESPONSE_UNDERRUN);
-			continue;
+						
+			sendErrorCode(tsChannel, TS_RESPONSE_UNDERRUN);
 		}
 
 		uint32_t expectedCrc = *(uint32_t*) (tsChannel->crcReadBuffer + incomingPacketSize);
+
 		expectedCrc = SWAP_UINT32(expectedCrc);
 
 		uint32_t actualCrc = crc32(tsChannel->crcReadBuffer, incomingPacketSize);
 		if (actualCrc != expectedCrc) {
+			sendErrorCode(tsChannel, TS_RESPONSE_CRC_FAILURE);
 			continue;
 		}
 
@@ -389,7 +394,9 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 static THD_FUNCTION(tsThreadEntryPoint, arg) {
 	(void) arg;
 	chRegSetThreadName("tunerstudio thread");
+
 	startTsPort(&tsChannel);
+
 	runBinaryProtocolLoop(&tsChannel);
 }
 
@@ -414,7 +421,8 @@ void handleQueryCommand(ts_channel_s *tsChannel, ts_response_format_e mode) {
 
 static void handleOutputChannelsCommand(ts_channel_s *tsChannel, ts_response_format_e mode, uint16_t offset, uint16_t count) {
 	if (offset + count > sizeof(TunerStudioOutputChannels)) {
-		sendErrorCode(tsChannel);
+		
+		sendErrorCode(tsChannel, TS_RESPONSE_OUT_OF_RANGE);
 		return;
 	}
 
@@ -500,7 +508,7 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 		handleCrc32Check(tsChannel, TS_CRC, data16[0]);
 		break;
 	case TS_BURN_COMMAND:
-		handleBurnCommand(tsChannel, TS_CRC, data16[0]);
+		handleBurnCommand(tsChannel, TS_CRC);
 		break;
 	case TS_READ_COMMAND:
 		handlePageReadCommand(tsChannel, TS_CRC, data16[0], data16[1], data16[2]);

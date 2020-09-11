@@ -32,8 +32,8 @@
 EXTERN_ENGINE;
 
 
-static boostOpenLoop_Map3D_t boostMapOpen("boostmapopen", 1);
-static boostOpenLoop_Map3D_t boostMapClosed("boostmapclosed", 1);
+static boostOpenLoop_Map3D_t boostMapOpen("boostmapopen");
+static boostOpenLoop_Map3D_t boostMapClosed("boostmapclosed");
 static SimplePwm boostPwmControl("boost");
 
 void BoostController::init(SimplePwm* pwm, const ValueProvider3D* openLoopMap, const ValueProvider3D* closedLoopTargetMap, pid_s* pidParams) {
@@ -82,7 +82,7 @@ expected<float> BoostController::getSetpoint() const {
 		return unexpected;
 	}
 
-	return m_closedLoopTargetMap->getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value / TPS_1_BYTE_PACKING_MULT) * LOAD_1_BYTE_PACKING_MULT;
+	return m_closedLoopTargetMap->getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value / TPS_1_BYTE_PACKING_MULT);
 }
 
 expected<percent_t> BoostController::getOpenLoop(float target) const {
@@ -100,7 +100,7 @@ expected<percent_t> BoostController::getOpenLoop(float target) const {
 		return unexpected;
 	}
 
-	percent_t openLoop = m_openLoopMap->getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value / TPS_1_BYTE_PACKING_MULT) * LOAD_1_BYTE_PACKING_MULT;
+	percent_t openLoop = m_openLoopMap->getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value / TPS_1_BYTE_PACKING_MULT);
 
 #if EFI_TUNER_STUDIO
 	if (engineConfiguration->debugMode == DBG_BOOST) {
@@ -141,11 +141,10 @@ expected<percent_t> BoostController::getClosedLoop(float target, float manifoldP
 	return closedLoop;
 }
 
-
 void BoostController::setOutput(expected<float> output) {
 	// TODO: hook up safe duty cycle
 	float duty = PERCENT_TO_DUTY(output.value_or(/*CONFIG(boostControlSafeDutyCycle)*/ 0));
-
+	
 #if EFI_LAUNCH_CONTROL
 if (CONFIG(enableLaunchBoost)) {
 if (engine->isLaunchCondition) {

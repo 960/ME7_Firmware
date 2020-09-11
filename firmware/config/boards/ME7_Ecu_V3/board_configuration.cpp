@@ -134,50 +134,49 @@ void setDefaultMaps(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 	memcpy(engineConfiguration->sparkDwellValues, dwellValues, sizeof(dwellValues));
 		memcpy(config->frpm_table, frpm_table, sizeof(frpm_table));
 	memcpy(config->fmap_table, fmap_table, sizeof(fmap_table));
-	copyFuelTable(veTable, config->veTable);
 	memcpy(config->srpm_table, srpm_table, sizeof(srpm_table));
 	memcpy(config->smap_table, smap_table, sizeof(smap_table));
-	copyTimingTable(ignitionTimingTable, config->advanceTable);
 	memcpy(config->crankingCycleBins, crankingCycleBins, sizeof(crankingCycleBins));
 	memcpy(config->crankingCycleCoef, crankingCycleValues, sizeof(crankingCycleValues));
 	memcpy(config->afterstartEnrich, afterstartEnrich, sizeof(afterstartEnrich));
 
 
 
-	//memcpy(config->gpPwm1LoadBins, gpPwmCoolantFanLoad, sizeof(gpPwmCoolantFanLoad));
-	// todo: there should be a better way?
-//	setLinearCurve(config->gpPwm1RpmBins, 0, 8000 / RPM_1_BYTE_PACKING_MULT, 1);
-//	setLinearCurve(config->gpPwm1LoadBins, 0, 130, 1);
-
-//	for (int loadIndex = 0; loadIndex < GP_PWM_LOAD_COUNT; loadIndex++) {
-//		for (int rpmIndex = 0; rpmIndex < GP_PWM_RPM_COUNT; rpmIndex++) {
-//			config->gpPwmTable1[loadIndex][rpmIndex] = gpPwmCoolantFan[loadIndex][rpmIndex];
-//		}
-//	}
 }
 
 void setPinConfigurationOverrides(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	engine->is_enabled_spi_3 = true;
-	engine->is_enabled_spi_2 = true;
-	engine->pinSpi3Mosi = GPIOB_5;
-	engine->pinSpi3Miso = GPIOB_4;
-	engine->pinSpi3Sck = GPIOB_3;
 
+	engine->is_enabled_spi_2 = true;
 	engine->pinSpi2Mosi = GPIOB_15;
 	engine->pinSpi2Miso = GPIOB_14;
 	engine->pinSpi2Sck = GPIOB_13;
-
-
 	engine->cj125SpiDevice = SPI_DEVICE_2;
 	engine->cj125CsPin = GPIOE_13;
 
 	engine->cj125ur = EFI_ADC_1;
 	engine->cj125ua = EFI_ADC_2;
+	engine->vbattAdcChannel = EFI_ADC_0;
 
 	engine->cj125isUaDivided = true;
 	engine->cj125isUrDivided = true;
 
 	engine->wboHeaterPin = GPIOE_11;
+
+	engine->etbIo[0].directionPin1 = GPIOC_9;
+	engine->etbIo[0].directionPin2 = GPIO_UNASSIGNED;
+	engine->etbIo[0].controlPin1 = GPIOA_8;
+	engine->etbIo[0].disablePin = GPIOG_9;
+
+	engine->etbIo[1].directionPin1 = GPIOC_8;
+	engine->etbIo[1].directionPin2 = GPIO_UNASSIGNED;
+	engine->etbIo[1].controlPin1 = GPIOD_7;
+	engine->etbIo[1].disablePin = GPIOD_6;
+
+	engine->etb_use_two_wires = false;
+
+	engine->pinInjectorMode = OM_DEFAULT;
+
+
 }
 
 void setSerialConfigurationOverrides(void) {
@@ -190,7 +189,7 @@ static void setLedPins() {
 
 
 static void setInjectorPins() {
-	engineConfiguration->pinInjectorMode = OM_DEFAULT;
+
 	engineConfiguration->pinInjector[0] = GPIOE_2; // #1
 	engineConfiguration->pinInjector[1] = GPIOB_9; // #2
 	engineConfiguration->pinInjector[2] = GPIOE_1; // #3
@@ -224,29 +223,37 @@ static void setpinCoil() {
 }
 
 static void setupEtb() {
-	engineConfiguration->etb_use_two_wires = false;
-	engineConfiguration->etb.pFactor = 12;
-	engineConfiguration->etb.iFactor = 15;
-	engineConfiguration->etb.dFactor = 0;
-	engineConfiguration->etb.offset = 0;
+
+	engineConfiguration->tpsMin = 118;
+	engineConfiguration->tpsMax = 995;
 	engineConfiguration->etbFreq = 500;
+	engineConfiguration->etb.iFactor = 0.13;
+	engineConfiguration->etb.iFactor = 250;
+	engineConfiguration->etb.pFactor = 14;
+	engineConfiguration->etb.minValue = -100;
+	engineConfiguration->etb.maxValue = -100;
+	engineConfiguration->etb_iTermMin = -30;
+	engineConfiguration->etb_iTermMax = 30;
+	engineConfiguration->etb.offset = 0;
 	engineConfiguration->useETBforIdleControl = true;
 
 }
 static void setDefaultOutputs() {
-	engineConfiguration->etbIo[0].directionPin1 = GPIOC_9;
-	engineConfiguration->etbIo[0].controlPin1 = GPIOA_8;
-	engineConfiguration->etbIo[0].disablePin = GPIOG_9;
+
 	engineConfiguration->pinMainRelay = GPIOD_13;
 	engineConfiguration->idle.solenoidPin = GPIO_UNASSIGNED;
 	engineConfiguration->pinFan = GPIO_UNASSIGNED;
 	engineConfiguration->pinTrigger[1] = GPIO_UNASSIGNED;
 	engineConfiguration->pinTrigger[0] = GPIOD_15;
+	engineConfiguration->syncRatioFrom = 0.8;
+	engineConfiguration->syncRatioTo = 1.4;
+	config->vvtToothMinAngle = 0;
+	config->vvtToothMaxAngle = 90;
 
 }
 
 static void setupDefaultSensorInputs() {
-	engineConfiguration->vbattAdcChannel = EFI_ADC_0;
+
 
 	engineConfiguration->throttlePedalPositionAdcChannel = EFI_ADC_5;
 	engineConfiguration->mafAdcChannel = EFI_ADC_7;
@@ -322,8 +329,6 @@ static void setEngineDefaults() {
 
 
 		// Map Sensor
-
-
 	engineConfiguration->map.sensor.lowValue = 0;
 	engineConfiguration->map.sensor.highValue = 420;
 	engineConfiguration->mapLowValueVoltage = 0;
@@ -424,13 +429,8 @@ void setengineConfigurationOverrides(void) {
 
 	// NOT USED JUNK
 
-	engineConfiguration->etbIo[1].directionPin1 = GPIO_UNASSIGNED;
-	engineConfiguration->etbIo[1].directionPin2 = GPIO_UNASSIGNED;
-
 
 	engineConfiguration->externalKnockSenseAdc = EFI_ADC_NONE;
-
-
 	engineConfiguration->useStepperIdle = false;
 	engineConfiguration->idle.pinStepperDirection = GPIO_UNASSIGNED;
 	engineConfiguration->idle.stepperStepPin = GPIO_UNASSIGNED;

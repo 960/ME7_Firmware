@@ -8,11 +8,15 @@
 #define acCutoffHighRpm_offset_hex 280
 #define acCutoffLowRpm_offset 638
 #define acCutoffLowRpm_offset_hex 27e
+#define acIdleExtraMin_offset 1091
+#define acIdleExtraMin_offset_hex 443
+#define acIdleExtraOffset_offset 1090
+#define acIdleExtraOffset_offset_hex 442
 #define acIdleRpmBump_offset 642
 #define acIdleRpmBump_offset_hex 282
 #define acSwitchAdc_offset 186
 #define acSwitchAdc_offset_hex ba
-#define adc_channel_e_enum "PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PB0", "PB1", "PC0", "PC1", "PC2", "PC3", "PC4", "PC5", "Disabled", "PB12", "PB13", "PC14", "PC15", "PC16", "PC17", "PD3", "PD4", "PE2", "PE6", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"
+#define adc_channel_e_enum "Disabled", "PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PB0", "PB1", "PC0", "PC1", "PC2", "PC3", "PC4", "PC5"
 #define ADC_CHANNEL_NONE 16
 #define adcVcc_offset 572
 #define adcVcc_offset_hex 23c
@@ -305,14 +309,12 @@
 #define clutchDownPin_offset_hex 10f
 #define clutchDownPinMode_offset 277
 #define clutchDownPinMode_offset_hex 115
-#define clutchUpPin_offset 266
-#define clutchUpPin_offset_hex 10a
-#define clutchUpPinMode_offset 278
-#define clutchUpPinMode_offset_hex 116
 #define COMPOSITE_DATA_LENGTH 2500
 #define COMPOSITE_PACKET_COUNT 500
 #define COMPOSITE_PACKET_SIZE 5
 #define CONSOLE_DATA_PROTOCOL_TAG " @"
+#define consumeObdSensors_offset 240
+#define consumeObdSensors_offset_hex f0
 #define CRANKING_ADVANCE_CURVE_SIZE 4
 #define cranking_baseFuel_offset 320
 #define cranking_baseFuel_offset_hex 140
@@ -418,6 +420,7 @@
 #define enableVerboseCanTx_offset 148
 #define enableVerboseCanTx_offset_hex 94
 #define engine_load_mode_e_enum "INVALID", "INVALID", "INVALID", "Speed Density", "MAF Air Charge", "Alpha-N", "INVALID"
+#define ENGINE_NOISE_CURVE_SIZE 8
 #define engineConfiguration_offset 0
 #define engineConfiguration_offset_hex 0
 #define engineLoadAccelLength_offset 1040
@@ -446,8 +449,6 @@
 #define etb_periodMs_offset_hex 2e6
 #define etb_pFactor_offset 728
 #define etb_pFactor_offset_hex 2d8
-#define etb_use_two_wires_offset 148
-#define etb_use_two_wires_offset_hex 94
 #define etbBiasBins_offset 4264
 #define etbBiasBins_offset_hex 10a8
 #define etbBiasValues_offset 4288
@@ -458,46 +459,6 @@
 #define etbFreq_offset_hex 286
 #define etbIdleThrottleRange_offset 1352
 #define etbIdleThrottleRange_offset_hex 548
-#define etbIo1_controlPin1_offset 298
-#define etbIo1_controlPin1_offset_hex 12a
-#define etbIo1_directionPin1_offset 296
-#define etbIo1_directionPin1_offset_hex 128
-#define etbIo1_directionPin2_offset 297
-#define etbIo1_directionPin2_offset_hex 129
-#define etbIo1_disablePin_offset 299
-#define etbIo1_disablePin_offset_hex 12b
-#define etbIo1_offset 296
-#define etbIo1_offset_hex 128
-#define etbIo21_controlPin1_offset 306
-#define etbIo21_controlPin1_offset_hex 132
-#define etbIo21_directionPin1_offset 304
-#define etbIo21_directionPin1_offset_hex 130
-#define etbIo21_directionPin2_offset 305
-#define etbIo21_directionPin2_offset_hex 131
-#define etbIo21_disablePin_offset 307
-#define etbIo21_disablePin_offset_hex 133
-#define etbIo21_offset 304
-#define etbIo21_offset_hex 130
-#define etbIo22_controlPin1_offset 310
-#define etbIo22_controlPin1_offset_hex 136
-#define etbIo22_directionPin1_offset 308
-#define etbIo22_directionPin1_offset_hex 134
-#define etbIo22_directionPin2_offset 309
-#define etbIo22_directionPin2_offset_hex 135
-#define etbIo22_disablePin_offset 311
-#define etbIo22_disablePin_offset_hex 137
-#define etbIo22_offset 308
-#define etbIo22_offset_hex 134
-#define etbIo2_controlPin1_offset 302
-#define etbIo2_controlPin1_offset_hex 12e
-#define etbIo2_directionPin1_offset 300
-#define etbIo2_directionPin1_offset_hex 12c
-#define etbIo2_directionPin2_offset 301
-#define etbIo2_directionPin2_offset_hex 12d
-#define etbIo2_disablePin_offset 303
-#define etbIo2_disablePin_offset_hex 12f
-#define etbIo2_offset 300
-#define etbIo2_offset_hex 12c
 #define externalKnockSenseAdc_offset 184
 #define externalKnockSenseAdc_offset_hex b8
 #define extraInjectionOffset_offset 116
@@ -514,7 +475,7 @@
 #define fixedModeTiming_offset_hex 88
 #define fixTiming_offset 1096
 #define fixTiming_offset_hex 448
-#define FLASH_DATA_VERSION 10001
+#define FLASH_DATA_VERSION 10008
 #define fmap_table_offset 10168
 #define fmap_table_offset_hex 27b8
 #define frpm_table_offset 10232
@@ -538,9 +499,9 @@
 #define GAUGE_NAME_ACCEL_X "Acceleration: X"
 #define GAUGE_NAME_ACCEL_Y "Acceleration: Y"
 #define GAUGE_NAME_ACCEL_Z "Acceleration: Z"
-#define GAUGE_NAME_AFR "Air/Fuel Ratio"
+#define GAUGE_NAME_AFR "AFR"
 #define GAUGE_NAME_AIR_FLOW "MAF air flow"
-#define GAUGE_NAME_AIR_MASS "air mass"
+#define GAUGE_NAME_AIR_MASS "Air Mass"
 #define GAUGE_NAME_BARO_PRESSURE "Barometric pressure"
 #define GAUGE_NAME_CLT "CLT"
 #define GAUGE_NAME_CPU_TEMP "CPU Temperature"
@@ -563,32 +524,32 @@
 #define GAUGE_NAME_ETB_ERROR "ETB position error"
 #define GAUGE_NAME_ETB_TARGET "ETB position target"
 #define GAUGE_NAME_FUEL_BARO_CORR "fuel: Barometric pressure correction"
-#define GAUGE_NAME_FUEL_BASE "fuel: base"
+#define GAUGE_NAME_FUEL_BASE "Base Fuel"
 #define GAUGE_NAME_FUEL_CHARGE_TEMP "fuel: Estimated charge temperature"
-#define GAUGE_NAME_FUEL_CLT_CORR "fuel: CLT correction"
-#define GAUGE_NAME_FUEL_CRANKING "fuel: cranking"
+#define GAUGE_NAME_FUEL_CLT_CORR "Warmup CLT correction"
+#define GAUGE_NAME_FUEL_CRANKING "Cranking Fuel"
 #define GAUGE_NAME_FUEL_EL_EXTRA "fuel: engine load acceleration extra fuel"
-#define GAUGE_NAME_FUEL_IAT_CORR "fuel: IAT correction"
+#define GAUGE_NAME_FUEL_IAT_CORR "IAT correction"
 #define GAUGE_NAME_FUEL_INJ_DUTY "fuel: injector duty cycle"
-#define GAUGE_NAME_FUEL_LAST_INJECTION "fuel: Last injection"
-#define GAUGE_NAME_FUEL_LOAD "fuel: load"
-#define GAUGE_NAME_FUEL_PID_CORR "fuel: Short-term fuel trim"
-#define GAUGE_NAME_FUEL_RUNNING "fuel: running"
+#define GAUGE_NAME_FUEL_LAST_INJECTION "Last Injection"
+#define GAUGE_NAME_FUEL_LOAD "Fuel Load"
+#define GAUGE_NAME_FUEL_PID_CORR "EGO Correction"
+#define GAUGE_NAME_FUEL_RUNNING "Running Fuel"
 #define GAUGE_NAME_FUEL_TPS_EXTRA "fuel: TPS acceleration extra fuel ms"
 #define GAUGE_NAME_FUEL_TPS_ROC "fuel: TPS change"
-#define GAUGE_NAME_FUEL_VE "fuel: VE"
-#define GAUGE_NAME_FUEL_WALL_AMOUNT "fuel: wall amount"
+#define GAUGE_NAME_FUEL_VE "VE"
+#define GAUGE_NAME_FUEL_WALL_AMOUNT "Wall Fuel Amount"
 #define GAUGE_NAME_FUEL_WALL_CORRECTION "fuel: wall corr ms"
 #define GAUGE_NAME_IAC "Idle Air Valve"
 #define GAUGE_NAME_IAT "IAT"
 #define GAUGE_NAME_IGNITION_LOAD "ign: load"
 #define GAUGE_NAME_INJECTOR_LAG "fuel: injector lag"
-#define GAUGE_NAME_KNOCK_COUNTER "knock: counter"
-#define GAUGE_NAME_KNOCK_LEVEL "knock: current level"
+#define GAUGE_NAME_KNOCK_COUNTER "Knock Counter"
+#define GAUGE_NAME_KNOCK_LEVEL "Knock Level"
 #define GAUGE_NAME_MAF "MAF"
 #define GAUGE_NAME_MAP "MAP"
 #define GAUGE_NAME_RPM "RPM"
-#define GAUGE_NAME_TARGET_AFR "fuel: target AFR"
+#define GAUGE_NAME_TARGET_AFR "Target AFR"
 #define GAUGE_NAME_TCHARGE "fuel: SD tCharge"
 #define GAUGE_NAME_THROTTLE_PEDAL "Throttle pedal position"
 #define GAUGE_NAME_TIME "Time"
@@ -600,8 +561,8 @@
 #define GAUGE_NAME_VERSION "firmware"
 #define GAUGE_NAME_VVS "Vehicle Speed"
 #define GAUGE_NAME_VVT "VVT position"
-#define GAUGE_NAME_WARNING_COUNTER "warning: counter"
-#define GAUGE_NAME_WARNING_LAST "warning: last"
+#define GAUGE_NAME_WARNING_COUNTER "Warning Counter"
+#define GAUGE_NAME_WARNING_LAST "Last Warning"
 #define globalFuelCorrection_offset 568
 #define globalFuelCorrection_offset_hex 238
 #define globalTriggerAngleOffset_offset 140
@@ -746,10 +707,10 @@
 #define iatFuelCorrBins_offset 5304
 #define iatFuelCorrBins_offset_hex 14b8
 #define IDLE_ADVANCE_CURVE_SIZE 8
-#define idle_antiwindupFreq_offset 1840
-#define idle_antiwindupFreq_offset_hex 730
-#define idle_derivativeFilterLoss_offset 1844
-#define idle_derivativeFilterLoss_offset_hex 734
+#define idle_antiwindupFreq_offset 1832
+#define idle_antiwindupFreq_offset_hex 728
+#define idle_derivativeFilterLoss_offset 1836
+#define idle_derivativeFilterLoss_offset_hex 72c
 #define idle_offset 592
 #define idle_offset_hex 250
 #define idle_pinStepperDirection_offset 597
@@ -904,12 +865,32 @@
 #define isVerboseTriggerSynchDetails_offset_hex a4
 #define isVvtControlEnabled_offset 156
 #define isVvtControlEnabled_offset_hex 9c
-#define knockBandCustom_offset 1852
-#define knockBandCustom_offset_hex 73c
+#define knockBandCustom_offset 1844
+#define knockBandCustom_offset_hex 734
+#define knockBankCyl1_offset 240
+#define knockBankCyl1_offset_hex f0
+#define knockBankCyl2_offset 240
+#define knockBankCyl2_offset_hex f0
+#define knockBankCyl3_offset 240
+#define knockBankCyl3_offset_hex f0
+#define knockBankCyl4_offset 240
+#define knockBankCyl4_offset_hex f0
+#define knockBankCyl5_offset 240
+#define knockBankCyl5_offset_hex f0
+#define knockBankCyl6_offset 240
+#define knockBankCyl6_offset_hex f0
+#define knockBankCyl7_offset 240
+#define knockBankCyl7_offset_hex f0
+#define knockBankCyl8_offset 240
+#define knockBankCyl8_offset_hex f0
 #define knockDetectionWindowEnd_offset 940
 #define knockDetectionWindowEnd_offset_hex 3ac
 #define knockDetectionWindowStart_offset 936
 #define knockDetectionWindowStart_offset_hex 3a8
+#define knockNoise_offset 3536
+#define knockNoise_offset_hex dd0
+#define knockNoiseRpmBins_offset 3568
+#define knockNoiseRpmBins_offset_hex df0
 #define knockVThreshold_offset 948
 #define knockVThreshold_offset_hex 3b4
 #define launch_hardCutRpmRange_offset 916
@@ -970,8 +951,8 @@
 #define loadBasedAeMult_offset_hex 420
 #define mafAdcChannel_offset 178
 #define mafAdcChannel_offset_hex b2
-#define mainUnusedEnd_offset 1864
-#define mainUnusedEnd_offset_hex 748
+#define mainUnusedEnd_offset 1848
+#define mainUnusedEnd_offset_hex 738
 #define manIdlePosition_offset 580
 #define manIdlePosition_offset_hex 244
 #define MAP_ACCEL_TAPER 8
@@ -1157,8 +1138,6 @@
 #define pinInjector8_offset_hex c3
 #define pinInjector9_offset 196
 #define pinInjector9_offset_hex c4
-#define pinInjectorMode_offset 226
-#define pinInjectorMode_offset_hex e2
 #define pinMainRelay_offset 215
 #define pinMainRelay_offset_hex d7
 #define pinMainRelayMode_offset 230
@@ -1232,10 +1211,10 @@
 #define slowAdcAlpha_offset_hex 430
 #define smap_table_offset 9016
 #define smap_table_offset_hex 2338
-#define sparkDwellRpmBins_offset 1748
-#define sparkDwellRpmBins_offset_hex 6d4
-#define sparkDwellValues_offset 1780
-#define sparkDwellValues_offset_hex 6f4
+#define sparkDwellRpmBins_offset 1740
+#define sparkDwellRpmBins_offset_hex 6cc
+#define sparkDwellValues_offset 1772
+#define sparkDwellValues_offset_hex 6ec
 #define sparkEdge_offset 227
 #define sparkEdge_offset_hex e3
 #define specs_offset 88
@@ -1313,19 +1292,19 @@
 #define stft_startupDelay_offset_hex 30f
 #define stftIgnoreErrorMagnitude_offset 156
 #define stftIgnoreErrorMagnitude_offset_hex 9c
-#define stoichRatioPrimary_offset 1848
-#define stoichRatioPrimary_offset_hex 738
-#define storedHeater_offset 1860
-#define storedHeater_offset_hex 744
-#define storedLambda_offset 1856
-#define storedLambda_offset_hex 740
+#define stoichRatioPrimary_offset 1840
+#define stoichRatioPrimary_offset_hex 730
+#define storedHeater_offset 3524
+#define storedHeater_offset_hex dc4
+#define storedLambda_offset 3520
+#define storedLambda_offset_hex dc0
 #define switch_input_pin_e_enum "NONE", "INVALID", "PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PA8", "PA9", "PA10", "PA11", "PA12", "PA13", "PA14", "PA15", "PB0", "PB1", "PB2", "PB3", "PB4", "PB5", "PB6", "PB7", "PB8", "PB9", "PB10", "PB11", "PB12", "PB13", "PB14", "PB15", "PC0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13", "PC14", "PC15", "PD0", "PD1", "PD2", "PD3", "PD4", "PD5", "PD6", "PD7", "PD8", "PD9", "PD10", "PD11", "PD12", "PD13", "PD14", "PD15", "PE0", "PE1", "PE2", "PE3", "PE4", "PE5", "PE6","PE7","PE8","PE9","PE10","PE11","PE12","PE13","PE14","PE15", "PF0","PF1","PF2","PF3","PF4","PF5","PF6","PF7","PF8","PF9","PF10","PF11","PF12","PF13","PF14","PF15", "PG0","PG1","PG2","PG3","PG4","PG5","PG6","PG7","PG8","PG9","PG10","PG11","PG12","PG13","PG14","PG15", "PH0","PH1","PH2","PH3","PH4","PH5","PH6","PH7","PH8","PH9","PH10","PH11","PH12","PH13","PH14","PH15","INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"
 #define syncMode_offset 156
 #define syncMode_offset_hex 9c
-#define syncRatioFrom_offset 1832
-#define syncRatioFrom_offset_hex 728
-#define syncRatioTo_offset 1836
-#define syncRatioTo_offset_hex 72c
+#define syncRatioFrom_offset 1824
+#define syncRatioFrom_offset_hex 720
+#define syncRatioTo_offset 1828
+#define syncRatioTo_offset_hex 724
 #define tachPulseDuractionMs_offset 960
 #define tachPulseDuractionMs_offset_hex 3c0
 #define tachPulseDurationAsDutyCycle_offset 156
@@ -1359,8 +1338,12 @@
 #define tChargeMode_offset_hex 52c
 #define tcuDownshiftButtonPin_offset 265
 #define tcuDownshiftButtonPin_offset_hex 109
+#define tcuDownshiftButtonPinMode_offset 275
+#define tcuDownshiftButtonPinMode_offset_hex 113
 #define tcuUpshiftButtonPin_offset 264
 #define tcuUpshiftButtonPin_offset_hex 108
+#define tcuUpshiftButtonPinMode_offset 274
+#define tcuUpshiftButtonPinMode_offset_hex 112
 #define throttlePedalPositionAdcChannel_offset 179
 #define throttlePedalPositionAdcChannel_offset_hex b3
 #define throttlePedalPositionSecondAdcChannel_offset 171
@@ -1403,14 +1386,14 @@
 #define timing_offset_cylinder9_offset_hex 4e4
 #define timingMode_offset 132
 #define timingMode_offset_hex 84
-#define tle8888mode_offset 1812
-#define tle8888mode_offset_hex 714
-#define tle8888VrDetectionVoltage_offset 1820
-#define tle8888VrDetectionVoltage_offset_hex 71c
-#define tle8888VrFilter_offset 1816
-#define tle8888VrFilter_offset_hex 718
-#define tle8888VrPeakTime_offset 1824
-#define tle8888VrPeakTime_offset_hex 720
+#define tle8888mode_offset 1804
+#define tle8888mode_offset_hex 70c
+#define tle8888VrDetectionVoltage_offset 1812
+#define tle8888VrDetectionVoltage_offset_hex 714
+#define tle8888VrFilter_offset 1808
+#define tle8888VrFilter_offset_hex 710
+#define tle8888VrPeakTime_offset 1816
+#define tle8888VrPeakTime_offset_hex 718
 #define todoClutchDownPinInverted_offset 156
 #define todoClutchDownPinInverted_offset_hex 9c
 #define TOOTH_DATA_LENGTH 2000
@@ -1497,8 +1480,8 @@
 #define triggerErrorPin_offset_hex 102
 #define triggerErrorPinMode_offset 260
 #define triggerErrorPinMode_offset_hex 104
-#define triggerFilter_offset 1828
-#define triggerFilter_offset_hex 724
+#define triggerFilter_offset 1820
+#define triggerFilter_offset_hex 71c
 #define triggerSimulatorFrequency_offset 552
 #define triggerSimulatorFrequency_offset_hex 228
 #define triggerTestMaxEvents_offset 148
@@ -1506,7 +1489,6 @@
 #define triggerTestMinGap_offset 148
 #define triggerTestMinGap_offset_hex 94
 #define TS_CONFIG_SIZE 11000
-#define TS_FILE_VERSION 20200310
 #define TS_OUTPUT_SIZE 288
 #define ts_show_analog_divider true
 #define ts_show_auxserial_pins true
@@ -1545,8 +1527,8 @@
 #define unused104_offset_hex dd
 #define unused105_offset 273
 #define unused105_offset_hex 111
-#define unused107_offset 312
-#define unused107_offset_hex 138
+#define unused107_offset 296
+#define unused107_offset_hex 128
 #define unused108_offset 281
 #define unused108_offset_hex 119
 #define unused109_offset 291
@@ -1565,6 +1547,16 @@
 #define unused124_offset_hex 11d8
 #define unused125_offset 4056
 #define unused125_offset_hex fd8
+#define unused126_offset 148
+#define unused126_offset_hex 94
+#define unused127_offset 173
+#define unused127_offset_hex ad
+#define unused128_offset 226
+#define unused128_offset_hex e2
+#define unused129_offset 266
+#define unused129_offset_hex 10a
+#define unused130_offset 278
+#define unused130_offset_hex 116
 #define unused17_offset 236
 #define unused17_offset_hex ec
 #define unused54_offset 293
@@ -1577,70 +1569,52 @@
 #define unused99_offset_hex 98
 #define unusedantiLagRpmTreshold_offset 632
 #define unusedantiLagRpmTreshold_offset_hex 278
-#define unusedBit_160_10_offset 240
-#define unusedBit_160_10_offset_hex f0
-#define unusedBit_160_11_offset 240
-#define unusedBit_160_11_offset_hex f0
-#define unusedBit_160_12_offset 240
-#define unusedBit_160_12_offset_hex f0
-#define unusedBit_160_13_offset 240
-#define unusedBit_160_13_offset_hex f0
-#define unusedBit_160_14_offset 240
-#define unusedBit_160_14_offset_hex f0
-#define unusedBit_160_15_offset 240
-#define unusedBit_160_15_offset_hex f0
-#define unusedBit_160_16_offset 240
-#define unusedBit_160_16_offset_hex f0
-#define unusedBit_160_17_offset 240
-#define unusedBit_160_17_offset_hex f0
-#define unusedBit_160_18_offset 240
-#define unusedBit_160_18_offset_hex f0
-#define unusedBit_160_19_offset 240
-#define unusedBit_160_19_offset_hex f0
-#define unusedBit_160_1_offset 240
-#define unusedBit_160_1_offset_hex f0
-#define unusedBit_160_20_offset 240
-#define unusedBit_160_20_offset_hex f0
-#define unusedBit_160_21_offset 240
-#define unusedBit_160_21_offset_hex f0
-#define unusedBit_160_22_offset 240
-#define unusedBit_160_22_offset_hex f0
-#define unusedBit_160_23_offset 240
-#define unusedBit_160_23_offset_hex f0
-#define unusedBit_160_24_offset 240
-#define unusedBit_160_24_offset_hex f0
-#define unusedBit_160_25_offset 240
-#define unusedBit_160_25_offset_hex f0
-#define unusedBit_160_26_offset 240
-#define unusedBit_160_26_offset_hex f0
-#define unusedBit_160_27_offset 240
-#define unusedBit_160_27_offset_hex f0
-#define unusedBit_160_28_offset 240
-#define unusedBit_160_28_offset_hex f0
-#define unusedBit_160_29_offset 240
-#define unusedBit_160_29_offset_hex f0
-#define unusedBit_160_2_offset 240
-#define unusedBit_160_2_offset_hex f0
-#define unusedBit_160_30_offset 240
-#define unusedBit_160_30_offset_hex f0
-#define unusedBit_160_31_offset 240
-#define unusedBit_160_31_offset_hex f0
-#define unusedBit_160_3_offset 240
-#define unusedBit_160_3_offset_hex f0
-#define unusedBit_160_4_offset 240
-#define unusedBit_160_4_offset_hex f0
-#define unusedBit_160_5_offset 240
-#define unusedBit_160_5_offset_hex f0
-#define unusedBit_160_6_offset 240
-#define unusedBit_160_6_offset_hex f0
-#define unusedBit_160_7_offset 240
-#define unusedBit_160_7_offset_hex f0
-#define unusedBit_160_8_offset 240
-#define unusedBit_160_8_offset_hex f0
-#define unusedBit_160_9_offset 240
-#define unusedBit_160_9_offset_hex f0
-#define unusedSomethingWasHere_offset 1813
-#define unusedSomethingWasHere_offset_hex 715
+#define unusedBit_169_10_offset 240
+#define unusedBit_169_10_offset_hex f0
+#define unusedBit_169_11_offset 240
+#define unusedBit_169_11_offset_hex f0
+#define unusedBit_169_12_offset 240
+#define unusedBit_169_12_offset_hex f0
+#define unusedBit_169_13_offset 240
+#define unusedBit_169_13_offset_hex f0
+#define unusedBit_169_14_offset 240
+#define unusedBit_169_14_offset_hex f0
+#define unusedBit_169_15_offset 240
+#define unusedBit_169_15_offset_hex f0
+#define unusedBit_169_16_offset 240
+#define unusedBit_169_16_offset_hex f0
+#define unusedBit_169_17_offset 240
+#define unusedBit_169_17_offset_hex f0
+#define unusedBit_169_18_offset 240
+#define unusedBit_169_18_offset_hex f0
+#define unusedBit_169_19_offset 240
+#define unusedBit_169_19_offset_hex f0
+#define unusedBit_169_20_offset 240
+#define unusedBit_169_20_offset_hex f0
+#define unusedBit_169_21_offset 240
+#define unusedBit_169_21_offset_hex f0
+#define unusedBit_169_22_offset 240
+#define unusedBit_169_22_offset_hex f0
+#define unusedBit_169_23_offset 240
+#define unusedBit_169_23_offset_hex f0
+#define unusedBit_169_24_offset 240
+#define unusedBit_169_24_offset_hex f0
+#define unusedBit_169_25_offset 240
+#define unusedBit_169_25_offset_hex f0
+#define unusedBit_169_26_offset 240
+#define unusedBit_169_26_offset_hex f0
+#define unusedBit_169_27_offset 240
+#define unusedBit_169_27_offset_hex f0
+#define unusedBit_169_28_offset 240
+#define unusedBit_169_28_offset_hex f0
+#define unusedBit_169_29_offset 240
+#define unusedBit_169_29_offset_hex f0
+#define unusedBit_169_30_offset 240
+#define unusedBit_169_30_offset_hex f0
+#define unusedBit_169_31_offset 240
+#define unusedBit_169_31_offset_hex f0
+#define unusedSomethingWasHere_offset 1805
+#define unusedSomethingWasHere_offset_hex 70d
 #define useAdvanceCorrectionsForCranking_offset 164
 #define useAdvanceCorrectionsForCranking_offset_hex a4
 #define useCicPidForIdle_offset 148
@@ -1688,8 +1662,6 @@
 #define useTPSBasedVeTable_offset 156
 #define useTPSBasedVeTable_offset_hex 9c
 #define VBAT_INJECTOR_CURVE_SIZE 8
-#define vbattAdcChannel_offset 173
-#define vbattAdcChannel_offset_hex ad
 #define vbattDividerCoeff_offset 520
 #define vbattDividerCoeff_offset_hex 208
 #define vehicleSpeedCoef_offset 532
@@ -1702,8 +1674,8 @@
 #define verboseTriggerSynchDetails_offset_hex a4
 #define verboseVVTDecoding_offset 164
 #define verboseVVTDecoding_offset_hex a4
-#define veTable_offset 9144
-#define veTable_offset_hex 23b8
+#define veTable1_offset 9144
+#define veTable1_offset_hex 23b8
 #define VOLTAGE_1_BYTE_PACKING_DIV 0.02
 #define vRefAdcChannel_offset 187
 #define vRefAdcChannel_offset_hex bb
@@ -1712,7 +1684,7 @@
 #define vvt_maxVvtDeviation_offset_hex 36c
 #define vvt_minVvtTemperature_offset 844
 #define vvt_minVvtTemperature_offset_hex 34c
-#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "Bosch Quick-Start", "mode6", "mode7"
+#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "Bosch Quick-Start", "INVALID", "INVALID","INVALID"
 #define vvt_offset 840
 #define vvt_offset_hex 348
 #define vvt_pad_offset 882
@@ -1750,16 +1722,16 @@
 #define vvtLoadBins_offset_hex f18
 #define vvtMode_offset 1196
 #define vvtMode_offset_hex 4ac
-#define vvtOffset_offset 1744
-#define vvtOffset_offset_hex 6d0
+#define vvtOffset_offset 1736
+#define vvtOffset_offset_hex 6c8
 #define vvtRpmBins_offset 3896
 #define vvtRpmBins_offset_hex f38
 #define vvtTable_offset 3608
 #define vvtTable_offset_hex e18
-#define vvtToothMaxAngle_offset 1740
-#define vvtToothMaxAngle_offset_hex 6cc
-#define vvtToothMinAngle_offset 1736
-#define vvtToothMinAngle_offset_hex 6c8
+#define vvtToothMaxAngle_offset 3532
+#define vvtToothMaxAngle_offset_hex dcc
+#define vvtToothMinAngle_offset 3528
+#define vvtToothMinAngle_offset_hex dc8
 #define warningPeriod_offset 644
 #define warningPeriod_offset_hex 284
 #define wwaeBeta_offset 1000

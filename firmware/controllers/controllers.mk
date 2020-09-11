@@ -32,9 +32,13 @@ CONTROLLERS_SRC_CPP = \
 	$(CONTROLLERS_DIR)/engine_cycle/fuel_schedule.cpp \
 	$(CONTROLLERS_DIR)/flash_main.cpp \
 	$(CONTROLLERS_DIR)/bench_test.cpp \
+	$(CONTROLLERS_DIR)/can/obd2.cpp \
 	$(CONTROLLERS_DIR)/can/can_rx.cpp \
 	$(CONTROLLERS_DIR)/can/can_tx.cpp \
 	$(CONTROLLERS_DIR)/can/can_dash.cpp \
+	$(CONTROLLERS_DIR)/can/can_vag_10_ms.cpp \
+	$(CONTROLLERS_DIR)/can/can_vag_20_ms.cpp \
+	$(CONTROLLERS_DIR)/can/can_vag_50_ms.cpp \
 	$(CONTROLLERS_DIR)/can/can_vss.cpp \
  	$(CONTROLLERS_DIR)/engine_controller.cpp \
  	$(CONTROLLERS_DIR)/engine_controller_misc.cpp \
@@ -42,7 +46,8 @@ CONTROLLERS_SRC_CPP = \
     $(CONTROLLERS_DIR)/actuators/vvt_control.cpp \
 	$(CONTROLLERS_DIR)/serial/serial_rx.cpp \
 	$(CONTROLLERS_DIR)/serial/serial_sensor.cpp \
-
+	$(CONTROLLERS_DIR)/buttonshift.cpp \
+	$(CONTROLLERS_DIR)/tcu.cpp \
 
 CONTROLLERS_INC=\
 	$(CONTROLLERS_DIR) \

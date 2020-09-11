@@ -15,12 +15,18 @@
 #pragma once
 #define EFI_BOOST_CONTROL TRUE
 
+#undef EFI_ENABLE_MOCK_ADC
+#define EFI_ENABLE_MOCK_ADC FALSE
+
+#undef EFI_BLUETOOTH_SETUP
+#define EFI_BLUETOOTH_SETUP TRUE
 
 #undef EFI_SPI_FRAM
 #define EFI_SPI_FRAM TRUE
 // Warning! This is a test config!
 
 #define EFI_ANTILAG FALSE
+
 #undef EFI_LAUNCH_CONTROL
 #define EFI_LAUNCH_CONTROL TRUE
 
@@ -80,8 +86,6 @@
 
 #define HAL_VSS_USE_PAL TRUE
 
-#undef EFI_BLUETOOTH_SETUP
-#define EFI_BLUETOOTH_SETUP FALSE
 
 #undef EFI_TUNER_STUDIO_VERBOSE
 #define EFI_TUNER_STUDIO_VERBOSE FALSE
@@ -124,6 +128,8 @@
 #undef EFI_LCD
 #define EFI_LCD FALSE
 
+
+#define KNOCK_HAS_CH2 TRUE
 /**
  * Do we need file logging (like SD card) logic?
  */

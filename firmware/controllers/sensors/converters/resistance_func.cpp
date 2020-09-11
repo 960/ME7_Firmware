@@ -4,7 +4,6 @@
 
 #include "resistance_func.h"
 
-
 void ResistanceFunc::configure(float supplyVoltage, float pullupResistor) {
 	m_pullupResistor = pullupResistor;
 	m_supplyVoltage = supplyVoltage;
@@ -26,4 +25,3 @@ SensorResult ResistanceFunc::convert(float raw) const {
 
 	return resistance;
 }
-

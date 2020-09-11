@@ -1,4 +1,4 @@
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Aug 31 12:07:24 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Sep 07 17:39:17 CEST 2020
 // by class com.rusefi.output.CHeaderConsumer
 // begin
 #ifndef CONTROLLERS_GENERATED_ENGINE_CONFIGURATION_GENERATED_STRUCTURES_H
@@ -518,29 +518,6 @@ struct idle_hardware_s {
 
 typedef struct idle_hardware_s idle_hardware_s;
 
-// start of etb_io
-struct etb_io {
-	/**
-	 * offset 0
-	 */
-	brain_pin_e directionPin1;
-	/**
-	 * offset 1
-	 */
-	brain_pin_e directionPin2;
-	/**
-	 * offset 2
-	 */
-	brain_pin_e controlPin1;
-	/**
-	 * offset 3
-	 */
-	brain_pin_e disablePin;
-	/** total size 4*/
-};
-
-typedef struct etb_io etb_io;
-
 // start of launch_s
 struct launch_s {
 	/**
@@ -743,7 +720,7 @@ struct engine_configuration_s {
 	bool cj125isLsu49 : 1;
 	/**
 	offset 148 bit 2 */
-	bool etb_use_two_wires : 1;
+	bool unused126 : 1;
 	/**
 	offset 148 bit 3 */
 	bool isDoubleSolenoidIdle : 1;
@@ -1092,10 +1069,9 @@ struct engine_configuration_s {
 	 */
 	adc_channel_e tps1_1AdcChannel;
 	/**
-	 * This is the processor input pin that the battery voltage circuit is connected to, if you are unsure of what pin to use, check the schematic that corresponds to your PCB.
 	 * offset 173
 	 */
-	adc_channel_e vbattAdcChannel;
+	uint8_t unused127;
 	/**
 	 * This is the processor pin that your fuel level sensor in connected to. This is a non standard input so will need to be user defined.
 	 * offset 174
@@ -1218,7 +1194,7 @@ struct engine_configuration_s {
 	/**
 	 * offset 226
 	 */
-	pin_output_mode_e pinInjectorMode;
+	uint8_t unused128;
 	/**
 	 * offset 227
 	 */
@@ -1269,97 +1245,97 @@ struct engine_configuration_s {
 	bool enableSoftwareKnock : 1;
 	/**
 	offset 240 bit 1 */
-	bool unusedBit_160_1 : 1;
+	bool consumeObdSensors : 1;
 	/**
 	offset 240 bit 2 */
-	bool unusedBit_160_2 : 1;
+	bool knockBankCyl1 : 1;
 	/**
 	offset 240 bit 3 */
-	bool unusedBit_160_3 : 1;
+	bool knockBankCyl2 : 1;
 	/**
 	offset 240 bit 4 */
-	bool unusedBit_160_4 : 1;
+	bool knockBankCyl3 : 1;
 	/**
 	offset 240 bit 5 */
-	bool unusedBit_160_5 : 1;
+	bool knockBankCyl4 : 1;
 	/**
 	offset 240 bit 6 */
-	bool unusedBit_160_6 : 1;
+	bool knockBankCyl5 : 1;
 	/**
 	offset 240 bit 7 */
-	bool unusedBit_160_7 : 1;
+	bool knockBankCyl6 : 1;
 	/**
 	offset 240 bit 8 */
-	bool unusedBit_160_8 : 1;
+	bool knockBankCyl7 : 1;
 	/**
 	offset 240 bit 9 */
-	bool unusedBit_160_9 : 1;
+	bool knockBankCyl8 : 1;
 	/**
 	offset 240 bit 10 */
-	bool unusedBit_160_10 : 1;
+	bool unusedBit_169_10 : 1;
 	/**
 	offset 240 bit 11 */
-	bool unusedBit_160_11 : 1;
+	bool unusedBit_169_11 : 1;
 	/**
 	offset 240 bit 12 */
-	bool unusedBit_160_12 : 1;
+	bool unusedBit_169_12 : 1;
 	/**
 	offset 240 bit 13 */
-	bool unusedBit_160_13 : 1;
+	bool unusedBit_169_13 : 1;
 	/**
 	offset 240 bit 14 */
-	bool unusedBit_160_14 : 1;
+	bool unusedBit_169_14 : 1;
 	/**
 	offset 240 bit 15 */
-	bool unusedBit_160_15 : 1;
+	bool unusedBit_169_15 : 1;
 	/**
 	offset 240 bit 16 */
-	bool unusedBit_160_16 : 1;
+	bool unusedBit_169_16 : 1;
 	/**
 	offset 240 bit 17 */
-	bool unusedBit_160_17 : 1;
+	bool unusedBit_169_17 : 1;
 	/**
 	offset 240 bit 18 */
-	bool unusedBit_160_18 : 1;
+	bool unusedBit_169_18 : 1;
 	/**
 	offset 240 bit 19 */
-	bool unusedBit_160_19 : 1;
+	bool unusedBit_169_19 : 1;
 	/**
 	offset 240 bit 20 */
-	bool unusedBit_160_20 : 1;
+	bool unusedBit_169_20 : 1;
 	/**
 	offset 240 bit 21 */
-	bool unusedBit_160_21 : 1;
+	bool unusedBit_169_21 : 1;
 	/**
 	offset 240 bit 22 */
-	bool unusedBit_160_22 : 1;
+	bool unusedBit_169_22 : 1;
 	/**
 	offset 240 bit 23 */
-	bool unusedBit_160_23 : 1;
+	bool unusedBit_169_23 : 1;
 	/**
 	offset 240 bit 24 */
-	bool unusedBit_160_24 : 1;
+	bool unusedBit_169_24 : 1;
 	/**
 	offset 240 bit 25 */
-	bool unusedBit_160_25 : 1;
+	bool unusedBit_169_25 : 1;
 	/**
 	offset 240 bit 26 */
-	bool unusedBit_160_26 : 1;
+	bool unusedBit_169_26 : 1;
 	/**
 	offset 240 bit 27 */
-	bool unusedBit_160_27 : 1;
+	bool unusedBit_169_27 : 1;
 	/**
 	offset 240 bit 28 */
-	bool unusedBit_160_28 : 1;
+	bool unusedBit_169_28 : 1;
 	/**
 	offset 240 bit 29 */
-	bool unusedBit_160_29 : 1;
+	bool unusedBit_169_29 : 1;
 	/**
 	offset 240 bit 30 */
-	bool unusedBit_160_30 : 1;
+	bool unusedBit_169_30 : 1;
 	/**
 	offset 240 bit 31 */
-	bool unusedBit_160_31 : 1;
+	bool unusedBit_169_31 : 1;
 	/**
 	 * offset 244
 	 */
@@ -1424,10 +1400,9 @@ struct engine_configuration_s {
 	 */
 	switch_input_pin_e tcuDownshiftButtonPin;
 	/**
-	 * Some vehicles have a switch to indicate that clutch pedal is all the way up
 	 * offset 266
 	 */
-	switch_input_pin_e clutchUpPin;
+	uint8_t unused129;
 	/**
 	 * offset 267
 	 */
@@ -1447,7 +1422,6 @@ struct engine_configuration_s {
 	 */
 	switch_input_pin_e throttlePedalUpPin;
 	/**
-	 * some cars have a switch to indicate that clutch pedal is all the way down
 	 * offset 271
 	 */
 	switch_input_pin_e clutchDownPin;
@@ -1459,7 +1433,15 @@ struct engine_configuration_s {
 	/**
 	 * offset 273
 	 */
-	uint8_t unused105[3];
+	uint8_t unused105;
+	/**
+	 * offset 274
+	 */
+	pin_input_mode_e tcuUpshiftButtonPinMode;
+	/**
+	 * offset 275
+	 */
+	pin_input_mode_e tcuDownshiftButtonPinMode;
 	/**
 	 * offset 276
 	 */
@@ -1471,7 +1453,7 @@ struct engine_configuration_s {
 	/**
 	 * offset 278
 	 */
-	pin_input_mode_e clutchUpPinMode;
+	uint8_t unused130;
 	/**
 	 * offset 279
 	 */
@@ -1509,15 +1491,7 @@ struct engine_configuration_s {
 	/**
 	 * offset 296
 	 */
-	etb_io etbIo[ETB_COUNT];
-	/**
-	 * offset 304
-	 */
-	etb_io etbIo2[ETB_COUNT];
-	/**
-	 * offset 312
-	 */
-	int unused107;
+	int unused107[5];
 	/**
 	 * offset 316
 	 */
@@ -2045,7 +2019,17 @@ struct engine_configuration_s {
 	/**
 	 * offset 1089
 	 */
-	uint8_t unused101[3];
+	uint8_t unused101;
+	/**
+	 * Additional idle PID offset while A/C is active
+	 * offset 1090
+	 */
+	uint8_t acIdleExtraOffset;
+	/**
+	 * Additional idle PID minValue while A/C is active
+	 * offset 1091
+	 */
+	uint8_t acIdleExtraMin;
 	/**
 	 * kPa value at which we need to cut fuel and spark, 0 if not enabled
 	 * offset 1092
@@ -2319,91 +2303,75 @@ struct engine_configuration_s {
 	 */
 	uint16_t unused102;
 	/**
-	 * offset 1736
-	 */
-	float vvtToothMinAngle;
-	/**
-	 * offset 1740
-	 */
-	float vvtToothMaxAngle;
-	/**
 	 * Angle between cam sensor and VVT zero position
 	 * set vvt_offset X
-	 * offset 1744
+	 * offset 1736
 	 */
 	float vvtOffset;
 	/**
 	 * On single-coil or wasted spark setups you have to lower dwell at high RPM
-	 * offset 1748
+	 * offset 1740
 	 */
 	float sparkDwellRpmBins[DWELL_CURVE_SIZE];
 	/**
-	 * offset 1780
+	 * offset 1772
 	 */
 	float sparkDwellValues[DWELL_CURVE_SIZE];
 	/**
-	 * offset 1812
+	 * offset 1804
 	 */
 	tle8888_mode_e tle8888mode;
 	/**
-	 * offset 1813
+	 * offset 1805
 	 */
 	uint8_t unusedSomethingWasHere[3];
 	/**
-	 * offset 1816
+	 * offset 1808
 	 */
 	tle8888filter_e tle8888VrFilter;
 	/**
-	 * offset 1820
+	 * offset 1812
 	 */
 	tle8888detection_voltage_e tle8888VrDetectionVoltage;
 	/**
-	 * offset 1824
+	 * offset 1816
 	 */
 	tle8888vrpeak_time_e tle8888VrPeakTime;
 	/**
-	 * offset 1828
+	 * offset 1820
 	 */
 	trigger_filter_e triggerFilter;
 	/**
-	 * offset 1832
+	 * offset 1824
 	 */
 	float syncRatioFrom;
 	/**
-	 * offset 1836
+	 * offset 1828
 	 */
 	float syncRatioTo;
 	/**
 	 * 0.1 is a good default value
-	 * offset 1840
+	 * offset 1832
 	 */
 	float idle_antiwindupFreq;
 	/**
 	 * 0.1 is a good default value
-	 * offset 1844
+	 * offset 1836
 	 */
 	float idle_derivativeFilterLoss;
 	/**
-	 * offset 1848
+	 * offset 1840
 	 */
 	float stoichRatioPrimary;
 	/**
-	 * offset 1852
+	 * offset 1844
 	 */
 	float knockBandCustom;
 	/**
-	 * offset 1856
+	 * offset 1848
 	 */
-	uint32_t storedLambda;
-	/**
-	 * offset 1860
-	 */
-	uint32_t storedHeater;
-	/**
-	 * offset 1864
-	 */
-	int mainUnusedEnd[434];
-	/** total size 3600*/
+	int mainUnusedEnd[418];
+	/** total size 3520*/
 };
 
 typedef struct engine_configuration_s engine_configuration_s;
@@ -2414,6 +2382,31 @@ struct persistent_config_s {
 	 * offset 0
 	 */
 	engine_configuration_s engineConfiguration;
+	/**
+	 * offset 3520
+	 */
+	uint32_t storedLambda;
+	/**
+	 * offset 3524
+	 */
+	uint32_t storedHeater;
+	/**
+	 * offset 3528
+	 */
+	float vvtToothMinAngle;
+	/**
+	 * offset 3532
+	 */
+	float vvtToothMaxAngle;
+	/**
+	 * Knock sensor output knock detection threshold depending on current RPM
+	 * offset 3536
+	 */
+	float knockNoise[ENGINE_NOISE_CURVE_SIZE];
+	/**
+	 * offset 3568
+	 */
+	float knockNoiseRpmBins[ENGINE_NOISE_CURVE_SIZE];
 	/**
 	 * offset 3600
 	 */
@@ -2667,7 +2660,7 @@ struct persistent_config_s {
 	/**
 	 * offset 9144
 	 */
-	ve_table_t veTable;
+	ve_table_t veTable1;
 	/**
 	 * offset 10168
 	 */
@@ -2707,4 +2700,4 @@ typedef struct persistent_config_s persistent_config_s;
 
 #endif
 // end
-// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Aug 31 12:07:24 CEST 2020
+// this section was generated automatically by rusEfi tool ConfigDefinition.jar based on gen_config.bat integration\rusefi_config.txt Mon Sep 07 17:39:17 CEST 2020

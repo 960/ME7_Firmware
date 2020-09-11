@@ -60,6 +60,8 @@ EXTERN_ENGINE;
 	Engine *unitTestEngine;
 #endif
 
+// todo: move all static vars to engine->engineState.idle?
+
 static bool prettyClose = false;
 
 static bool shouldResetPid = false;
@@ -135,22 +137,6 @@ static percent_t idlePositionSensitivityThreshold = 0.0f;
 
 #if ! EFI_UNIT_TEST
 
-
-static void showIdleInfo(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	if (CONFIG(useStepperIdle)) {
-		if (CONFIG(useHbridges)) {
-		} else {
-		}
-	} else {
-		if (!CONFIG(isDoubleSolenoidIdle)) {
-		} else {
-		}
-	}
-
-	if (engineConfiguration->idleMode == IM_AUTO) {
-		getIdlePid(PASS_ENGINE_PARAMETER_SIGNATURE);
-	}
-}
 
 void setIdleMode(idle_mode_e value DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	engineConfiguration->idleMode = value ? IM_AUTO : IM_MANUAL;
@@ -337,9 +323,9 @@ static percent_t automaticIdleController(float tpsPos DECLARE_ENGINE_PARAMETER_S
 	}
 	// increase the errorAmpCoef slowly to restore the process correctly after the PID reset
 	// todo: move restoreAfterPidResetTimeUs to engineState.idle?
-	efitimeus_t timeSincePidResetUs = nowUs - /*engine->engineState.idle.*/restoreAfterPidResetTimeUs;
+	efitimeus_t timeSincePidResetUs = nowUs - restoreAfterPidResetTimeUs;
 	// todo: add 'pidAfterResetDampingPeriodMs' setting
-	errorAmpCoef = interpolateClamped(0.0f, 0.0f, MS2US(/*CONFIG(pidAfterResetDampingPeriodMs)*/1000), errorAmpCoef, timeSincePidResetUs);
+	errorAmpCoef = interpolateClamped(0.0f, 0.0f, MS2US(1000), errorAmpCoef, timeSincePidResetUs);
 	// If errorAmpCoef > 1.0, then PID thinks that RPM is lower than it is, and controls IAC more aggressively
 	getIdlePid(PASS_ENGINE_PARAMETER_SIGNATURE)->setErrorAmplification(errorAmpCoef);
 
@@ -427,9 +413,7 @@ static percent_t automaticIdleController(float tpsPos DECLARE_ENGINE_PARAMETER_S
 			}
 			engine->acSwitchState = result;
 		}
-		if (CONFIG(clutchUpPin) != GPIO_UNASSIGNED) {
-			engine->clutchUpState = efiReadPin(CONFIG(clutchUpPin));
-		}
+
 		if (CONFIG(throttlePedalUpPin) != GPIO_UNASSIGNED) {
 			engine->engineState.idle.throttlePedalUpState = efiReadPin(CONFIG(throttlePedalUpPin));
 		}
@@ -444,7 +428,7 @@ static percent_t automaticIdleController(float tpsPos DECLARE_ENGINE_PARAMETER_S
 
 		const auto [cltValid, clt] = Sensor::get(SensorType::Clt);
 
-		bool isRunning = engine->rpmCalculator.isRunning(PASS_ENGINE_PARAMETER_SIGNATURE);
+		bool isRunning = engine->rpmCalculator.isRunning();
 
 		// cltCorrection is used only for cranking or running in manual mode
 		float cltCorrection;
@@ -598,7 +582,7 @@ static void applyIdleSolenoidPinState(int stateIndex, PwmConfig *state) /* pwm_g
 	OutputPin *output = state->outputPins[0];
 	int value = state->multiChannelStateSequence.getChannelState(/*channelIndex*/0, stateIndex);
 	if (!value /* always allow turning solenoid off */ ||
-			(GET_RPM_VALUE != 0 || timeToStopIdleTest != 0) /* do not run solenoid unless engine is spinning or bench testing in progress */
+			(GET_RPM() != 0 || timeToStopIdleTest != 0) /* do not run solenoid unless engine is spinning or bench testing in progress */
 			) {
 		output->setValue(value);
 	}
@@ -721,10 +705,6 @@ void startIdleThread(DECLARE_ENGINE_PARAMETER_SUFFIX) {
 				getInputMode(CONFIG(clutchDownPinMode)));
 	}
 
-	if (CONFIG(clutchUpPin) != GPIO_UNASSIGNED) {
-		efiSetPadMode("clutch up switch", CONFIG(clutchUpPin),
-				getInputMode(CONFIG(clutchUpPinMode)));
-	}
 
 	if (CONFIG(throttlePedalUpPin) != GPIO_UNASSIGNED) {
 		efiSetPadMode("throttle pedal up switch", CONFIG(throttlePedalUpPin),

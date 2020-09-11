@@ -22,7 +22,7 @@
 ! each field is declared as
 ! type name;comment
 
-
+#define FLASH_DATA_VERSION 10008
 #define TS_SIGNATURE "MS Ext"
 
 
@@ -35,10 +35,12 @@
 ! this is used to confirm that firmware and TunerStudio are using the same rusefi.ini version
 ! so not forget to change fileVersion in rusefi.ini
 ! todo: is this not needed in light of TS_SIGNATURE?
-#define TS_FILE_VERSION 20200310
+
 
 
 #define FLASH_DATA_VERSION 10001
+
+
 ! all the sub-structures are going to be nested within the primary structure, that's
 ! needed to get a proper TunerStudio file
 
@@ -75,7 +77,7 @@ struct_no_prefix engine_configuration_s
 #define CLT_CRANKING_CURVE_SIZE 8
 #define IDLE_ADVANCE_CURVE_SIZE 8
 #define CRANKING_ADVANCE_CURVE_SIZE 4
-
+#define ENGINE_NOISE_CURVE_SIZE 8
 #define CLT_TIMING_CURVE_SIZE 8
 #define IDLE_VE_CURVE_SIZE 8
 
@@ -175,7 +177,7 @@ custom ego_sensor_e 4 bits, S32, @OFFSET@, [0:3], @@ego_sensor_e_enum@@
 #define debug_mode_e_enum "Alternator PID", "TPS acceleration enrichment", "INVALID", "Idle Control", "Engine Load accl enrich", "Trigger Counters", "FSIO_ADC", "AUX_PID_1", "VVT input", "Cranking", "Timing", "Closed-loop fuel corr PID", "VSS", "SD card", "sr5", "Knock", "mode16", "Electronic Throttle", "Executor", "Bench Test / TS commands", "Aux Valves", "Analog inputs #1", "INSTANT_RPM", "FSIO_EXPRESSION", "Status", "CJ125", "CAN", "MAP", "Metrics", "ETB#2", "Ion Sense", "TLE8888", "Analog inputs #2", "Dwell Metric", "INVALID", "ETB Logic", "Boost Control", "Start/Stop", "Launch", "ETB Autotune", "Trigger Timing"
 custom debug_mode_e 4 bits,    U32,   @OFFSET@, [0:7], @@debug_mode_e_enum@@
 
-#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "Bosch Quick-Start", "mode6", "mode7"
+#define vvt_mode_e_enum "Inactive", "Second half", "2JZ/Universal", "Miata NB2", "First Half", "Bosch Quick-Start", "INVALID", "INVALID","INVALID"
 custom vvt_mode_e 4 bits,    U32,   @OFFSET@, [0:4], @@vvt_mode_e_enum@@
 
 #define launchActivationMode_e_enum "Switch Input", "Clutch Input", "Always Active(Disabled By Speed)","INVALID"
@@ -255,8 +257,8 @@ custom can_baudrate_e 1 bits, U08, @OFFSET@, [0:1], @@can_baudrate_e_enum@@
 !
 ! lower 16 values are used on stm32, values above 16 are related to Kinetis work in progress
 ! 
-#define adc_channel_e_enum "PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PB0", "PB1", "PC0", "PC1", "PC2", "PC3", "PC4", "PC5", "Disabled", "PB12", "PB13", "PC14", "PC15", "PC16", "PC17", "PD3", "PD4", "PE2", "PE6", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"
-custom adc_channel_e 1 bits, U08, @OFFSET@, [0:7]  @@adc_channel_e_enum@@
+#define adc_channel_e_enum "Disabled", "PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PB0", "PB1", "PC0", "PC1", "PC2", "PC3", "PC4", "PC5"
+custom adc_channel_e 1 bits, U08, @OFFSET@, [0:4]  @@adc_channel_e_enum@@
 
 ! At the moment TIM1, TIM2, TIM3 and TIM9 are configured as ICU
 ! todo: as of ChibiOS3, only channels 1 & 2 are allowed to capture input, that's a ChibiOS driver limitation
@@ -390,8 +392,8 @@ struct trigger_config_s @brief Trigger wheel(s) configuration
 
 	trigger_type_e type;set trigger_type X
 	uint8_t[4] unused95
-	int numTeeth;;"number",    1,      0.0,       0,  500.0,        0
-	int missingTeeth;;"number",    1,      0.0,       0,  500.0,        0
+	int numTeeth;;"number",    1,      0.0,       1,  100,        0
+	int missingTeeth;;"number",    1,      0.0,       1,  10,        0
 end_struct
 
 struct afr_sensor_s
@@ -411,12 +413,6 @@ struct idle_hardware_s
 	pin_output_mode_e solenoidPinMode;
 end_struct
 
-struct etb_io
-	brain_pin_e directionPin1;
-	brain_pin_e directionPin2;
-	brain_pin_e controlPin1;
-	brain_pin_e disablePin;
-end_struct
 
 struct launch_s
     launchActivationMode_e launchActivationMode;
@@ -474,7 +470,7 @@ int unused81
 
 	bit enableThrottlePumps
 	bit cj125isLsu49,LSU 4.9,LSU 4.2
-	bit etb_use_two_wires,Yes,No
+	bit unused126
 	bit isDoubleSolenoidIdle,Yes,No
 	
 	bit enableTpsTpsAe
@@ -604,7 +600,7 @@ int unused75
 
 
 	adc_channel_e tps1_1AdcChannel;First throttle body, first sensor. See also pedalPositionAdcChannel
-	adc_channel_e vbattAdcChannel;+This is the processor input pin that the battery voltage circuit is connected to, if you are unsure of what pin to use, check the schematic that corresponds to your PCB. 
+	uint8_t unused127
 	adc_channel_e fuelLevelSensor;+This is the processor pin that your fuel level sensor in connected to. This is a non standard input so will need to be user defined. 
 	adc_channel_e tps2_1AdcChannel;Second throttle body position sensor, single channel so far\nset_analog_input_pin tps2 X
 
@@ -642,7 +638,8 @@ int unused75
 
 	pin_output_mode_e pinTachoMode;
 	pin_output_mode_e pinFuelPumpMode;
-	pin_output_mode_e pinInjectorMode;
+	uint8_t unused128
+	
 	pin_output_mode_e sparkEdge;
 
 	pin_output_mode_e pinFanMode;
@@ -659,7 +656,15 @@ int unused75
 	brain_pin_e pinStepperEnable;
 
 	bit enableSoftwareKnock
-
+	bit consumeObdSensors
+	bit knockBankCyl1
+	bit knockBankCyl2
+	bit knockBankCyl3
+	bit knockBankCyl4
+	bit knockBankCyl5
+	bit knockBankCyl6
+	bit knockBankCyl7
+	bit knockBankCyl8
 	int[1] unused117;
 	
 	brain_pin_e canTxPin;
@@ -678,20 +683,23 @@ int unused75
 
 	switch_input_pin_e tcuUpshiftButtonPin
 	switch_input_pin_e tcuDownshiftButtonPin
-	switch_input_pin_e clutchUpPin;Some vehicles have a switch to indicate that clutch pedal is all the way up
+	uint8_t unused129
  	switch_input_pin_e antiLagActivatePin;
     
 	switch_input_pin_e launchActivatePin;
 	switch_input_pin_e brakePedalPin;Brake pedal switch
 	switch_input_pin_e throttlePedalUpPin;+Throttle Pedal not pressed switch - used on some older vehicles like early Mazda Miata
-	switch_input_pin_e clutchDownPin;some cars have a switch to indicate that clutch pedal is all the way down
+	switch_input_pin_e clutchDownPin;
 	
 	switch_input_pin_e startStopButtonPin;See also starterControlPin
-	uint8_t[3] unused105
+	uint8_t[1] unused105
 	
+	pin_input_mode_e tcuUpshiftButtonPinMode
+	pin_input_mode_e tcuDownshiftButtonPinMode
+
 	pin_input_mode_e startStopButtonMode;
 	pin_input_mode_e clutchDownPinMode;
-	pin_input_mode_e clutchUpPinMode;
+uint8_t unused130
 	pin_input_mode_e brakePedalPinMode;
 	
 	pin_input_mode_e throttlePedalUpPinMode;
@@ -705,10 +713,9 @@ int unused75
 	brain_input_pin_e vehicleSpeedSensorInputPin;
 	uint8_t[3] unused54
 	
-	etb_io[ETB_COUNT iterate] etbIo
-	etb_io[ETB_COUNT iterate] etbIo2
+	
 
-	int unused107
+	int[5] unused107
 	debug_mode_e debugMode;
 	
 	cranking_parameters_s cranking
@@ -861,6 +868,8 @@ int unused75
 	
 	float wwaeBeta;+0 = No fuel settling on port walls 1 = All the fuel settling on port walls setting this to 0 disables the wall wetting enrichment. ;"Fraction",        1,     0,    0.0,    1.0,  2
 	
+
+	
 	float throttlePedalUpVoltage;;"voltage",      1,     0,    -6,   6,      2
 	float throttlePedalWOTVoltage;+Pedal in the floor;"voltage",      1,     0,    -6,   6,      2
 	
@@ -902,8 +911,10 @@ int unused75
 
 	
 	can_baudrate_e canBaudRate; set can_baudrate
-	uint8_t[3] unused101
+	uint8_t[1] unused101
+	uint8_t acIdleExtraOffset;+Additional idle PID offset while A/C is active;"Percent", 1, 0, 0, 255, 
 
+	uint8_t acIdleExtraMin;+Additional idle PID minValue while A/C is active;"Percent", 1, 0, 0, 255, 
 
 	float boostCutPressure;kPa value at which we need to cut fuel and spark, 0 if not enabled;"kPa",        1,     0,    0, 500,     0
 
@@ -1016,8 +1027,6 @@ int unused75
 	uint16_t unused102
 
 	
-float vvtToothMinAngle;;"",        1,     0,  -30000,    30000.0,  0
-float vvtToothMaxAngle;;"",        1,     0,  -30000,    30000.0,  0
 
 	float vvtOffset;+Angle between cam sensor and VVT zero position\nset vvt_offset X;"value",      1,      0,       -720, 1000,      1
 
@@ -1041,17 +1050,21 @@ float stoichRatioPrimary;;"",        1,     0,  0,    20,  1
 
 float knockBandCustom;;"",        1,     0,  0,    30,  1
 
-uint32_t storedLambda;
-uint32_t storedHeater;
 
 
-	int[434] mainUnusedEnd;
+	int[418] mainUnusedEnd;
 
 ! end of engine_configuration_s
 end_struct
 
 engine_configuration_s engineConfiguration;
 
+uint32_t storedLambda;
+uint32_t storedHeater;
+float vvtToothMinAngle;;"",        1,     0,  -30000,    30000.0,  0
+float vvtToothMaxAngle;;"",        1,     0,  -30000,    30000.0,  0
+float[ENGINE_NOISE_CURVE_SIZE] knockNoise;Knock sensor output knock detection threshold depending on current RPM;"v",      1,     0,   0.0,    10,   2
+float[ENGINE_NOISE_CURVE_SIZE] knockNoiseRpmBins;;"RPM",      1,     0,   0.0,    18000,   2
 
 
 float cj125Pfactor;;"",        	1,     0,  		0,    30,  3
@@ -1140,7 +1153,7 @@ ignition_table_t advanceTable;
 float[IGN_LOAD_COUNT] smap_table;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },   1,   0.0,        0,  500.0,   1
 float[IGN_RPM_COUNT] srpm_table;;"RPM",	   1,   0.0,        0,  18000.0, 2
 
-ve_table_t veTable;
+ve_table_t veTable1;
 float[FUEL_LOAD_COUNT] fmap_table;;{ bitStringValue(algorithmUnits ,  fuelAlgorithm) },	1,   0.0,        0,  400.0,   1
 float[FUEL_RPM_COUNT] frpm_table;;"RPM",	   1,   0.0,        0,  18000.0, 2
 
@@ -1209,14 +1222,14 @@ end_struct
 #define INDICATOR_NAME_AC_SWITCH "AC switch"
 
 #define GAUGE_NAME_AIR_FLOW "MAF air flow"
-#define GAUGE_NAME_AIR_MASS "air mass"
+#define GAUGE_NAME_AIR_MASS "Air Mass"
 
-#define GAUGE_NAME_WARNING_LAST "warning: last"
-#define GAUGE_NAME_WARNING_COUNTER "warning: counter"
+#define GAUGE_NAME_WARNING_LAST "Last Warning"
+#define GAUGE_NAME_WARNING_COUNTER "Warning Counter"
 
 
-#define GAUGE_NAME_KNOCK_LEVEL "knock: current level"
-#define GAUGE_NAME_KNOCK_COUNTER "knock: counter"
+#define GAUGE_NAME_KNOCK_LEVEL "Knock Level"
+#define GAUGE_NAME_KNOCK_COUNTER "Knock Counter"
 
 
 #define GAUGE_NAME_FUEL_BARO_CORR "fuel: Barometric pressure correction"
@@ -1226,22 +1239,22 @@ end_struct
 #define GAUGE_NAME_FUEL_CHARGE_TEMP "fuel: Estimated charge temperature"
 #define GAUGE_NAME_FUEL_TPS_EXTRA "fuel: TPS acceleration extra fuel ms"
 #define GAUGE_NAME_FUEL_EL_EXTRA "fuel: engine load acceleration extra fuel"
-#define GAUGE_NAME_FUEL_CLT_CORR "fuel: CLT correction"
-#define GAUGE_NAME_FUEL_IAT_CORR "fuel: IAT correction"
-#define GAUGE_NAME_FUEL_VE "fuel: VE"
-#define GAUGE_NAME_FUEL_CRANKING "fuel: cranking"
-#define GAUGE_NAME_FUEL_RUNNING "fuel: running"
-#define GAUGE_NAME_FUEL_LAST_INJECTION  "fuel: Last injection"
-#define GAUGE_NAME_FUEL_BASE "fuel: base"
-#define GAUGE_NAME_FUEL_PID_CORR "fuel: Short-term fuel trim"
-#define GAUGE_NAME_FUEL_WALL_AMOUNT "fuel: wall amount"
+#define GAUGE_NAME_FUEL_CLT_CORR "Warmup CLT correction"
+#define GAUGE_NAME_FUEL_IAT_CORR "IAT correction"
+#define GAUGE_NAME_FUEL_VE "VE"
+#define GAUGE_NAME_FUEL_CRANKING "Cranking Fuel"
+#define GAUGE_NAME_FUEL_RUNNING "Running Fuel"
+#define GAUGE_NAME_FUEL_LAST_INJECTION  "Last Injection"
+#define GAUGE_NAME_FUEL_BASE "Base Fuel"
+#define GAUGE_NAME_FUEL_PID_CORR "EGO Correction"
+#define GAUGE_NAME_FUEL_WALL_AMOUNT "Wall Fuel Amount"
 #define GAUGE_NAME_FUEL_WALL_CORRECTION "fuel: wall corr ms"
-#define GAUGE_NAME_FUEL_LOAD "fuel: load"
+#define GAUGE_NAME_FUEL_LOAD "Fuel Load"
 
 #define GAUGE_NAME_FUEL_INJ_DUTY "fuel: injector duty cycle"
 #define GAUGE_NAME_TCHARGE "fuel: SD tCharge"
-#define GAUGE_NAME_TARGET_AFR "fuel: target AFR"
-#define GAUGE_NAME_AFR "Air/Fuel Ratio"
+#define GAUGE_NAME_TARGET_AFR "Target AFR"
+#define GAUGE_NAME_AFR "AFR"
 #define GAUGE_NAME_IAC "Idle Air Valve"
 
 #define GAUGE_NAME_DWELL_DUTY "dwell: coil duty cycle"

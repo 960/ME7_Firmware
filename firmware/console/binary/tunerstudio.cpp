@@ -61,18 +61,23 @@
 
 #include "global.h"
 #include "os_access.h"
+
 #include "allsensors.h"
 #include "tunerstudio.h"
+
 #include "main_trigger_callback.h"
 #include "flash_main.h"
+
 #include "tunerstudio_io.h"
 #include "tunerstudio_outputs.h"
 #include "malfunction_central.h"
 #include "console_io.h"
 #include "crc.h"
+#include "bluetooth.h"
 #include "tunerstudio_io.h"
 #include "tooth_logger.h"
 #include "electronic_throttle.h"
+
 #include <string.h>
 #include "engine_configuration.h"
 #include "bench_test.h"
@@ -120,6 +125,42 @@ void printTsStats(void) {
 	printErrorCounters();
 }
 
+static void setTsSpeed(int value) {
+	CONFIG(tunerStudioSerialSpeed) = value;
+	printTsStats();
+}
+
+#if EFI_BLUETOOTH_SETUP
+
+#if defined(CONSOLE_USB_DEVICE)
+ /**
+  * we run BT on "primary" channel which is TTL if we have USB console
+  */
+ extern ts_channel_s primaryChannel;
+ #define BT_CHANNEL primaryChannel
+#else
+ /**
+  * if we run two TTL channels we run BT on 2nd TTL channel
+  */
+ #define BT_CHANNEL tsChannel
+#endif
+
+
+// Bluetooth HC-05 module initialization start (it waits for disconnect and then communicates to the module)
+static void bluetoothHC05(const char *baudRate, const char *name, const char *pinCode) {
+	bluetoothStart(&BT_CHANNEL, BLUETOOTH_HC_05, baudRate, name, pinCode);
+}
+
+// Bluetooth HC-06 module initialization start (it waits for disconnect and then communicates to the module)
+static void bluetoothHC06(const char *baudRate, const char *name, const char *pinCode) {
+	bluetoothStart(&BT_CHANNEL, BLUETOOTH_HC_06, baudRate, name, pinCode);
+}
+
+// Bluetooth SPP-C module initialization start (it waits for disconnect and then communicates to the module)
+static void bluetoothSPP(const char *baudRate, const char *name, const char *pinCode) {
+	bluetoothStart(&BT_CHANNEL, BLUETOOTH_SPP, baudRate, name, pinCode);
+}
+#endif  /* EFI_BLUETOOTH_SETUP */
 
 char *getWorkingPageAddr() {
 #ifndef EFI_NO_CONFIG_WORKING_COPY
@@ -132,6 +173,7 @@ char *getWorkingPageAddr() {
 static constexpr size_t getTunerStudioPageSize() {
 	return TOTAL_CONFIG_SIZE;
 }
+
 
 void sendOkResponse(ts_channel_s *tsChannel, ts_response_format_e mode) {
 	sr5SendResponse(tsChannel, mode, NULL, 0);
@@ -185,6 +227,9 @@ static const void * getStructAddr(int structId) {
 		return NULL;
 	}
 }
+
+
+
 
 static void handleGetStructContent(ts_channel_s *tsChannel, int structId, int size) {
 	tsState.readPageCommandsCounter++;
@@ -297,8 +342,7 @@ static void handleBurnCommand(ts_channel_s *tsChannel, ts_response_format_e mode
 static bool isKnownCommand(char command) {
 	return command == TS_HELLO_COMMAND || command == TS_READ_COMMAND || command == TS_OUTPUT_COMMAND
 			|| command == TS_PAGE_COMMAND || command == TS_BURN_COMMAND || command == TS_SINGLE_WRITE_COMMAND
-			|| command == TS_CHUNK_WRITE_COMMAND
-			|| command == TS_EXECUTE
+			|| command == TS_CHUNK_WRITE_COMMAND || command == TS_EXECUTE
 			|| command == TS_IO_TEST_COMMAND
 			|| command == TS_GET_STRUCT
 			|| command == TS_SET_LOGGER_SWITCH
@@ -309,7 +353,14 @@ static bool isKnownCommand(char command) {
 			|| command == TS_GET_FIRMWARE_VERSION
 			|| command == TS_PERF_TRACE_BEGIN
 			|| command == TS_PERF_TRACE_GET_BUFFER
-			|| command == TS_GET_CONFIG_ERROR;
+			|| command == TS_GET_CONFIG_ERROR
+			|| command == TS_START_TOOTH_LOGGER
+			|| command == TS_STOP_TOOTH_LOGGER;
+
+
+
+
+
 }
 
 // this function runs indefinitely
@@ -333,6 +384,10 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 		int received = sr5ReadData(tsChannel, &firstByte, 1);
 
 		if (received != 1) {
+#if EFI_BLUETOOTH_SETUP
+			// assume there's connection loss and notify the bluetooth init code
+			bluetoothSoftwareDisconnectNotify();
+#endif  /* EFI_BLUETOOTH_SETUP */
 			continue;
 		}
 		onDataArrived();
@@ -349,13 +404,14 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 		uint16_t incomingPacketSize = firstByte << 8 | secondByte;
 
 		if (incomingPacketSize == 0 || incomingPacketSize > (sizeof(tsChannel->crcReadBuffer) - CRC_WRAPPING_SIZE)) {
-	
+
 			sendErrorCode(tsChannel, TS_RESPONSE_UNDERRUN);
 			continue;
 		}
 
 		received = sr5ReadData(tsChannel, (uint8_t* )tsChannel->crcReadBuffer, 1);
 		if (received != 1) {
+			sendErrorCode(tsChannel, TS_RESPONSE_UNDERRUN);
 			continue;
 		}
 
@@ -372,6 +428,7 @@ void runBinaryProtocolLoop(ts_channel_s *tsChannel) {
 		if (received != expectedSize) {
 						
 			sendErrorCode(tsChannel, TS_RESPONSE_UNDERRUN);
+			continue;
 		}
 
 		uint32_t expectedCrc = *(uint32_t*) (tsChannel->crcReadBuffer + incomingPacketSize);
@@ -415,6 +472,7 @@ void tunerStudioError() {
 }
 
 void handleQueryCommand(ts_channel_s *tsChannel, ts_response_format_e mode) {
+	tsOutputChannels.secl = 0;
 	tsState.queryCommandCounter++;
 	sr5SendResponse(tsChannel, mode, (const uint8_t *) TS_SIGNATURE, strlen(TS_SIGNATURE) + 1);
 }
@@ -513,6 +571,16 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 	case TS_READ_COMMAND:
 		handlePageReadCommand(tsChannel, TS_CRC, data16[0], data16[1], data16[2]);
 		break;
+	case TS_START_TOOTH_LOGGER:
+		engine->toothLogEnabled = true;
+		engine->compositeLogEnabled = false;
+		EnableToothLogger();
+		break;
+	case TS_STOP_TOOTH_LOGGER:
+		engine->toothLogEnabled = false;
+		DisableToothLogger();
+		break;
+
 	case TS_IO_TEST_COMMAND:
 		{
 			uint16_t subsystem = SWAP_UINT16(data16[0]);
@@ -534,9 +602,12 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 	case TS_SET_LOGGER_SWITCH:
 		switch(data[0]) {
 		case TS_COMPOSITE_ENABLE:
+			engine->toothLogEnabled = false;
+			engine->compositeLogEnabled = true;
 			EnableToothLogger();
 			break;
 		case TS_COMPOSITE_DISABLE:
+			engine->compositeLogEnabled = false;
 			DisableToothLogger();
 			break;
 		default:
@@ -577,8 +648,15 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 		break;
 	case TS_GET_LOGGER_GET_BUFFER:
 		{
-			auto toothBuffer = GetToothLoggerBuffer();
-			sr5SendResponse(tsChannel, TS_CRC, toothBuffer.Buffer, toothBuffer.Length);
+			if (engine->toothLogEnabled == true) {
+				auto toothBuffer = GetToothLoggerBuffer();
+				sr5SendResponse(tsChannel, TS_CRC, toothBuffer.Buffer, toothBuffer.Length);
+			} else {
+				auto toothBuffer = GetCompositeLoggerBuffer();
+				sr5SendResponse(tsChannel, TS_CRC, toothBuffer.Buffer, toothBuffer.Length);
+			}
+
+
 		}
 
 		break;
@@ -602,7 +680,7 @@ void startTunerStudioConnectivity(void) {
 	memset(&tsState, 0, sizeof(tsState));
 	syncTunerStudioCopy();
 
-	
+
 	chThdCreateStatic(tunerstudioThreadStack, sizeof(tunerstudioThreadStack), NORMALPRIO, (tfunc_t)tsThreadEntryPoint, NULL);
 }
 

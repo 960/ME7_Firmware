@@ -48,7 +48,7 @@ bool CJ125::cjIdentify(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	int init1 = spi->ReadRegister(INIT_REG1_RD);
 	int init2 = spi->ReadRegister(INIT_REG2_RD);
 	diag = spi->ReadRegister(DIAG_REG_RD);
-	tsOutputChannels.widebandIdent = ident;
+
 
 	if (ident != CJ125_IDENT) {
 		setError(CJ125_ERROR_WRONG_IDENT PASS_ENGINE_PARAMETER_SUFFIX);

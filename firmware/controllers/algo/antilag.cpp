@@ -62,7 +62,7 @@ class AntiLag: public PeriodicTimerController {
 		if (!CONFIG(antiLagEnabled)) {
 			return;
 		}
-		int rpm = GET_RPM_VALUE;
+		int rpm = GET_RPM();
 		auto tps = Sensor::get(SensorType::DriverThrottleIntent);
 		auto clt = Sensor::get(SensorType::Clt);
 

@@ -81,9 +81,7 @@ static void initSpiModules(engine_configuration_s *engineConfiguration) {
 	if (engine->is_enabled_spi_2) {
 		turnOnSpi(SPI_DEVICE_2);
 	}
-	if (engine->is_enabled_spi_3) {
-		turnOnSpi(SPI_DEVICE_3);
-	}
+
 	if (engine->is_enabled_spi_4) {
 		turnOnSpi(SPI_DEVICE_4);
 	}
@@ -105,11 +103,14 @@ SPIDriver* getSpiDevice(spi_device_e spiDevice) {
 		return &SPID2;
 	}
 #endif
+
 #if STM32_SPI_USE_SPI3
 	if (spiDevice == SPI_DEVICE_3) {
 		return &SPID3;
 	}
 #endif
+
+
 #if STM32_SPI_USE_SPI4
 	if (spiDevice == SPI_DEVICE_4) {
 		return &SPID4;
@@ -135,26 +136,12 @@ extern AdcDevice fastAdc;
 void adc_callback_fast(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 	(void) buffer;
 	(void) n;
-
 	ScopePerf perf(PE::AdcCallbackFast);
-	/**
-	 * Note, only in the ADC_COMPLETE state because the ADC driver fires an
-	 * intermediate callback when the buffer is half full.
-	 * */
 	if (adcp->state == ADC_COMPLETE) {
 		ScopePerf perf(PE::AdcCallbackFastComplete);
-
 		fastAdc.invalidateSamplesCache();
-
-		/**
-		 * this callback is executed 10 000 times a second, it needs to be as fast as possible
-		 */
 		efiAssertVoid(CUSTOM_ERR_6676, getCurrentRemainingStack() > 128,
 				"lowstck#9b");
-
-//		if (tpsSampleIndex != TPS_IS_SLOW) {
-//			tpsFastAdc = fastAdc.samples[tpsSampleIndex];
-//		}
 	}
 }
 #endif /* HAL_USE_ADC */
@@ -206,7 +193,7 @@ void applyNewHardwareSettings(void) {
 #if EFI_CAN_SUPPORT
 	stopCanPins();
 #endif /* EFI_CAN_SUPPORT */
-
+	//engine->stopHardCodedPins(PASS_ENGINE_PARAMETER_SIGNATURE);
 #if EFI_AUX_SERIAL
 	stopAuxSerialPins();
 #endif /* EFI_AUX_SERIAL */
@@ -217,6 +204,9 @@ void applyNewHardwareSettings(void) {
 		stopIdleHardware();
 	}
 #endif
+
+
+
 
 #if EFI_VEHICLE_SPEED
 	stopVSSPins();
@@ -230,9 +220,7 @@ void applyNewHardwareSettings(void) {
 	stopVvtPin();
 #endif
 
-	if (isPinOrModeChanged(clutchUpPin, clutchUpPinMode)) {
-		brain_pin_markUnused(activeConfiguration.clutchUpPin);
-	}
+
 
 	if (isPinOrModeChanged(startStopButtonPin, startStopButtonMode)) {
 		brain_pin_markUnused(activeConfiguration.startStopButtonPin);
@@ -240,7 +228,7 @@ void applyNewHardwareSettings(void) {
 
 	enginePins.unregisterPins();
 	startTriggerInputPins();
-	engine->setHardCodedPins(PASS_ENGINE_PARAMETER_SIGNATURE);
+
 	enginePins.startInjectionPins();
 	enginePins.startIgnitionPins();
 #if EFI_CAN_SUPPORT
@@ -280,18 +268,17 @@ void initHardware() {
 			"engineConfiguration");
 	chMtxObjectInit(&spiMtx);
 	initPrimaryPins();
-
+	engine->setHardCodedPins(PASS_ENGINE_PARAMETER_SIGNATURE);
 	if (hasFirmwareError()) {
 		return;
 	}
 
-	initFlash();
 
-	chThdSleepMilliseconds(2);
 	readFromFlash();
-	chThdSleepMilliseconds(2);
+
 
 	initSingleTimerExecutorHardware();
+
 	if (hasFirmwareError()) {
 		return;
 	}

@@ -90,8 +90,7 @@
 #define ETB_MAX_COUNT 2
 #endif /* ETB_MAX_COUNT */
 
-
-static pedal2tps_t pedal2tpsMap("Pedal2Tps", 1);
+static pedal2tps_t pedal2tpsMap("Pedal2Tps");
 
 EXTERN_ENGINE;
 
@@ -123,6 +122,36 @@ static SensorType indexToTpsSensorSecondary(size_t index) {
 		default: return SensorType::Tps2Secondary;
 	}
 }
+
+#if EFI_TUNER_STUDIO
+static TsCalMode indexToCalModePriMin(size_t index) {
+	switch (index) {
+		case 0:  return TsCalMode::Tps1Min;
+		default: return TsCalMode::Tps2Min;
+	}
+}
+
+static TsCalMode indexToCalModePriMax(size_t index) {
+	switch (index) {
+		case 0:  return TsCalMode::Tps1Max;
+		default: return TsCalMode::Tps2Max;
+	}
+}
+
+static TsCalMode indexToCalModeSecMin(size_t index) {
+	switch (index) {
+		case 0:  return TsCalMode::Tps1SecondaryMin;
+		default: return TsCalMode::Tps2SecondaryMin;
+	}
+}
+
+static TsCalMode indexToCalModeSecMax(size_t index) {
+	switch (index) {
+		case 0:  return TsCalMode::Tps1SecondaryMax;
+		default: return TsCalMode::Tps2SecondaryMax;
+	}
+}
+#endif // EFI_TUNER_STUDIO
 
 static percent_t directPwmValue = NAN;
 static percent_t currentEtbDuty;
@@ -457,17 +486,17 @@ struct EtbImpl final : public EtbController, public PeriodicController<512> {
 		motor->disable();
 
 		// Write out the learned values to TS, waiting briefly after setting each to let TS grab it
-		tsOutputChannels.calibrationMode = TsCalMode::Tps1Max;
+		tsOutputChannels.calibrationMode = indexToCalModePriMax(myIndex);
 		tsOutputChannels.calibrationValue = primaryMax;
 		chThdSleepMilliseconds(500);
-		tsOutputChannels.calibrationMode = TsCalMode::Tps1Min;
+		tsOutputChannels.calibrationMode = indexToCalModePriMin(myIndex);
 		tsOutputChannels.calibrationValue = primaryMin;
 		chThdSleepMilliseconds(500);
 
-		tsOutputChannels.calibrationMode = TsCalMode::Tps1SecondaryMax;
+		tsOutputChannels.calibrationMode = indexToCalModeSecMax(myIndex);
 		tsOutputChannels.calibrationValue = secondaryMax;
 		chThdSleepMilliseconds(500);
-		tsOutputChannels.calibrationMode = TsCalMode::Tps1SecondaryMin;
+		tsOutputChannels.calibrationMode = indexToCalModeSecMin(myIndex);
 		tsOutputChannels.calibrationValue = secondaryMin;
 		chThdSleepMilliseconds(500);
 
@@ -618,8 +647,8 @@ void setDefaultEtbParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 	engineConfiguration->etbFreq = DEFAULT_ETB_PWM_FREQUENCY;
 
 	// voltage, not ADC like with TPS
-	engineConfiguration->throttlePedalUpVoltage = 0;
-	engineConfiguration->throttlePedalWOTVoltage = 5;
+	engineConfiguration->throttlePedalUpVoltage = 0.75;
+	engineConfiguration->throttlePedalWOTVoltage = 4;
 
 	engineConfiguration->etb = {
 		1,		// Kp
@@ -630,8 +659,8 @@ void setDefaultEtbParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 		-100, 100 // min/max
 	};
 
-	engineConfiguration->etb_iTermMin = -30;
-	engineConfiguration->etb_iTermMax = 30;
+
+
 }
 
 void onConfigurationChangeElectronicThrottleCallback(engine_configuration_s *previousConfiguration) {
@@ -690,7 +719,7 @@ void doInitElectronicThrottle(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	}
 
 	for (int i = 0 ; i < engine->etbActualCount; i++) {
-		auto motor = initDcMotor(i, CONFIG(etb_use_two_wires) PASS_ENGINE_PARAMETER_SUFFIX);
+		auto motor = initDcMotor(i, engine->etb_use_two_wires PASS_ENGINE_PARAMETER_SUFFIX);
 
 		// If this motor is actually set up, init the etb
 		if (motor)

@@ -2,7 +2,7 @@
 
 #include "sensor.h"
 
-class Log;
+class Logging;
 
 struct SensorConverter {
 	// Trying to copy a converter func by value is almost guaranteed to be a bug - disallow it

@@ -31,9 +31,10 @@ static void vvtRisingCallback(void *) {
 	if (!engine->hwTriggerInputEnabled) {
 		return;
 	}
-		// real physical fronts go into engine sniffer
-		LogTriggerTooth(SHAFT_SECONDARY_RISING, now);
-	hwHandleVvtCamSignal(TV_RISE, now);
+		
+	LogCamTooth(TV_RISE);
+
+	hwHandleVvtCamSignal(engineConfiguration->invertCamVVTSignal ? TV_FALL : TV_RISE, now);
 }
 
 static void vvtFallingCallback(void *) {
@@ -41,8 +42,9 @@ static void vvtFallingCallback(void *) {
 	if (!engine->hwTriggerInputEnabled) {
 		return;
 	}
-		LogTriggerTooth(SHAFT_SECONDARY_FALLING, now);
-	hwHandleVvtCamSignal(TV_FALL, now);
+	
+
+	LogCamTooth(TV_FALL);
 	hwHandleVvtCamSignal(engineConfiguration->invertCamVVTSignal ? TV_RISE : TV_FALL, now);
 }
 

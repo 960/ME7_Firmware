@@ -64,7 +64,7 @@ class LaunchControl : public PeriodicTimerController{
     				return;
     			}
 
-        int rpm = GET_RPM_VALUE;
+        int rpm = GET_RPM();
         auto tps = Sensor::get(SensorType::DriverThrottleIntent);
         int tpstreshold = (CONFIG(launch.launchTpsTreshold));
         float timeDelay = (CONFIG(launch.launchActivateDelay));

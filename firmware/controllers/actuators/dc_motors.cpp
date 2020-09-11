@@ -90,25 +90,25 @@ static EtbHardware etbHardware[ETB_COUNT * 2];
 // We needed more H-bridge configs - so the IO configs are split
 // across two arrays of settings to preserve config compatibility
 const etb_io& getConfigForMotor(size_t index DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	size_t firstSize = efi::size(engineConfiguration->etbIo);
+	size_t firstSize = efi::size(engine->etbIo);
 
 	if (index < firstSize) {
-		return engineConfiguration->etbIo[index];
+		return engine->etbIo[index];
 	}
 
-	return engineConfiguration->etbIo2[index - firstSize];
+	return engine->etbIo2[index - firstSize];
 }
 
 DcMotor* initDcMotor(size_t index, bool useTwoWires DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	const auto& io = getConfigForMotor(index PASS_ENGINE_PARAMETER_SUFFIX);
+	//const auto& io = getConfigForMotor(index PASS_ENGINE_PARAMETER_SUFFIX);
 	auto& hw = etbHardware[index];
 
 	hw.start(
 		useTwoWires,
-		io.controlPin1,
-		io.directionPin1,
-		io.directionPin2,
-		io.disablePin,
+		engine->etbIo[index].controlPin1,
+		engine->etbIo[index].directionPin1,
+		engine->etbIo[index].directionPin2,
+		engine->etbIo[index].disablePin,
 		&ENGINE(executor),
 		CONFIG(etbFreq)
 	);

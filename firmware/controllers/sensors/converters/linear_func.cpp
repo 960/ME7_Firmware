@@ -25,4 +25,3 @@ SensorResult LinearFunc::convert(float inputValue) const {
 
 	return result;
 }
-

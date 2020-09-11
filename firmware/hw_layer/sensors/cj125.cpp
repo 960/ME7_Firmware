@@ -13,7 +13,7 @@
  * @author Andrey Belomutskiy, (c) 2012-2020
  *
  */
-
+#include "fram.h"
 #include "engine.h"
 #include "cj125.h"
 #include "pwm_generator_logic.h"
@@ -31,8 +31,8 @@ EXTERN_ENGINE;
 #include "backup_ram.h"
 #include "pin_repository.h"
 
-static uint8_t tx_buff[2] NO_CACHE;
-static uint8_t rx_buff[1] NO_CACHE;
+static uint8_t tx_buff[4] NO_CACHE;
+static uint8_t rx_buff[4] NO_CACHE;
 
 static CJ125 globalInstance;
 
@@ -44,7 +44,7 @@ static SPIConfig cj125spicfg = {
 		NULL,
 		SPI_CJ125_CS_GPIO,
 		SPI_CJ125_CS_PIN,
-		SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_BAUDRATEPRESCALER_128,
+		SPI_CR1_MSTR | SPI_MODE1 | SPI_CJ125_SPEED,
 		SPI_CR2_8BIT_MODE
 };
 
@@ -179,10 +179,14 @@ void CJ125::calibrate(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	// store new calibration data
 	uint32_t storedLambda = get16bitFromVoltage(vUaCal);
 	uint32_t storedHeater = get16bitFromVoltage(vUrCal);
-
-	CONFIG(storedLambda) = storedLambda;
-	CONFIG(storedHeater) = storedHeater;
+//#if EFI_SPI_FRAM
+//	writeEeprom(0x00320000, sizeof(storedLambda),(uint8_t *) storedLambda);
+//	writeEeprom(0x00325000, sizeof(storedHeater),(uint8_t *) storedHeater);
+//#else
+	config->storedLambda = storedLambda;
+	config->storedHeater = storedHeater;
 	state = CJ125_IDLE;
+//#endif
 }
 
 static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
@@ -192,10 +196,13 @@ static void cjStart(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	globalInstance.cjIdentify(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 	// Load calibration values
-
-	uint32_t storedLambda = CONFIG(storedLambda);
-	uint32_t storedHeater = CONFIG(storedHeater);
-
+//#if EFI_SPI_FRAM
+//	uint32_t storedLambda = readEeprom(0x00320000, sizeof(storedLambda),(uint8_t *) storedLambda);
+//	uint32_t storedHeater = readEeprom(0x00325000, sizeof(storedHeater),(uint8_t *) storedHeater);
+//#else
+	uint32_t storedLambda = config->storedLambda;
+	uint32_t storedHeater = config->storedHeater;
+//#endif
 	// if no calibration, try to calibrate now and store new values
 	if (storedLambda == 0 || storedHeater == 0) {
 		/**

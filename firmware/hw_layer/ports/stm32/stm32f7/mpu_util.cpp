@@ -418,11 +418,11 @@ size_t flashSectorSize(flashsector_t sector) {
 }
 
 uintptr_t getFramAddrFirstCopy() {
-	return ((uint32_t)0x00300000);
+	return 0x00000000;
 }
 
 uintptr_t getFramAddrSecondCopy() {
-	return ((uint32_t)0x00600000);
+	return 0x00650000;
 }
 
 

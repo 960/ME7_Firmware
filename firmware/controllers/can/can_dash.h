@@ -9,7 +9,10 @@
 
 void canDashboardBMW();
 void canDashboardFiat();
-void canDashboardVAG();
+
+void can_VAG_10Ms();
+void can_VAG_20Ms();
+void can_VAG_50Ms();
 void canMazdaRX8();
 void canDashboardW202();
 void canDashboardBMWE90();

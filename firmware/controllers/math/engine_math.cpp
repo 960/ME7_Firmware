@@ -99,7 +99,7 @@ static floatms_t getCrankingSparkDwell(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	} else {
 		// technically this could be implemented via interpolate2d
 		float angle = engineConfiguration->crankingChargeAngle;
-		return getOneDegreeTimeMs(GET_RPM_VALUE) * angle;
+		return getOneDegreeTimeMs(GET_RPM()) * angle;
 	}
 }
 
@@ -154,21 +154,6 @@ static const int order_1_5_4_2_6_3_7_8[] = { 1, 5, 4, 2, 6, 3, 7, 8 };
 static const int order_1_2_7_8_4_5_6_3[] = { 1, 2, 7, 8, 4, 5, 6, 3 };
 static const int order_1_3_7_2_6_5_4_8[] = { 1, 3, 7, 2, 6, 5, 4, 8 };
 
-// 9 cylinder
-static const int order_1_2_3_4_5_6_7_8_9[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
-// 10 cylinder
-static const int order_1_10_9_4_3_6_5_8_7_2[] = {1, 10, 9, 4, 3, 6, 5, 8, 7, 2};
-
-// 12 cyliner
-static const int order_1_7_5_11_3_9_6_12_2_8_4_10[] = {1, 7, 5, 11, 3, 9, 6, 12, 2, 8, 4, 10};
-static const int order_1_7_4_10_2_8_6_12_3_9_5_11[] = {1, 7, 4, 10, 2, 8, 6, 12, 3, 9, 5, 11};
-static const int order_1_12_5_8_3_10_6_7_2_11_4_9[] = {1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9};
-static const int order_1_2_3_4_5_6_7_8_9_10_11_12[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-
-// no comments
-static const int order_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10[] = {1, 14, 9, 4, 7, 12, 15, 6, 13, 8, 3, 16, 11, 2, 5, 10};
-
 static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	switch (CONFIG(specs.firingOrder)) {
@@ -205,25 +190,6 @@ static int getFiringOrderLength(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	case FO_1_2_7_8_4_5_6_3:
 	case FO_1_3_7_2_6_5_4_8:
 		return 8;
-
-// 9 cylinder radial
-	case FO_1_2_3_4_5_6_7_8_9:
-		return 9;
-
-// 10 cylinder
-	case FO_1_10_9_4_3_6_5_8_7_2:
-		return 10;
-
-// 12 cylinder
-	case FO_1_7_5_11_3_9_6_12_2_8_4_10:
-	case FO_1_7_4_10_2_8_6_12_3_9_5_11:
-	case FO_1_12_5_8_3_10_6_7_2_11_4_9:
-	case FO_1_2_3_4_5_6_7_8_9_10_11_12:
-		return 12;
-
-	case FO_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10:
-		return 16;
-
 	default:
 		warning(CUSTOM_OBD_UNKNOWN_FIRING_ORDER, "getCylinderId not supported for %d", CONFIG(specs.firingOrder));
 	}
@@ -301,27 +267,6 @@ int getCylinderId(int index DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	case FO_1_3_7_2_6_5_4_8:
 		return order_1_3_7_2_6_5_4_8[index];
 
-	case FO_1_2_3_4_5_6_7_8_9:
-		return order_1_2_3_4_5_6_7_8_9[index];
-
-
-// 10 cylinder
-	case FO_1_10_9_4_3_6_5_8_7_2:
-		return order_1_10_9_4_3_6_5_8_7_2[index];
-
-// 12 cylinder
-	case FO_1_7_5_11_3_9_6_12_2_8_4_10:
-		return order_1_7_5_11_3_9_6_12_2_8_4_10[index];
-	case FO_1_7_4_10_2_8_6_12_3_9_5_11:
-		return order_1_7_4_10_2_8_6_12_3_9_5_11[index];
-	case FO_1_12_5_8_3_10_6_7_2_11_4_9:
-		return order_1_12_5_8_3_10_6_7_2_11_4_9[index];
-	case FO_1_2_3_4_5_6_7_8_9_10_11_12:
-		return order_1_2_3_4_5_6_7_8_9_10_11_12[index];
-
-// do not ask
-	case FO_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10:
-		return order_1_14_9_4_7_12_15_6_13_8_3_16_11_2_5_10[index];
 
 	default:
 		warning(CUSTOM_OBD_UNKNOWN_FIRING_ORDER, "getCylinderId not supported for %d", CONFIG(specs.firingOrder));

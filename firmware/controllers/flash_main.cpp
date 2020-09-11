@@ -52,7 +52,7 @@ void writeToFlashIfPending() {
 	writeToFlashNow();
 }
 template <typename EEtorage>
-int writeToFram(uint32_t storageAddress, const EEtorage& data)
+int writeToFram(flashaddr_t storageAddress, const EEtorage& data)
 {
 	return writeEeprom(storageAddress, reinterpret_cast<const uint8_t*>(&data), sizeof(data));
 
@@ -63,7 +63,6 @@ int eraseAndFlashCopy(flashaddr_t storageAddress, const TStorage& data)
 {
 	intFlashErase(storageAddress, sizeof(TStorage));
 	return intFlashWrite(storageAddress, reinterpret_cast<const char*>(&data), sizeof(TStorage));
-
 }
 
 void writeToFlashNow(void) {
@@ -81,6 +80,7 @@ void writeToFlashNow(void) {
 #endif
 	// handle success/failure
 	bool isSuccess = (result1 == FLASH_RETURN_SUCCESS) && (result2 == FLASH_RETURN_SUCCESS);
+
 	if (isSuccess) {
 	} else {
 	}
@@ -100,8 +100,8 @@ static void doResetConfiguration(void) {
 }
 
 persisted_configuration_state_e flashState;
-
-static persisted_configuration_state_e doReadEEConfiguration(uint32_t address) {
+#if EFI_SPI_FRAM
+static persisted_configuration_state_e doReadEEConfiguration(flashaddr_t address) {
 	readEeprom(address, sizeof(persistentState),(uint8_t *) &persistentState);
 	if (!isValidCrc(&persistentState)) {
 		return CRC_FAILED;
@@ -112,9 +112,10 @@ static persisted_configuration_state_e doReadEEConfiguration(uint32_t address) {
 	}
 }
 
-
+#else
 static persisted_configuration_state_e doReadConfiguration(flashaddr_t address) {
 	intFlashRead(address, (char *) &persistentState, sizeof(persistentState));
+
 	if (!isValidCrc(&persistentState)) {
 		return CRC_FAILED;
 	} else if (persistentState.version != FLASH_DATA_VERSION || persistentState.size != sizeof(persistentState)) {
@@ -123,13 +124,29 @@ static persisted_configuration_state_e doReadConfiguration(flashaddr_t address) 
 		return PC_OK;
 	}
 }
-
+#endif
+bool validateoffsets() {
+	if (engineConfiguration->specs.cylindersCount > 16 || engineConfiguration->specs.cylindersCount < 1) {
+	return false;
+	}
+	if (engineConfiguration->rpmLimit > 10000 || engineConfiguration->rpmLimit < 1000) {
+		return false;
+		}
+	if (engine->triggerCentral.triggerShape.getSize() < 1 || engine->triggerCentral.triggerShape.getSize() > 130) {
+		return false;
+	}
+	if (engineConfiguration->trigger.numTeeth < 1 || engineConfiguration->trigger.numTeeth > 130) {
+		return false;
+		} else {
+	return true;
+	}
+}
 /**
  * this method could and should be executed before we have any
  * connectivity so no console output here
  */
 persisted_configuration_state_e readConfiguration() {
-	efiAssert(CUSTOM_ERR_ASSERT, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "read f", PC_ERROR);
+	//efiAssert(CUSTOM_ERR_ASSERT, getCurrentRemainingStack() > EXPECTED_REMAINING_STACK, "read f", PC_ERROR);
 #if EFI_SPI_FRAM
 	persisted_configuration_state_e result = doReadEEConfiguration(getFramAddrFirstCopy());
 #else
@@ -139,7 +156,7 @@ persisted_configuration_state_e readConfiguration() {
 #if EFI_SPI_FRAM
 	result = doReadEEConfiguration(getFramAddrSecondCopy());
 #else
-		result = doReadConfiguration(getFlashAddrSecondCopy());
+	result = doReadConfiguration(getFlashAddrSecondCopy());
 #endif
 	}
 	if (result == CRC_FAILED) {
@@ -147,9 +164,14 @@ persisted_configuration_state_e readConfiguration() {
 	} else if (result == INCOMPATIBLE_VERSION) {
 		resetConfigurationExt(PASS_ENGINE_PARAMETER_SUFFIX);
 	} else {
+		int result2 = validateoffsets();
+		if (result2 == false) {
+		resetConfigurationExt(PASS_ENGINE_PARAMETER_SUFFIX);
+		} else {
 		applyNonPersistentConfiguration(PASS_ENGINE_PARAMETER_SUFFIX);
 	}
 	validateConfiguration(PASS_ENGINE_PARAMETER_SIGNATURE);
+	}
 	return result;
 }
 
@@ -162,8 +184,5 @@ void readFromFlash(void) {
 }
 
 
-void initFlash() {
-	
-}
 
 #endif /* EFI_INTERNAL_FLASH */

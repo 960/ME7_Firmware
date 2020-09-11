@@ -138,6 +138,8 @@ efitick_t getTimeNowNt(void) {
 
 }
 
+
+
 void touchTimeCounter() {
 	/**
 	 * We need to push current value into the 64 bit counter often enough so that we do not miss an overflow

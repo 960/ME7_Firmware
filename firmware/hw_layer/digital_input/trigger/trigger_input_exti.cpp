@@ -11,7 +11,6 @@
  */
 
 #include "global.h"
-
 #if HAL_TRIGGER_USE_PAL
 
 #include "trigger_input.h"
@@ -82,8 +81,6 @@ static void cam_callback(void *arg) {
 
 int extiTriggerTurnOnInputPin(const char *msg, int index, bool isTriggerShaft) {
 	brain_pin_e brainPin = isTriggerShaft ? CONFIG(pinTrigger)[index] : engineConfiguration->pinCam[index];
-
-
 	/* TODO:
 	 * * do not set to both edges if we need only one
 	 * * simplify callback in case of one edge */

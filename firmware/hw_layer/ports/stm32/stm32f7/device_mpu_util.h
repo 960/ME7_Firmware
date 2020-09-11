@@ -9,7 +9,10 @@
 
 #include "stm32f7xx_hal_flash_ex.h"
 
-
+#define SPI_MODE0    0
+#define SPI_MODE1    SPI_CR1_CPHA
+#define SPI_MODE2    SPI_CR1_CPOL
+#define SPI_MODE3    SPI_CR1_CPOL | SPI_CR1_CPHA
 
 #define SPI_BAUDRATEPRESCALER_2         (0x00000000U)
 #define SPI_BAUDRATEPRESCALER_4         (SPI_CR1_BR_0)  // 27MHz

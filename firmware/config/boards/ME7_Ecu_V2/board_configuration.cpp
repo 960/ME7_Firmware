@@ -1,5 +1,6 @@
 
 
+
 #include "global.h"
 #include "engine.h"
 #include "engine_math.h"
@@ -50,14 +51,14 @@ static const fuel_table_t veTable = {
 		         {75.0, 76.0, 77.0, 81.0, 84.0, 87.0, 89.0, 91.0, 93.0, 93.0, 92.0, 91.0, 91.0, 87.0, 84.0, 84.0, }
 };
 
-const float veRpmBins[FUEL_RPM_COUNT] = {
+const float frpm_table[FUEL_RPM_COUNT] = {
 		700.0, 820.0, 950.0, 1100.0,
 		1300.0, 1550.0, 1800.0, 2150.0,
 		2500.0, 3000.0, 3500.0, 4150.0,
 		4900.0, 5800.0, 6800.0, 8000.0
 };
 
-const float veLoadBins[FUEL_LOAD_COUNT] = {
+const float fmap_table[FUEL_LOAD_COUNT] = {
 		10, 20, 40, 60,
 		70, 80, 100, 120,
 		140, 160, 180, 200.0,
@@ -82,14 +83,14 @@ static const ignition_table_t ignitionTimingTable = {
 		{2.00,	3.00,	3.00,	3.00,	3.30,	3.34,	3.73,	4.12,	4.51,	4.91,	5.30,	5.85,	6.40,	6.95,	7.50,	8.00,   }
 
 };
-const float ignitionRpmBins[IGN_LOAD_COUNT] = {
+const float srpm_table[IGN_LOAD_COUNT] = {
 		700.0, 820.0, 950.0, 1100.0,
 		1300.0, 1550.0, 1800.0, 2150.0,
 		2500.0, 3000.0, 3500.0, 4150.0,
 		4900.0, 5800.0, 6800.0, 8000.0
 };
 
-const float ignitionLoadBins[IGN_LOAD_COUNT] = {
+const float smap_table[IGN_LOAD_COUNT] = {
 		10, 20, 40, 60,
 		70, 80, 100, 120,
 		140, 160, 180, 200.0,
@@ -132,12 +133,10 @@ const float afterstartEnrich[] = {
 void setDefaultMaps(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
 	memcpy(engineConfiguration->sparkDwellRpmBins, dwellBins, sizeof(dwellBins));
 	memcpy(engineConfiguration->sparkDwellValues, dwellValues, sizeof(dwellValues));
-		memcpy(config->veRpmBins, veRpmBins, sizeof(veRpmBins));
-	memcpy(config->veLoadBins, veLoadBins, sizeof(veLoadBins));
-	copyFuelTable(veTable, config->veTable);
-	memcpy(config->ignitionRpmBins, ignitionRpmBins, sizeof(ignitionRpmBins));
-	memcpy(config->ignitionLoadBins, ignitionLoadBins, sizeof(ignitionLoadBins));
-	copyTimingTable(ignitionTimingTable, config->ignitionTable);
+		memcpy(config->frpm_table, frpm_table, sizeof(frpm_table));
+	memcpy(config->fmap_table, fmap_table, sizeof(fmap_table));
+	memcpy(config->srpm_table, srpm_table, sizeof(srpm_table));
+	memcpy(config->smap_table, smap_table, sizeof(smap_table));
 	memcpy(config->crankingCycleBins, crankingCycleBins, sizeof(crankingCycleBins));
 	memcpy(config->crankingCycleCoef, crankingCycleValues, sizeof(crankingCycleValues));
 	memcpy(config->afterstartEnrich, afterstartEnrich, sizeof(afterstartEnrich));
@@ -175,11 +174,30 @@ void setPinConfigurationOverrides(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	engine->cj125ur = EFI_ADC_1;
 	engine->cj125ua = EFI_ADC_2;
+	engine->vbattAdcChannel = EFI_ADC_0;
 
 	engine->cj125isUaDivided = true;
 	engine->cj125isUrDivided = true;
 
 	engine->wboHeaterPin = GPIOE_9;
+
+	engine->etb_use_two_wires = true;
+	engine->etbIo[0].directionPin1 = GPIOG_9;
+	engine->etbIo[0].directionPin2 = GPIOD_7;
+
+	engine->etbIo[0].controlPin1 = GPIO_UNASSIGNED;
+	engine->etbIo[0].disablePin = GPIO_UNASSIGNED;
+
+	engine->etbIo[1].directionPin1 = GPIO_UNASSIGNED;
+	engine->etbIo[1].directionPin2 = GPIO_UNASSIGNED;
+	engine->etbIo[1].controlPin1 = GPIO_UNASSIGNED;
+	engine->etbIo[1].disablePin = GPIO_UNASSIGNED;
+
+
+
+
+	engine->pinInjectorMode = OM_DEFAULT;
+
 }
 
 void setSerialConfigurationOverrides(void) {
@@ -193,7 +211,7 @@ static void setLedPins() {
 
 
 static void setInjectorPins() {
-	engineConfiguration->pinInjectorMode = OM_DEFAULT;
+
 	engineConfiguration->pinInjector[0] = GPIOE_2; // #1
 	engineConfiguration->pinInjector[1] = GPIOB_9; // #2
 	engineConfiguration->pinInjector[2] = GPIOE_1; // #3
@@ -227,7 +245,7 @@ static void setpinCoil() {
 }
 
 static void setupEtb() {
-	engineConfiguration->etb_use_two_wires = true;
+
 	engineConfiguration->etb.pFactor = 12;
 	engineConfiguration->etb.iFactor = 15;
 	engineConfiguration->etb.dFactor = 0;
@@ -237,12 +255,8 @@ static void setupEtb() {
 
 }
 static void setDefaultOutputs() {
-	engineConfiguration->etbIo[0].directionPin1 = GPIOG_9;
-	engineConfiguration->etbIo[0].directionPin2 = GPIOD_7;
-
-
 	engineConfiguration->pinTrigger[0] = GPIOC_6;
-	engineConfiguration->pinCam[0] = GPIOA_8;
+	//engineConfiguration->pinCam[0] = GPIOA_8;
 	engineConfiguration->boostControlPin = GPIOE_3;
 
 	engineConfiguration->clutchDownPin = GPIOE_7;
@@ -257,7 +271,7 @@ static void setDefaultOutputs() {
 }
 
 static void setupDefaultSensorInputs() {
-	engineConfiguration->vbattAdcChannel = EFI_ADC_0;
+
 
 	engineConfiguration->throttlePedalPositionAdcChannel = EFI_ADC_5;
 	engineConfiguration->mafAdcChannel = EFI_ADC_7;
@@ -382,6 +396,10 @@ static void setEngineDefaults() {
 	engineConfiguration->boostPid.periodMs = 100;
 	engineConfiguration->boostPid.maxValue = 99;
 	engineConfiguration->boostPid.minValue = -99;
+	engineConfiguration->syncRatioFrom = 0.8;
+		engineConfiguration->syncRatioTo = 1.4;
+		config->vvtToothMinAngle = 0;
+		config->vvtToothMaxAngle = 90;
 
 }
 void setLaunchParameters() {
@@ -435,8 +453,8 @@ void setengineConfigurationOverrides(void) {
 
 	// NOT USED JUNK
 
-	engineConfiguration->etbIo[1].directionPin1 = GPIO_UNASSIGNED;
-	engineConfiguration->etbIo[1].directionPin2 = GPIO_UNASSIGNED;
+	engine->etbIo[1].directionPin1 = GPIO_UNASSIGNED;
+	engine->etbIo[1].directionPin2 = GPIO_UNASSIGNED;
 
 
 	engineConfiguration->externalKnockSenseAdc = EFI_ADC_NONE;

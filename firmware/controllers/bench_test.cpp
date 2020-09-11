@@ -40,7 +40,8 @@
 #include "electronic_throttle.h"
 #include "cj125.h"
 #include "malfunction_central.h"
-
+#include "tunerstudio_outputs.h"
+#include "tunerstudio_io.h"
 #if EFI_PROD_CODE
 #include "rusefi.h"
 #include "mpu_util.h"
@@ -79,7 +80,6 @@ static void runBench(brain_pin_e brainPin, OutputPin *output, float delayMs, flo
 
 		return;
 	}
-
 
 	if (delaySt != 0) {
 		chThdSleep(delaySt);
@@ -234,11 +234,17 @@ static void handleCommandX14(uint16_t index) {
 	case 0xE:
 		etbAutocal(0);
 		return;
+	case 0x11:
+		etbAutocal(1);
+		return;
 	case 0xC:
 		engine->etbAutoTune = true;
 		return;
 	case 0x10:
 		engine->etbAutoTune = false;
+#if EFI_TUNER_STUDIO
+		tsOutputChannels.calibrationMode = TsCalMode::None;
+#endif // EFI_TUNER_STUDIO
 		return;
 	case 0xF:
 		engine->directSelfStimulation = false;
@@ -277,6 +283,7 @@ void executeTSCommand(uint16_t subsystem, uint16_t index) {
 		mainRelayBench();
 
 	} else if (subsystem == 0x21) {
+	//	startBtConn();
 	} else if (subsystem == 0x30) {
 
 	} else if (subsystem == 0x31) {

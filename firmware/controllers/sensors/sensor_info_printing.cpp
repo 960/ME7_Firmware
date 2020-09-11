@@ -2,6 +2,10 @@
 #include "proxy_sensor.h"
 #include "functional_sensor.h"
 #include "redundant_sensor.h"
+#include "rpm_calculator.h"
+#include "linear_func.h"
+#include "resistance_func.h"
+#include "thermistor_func.h"
 #include "efilib.h"
 
 
@@ -33,4 +37,8 @@ void CanSensorBase::showInfo(const char* sensorName) const {
 
 void RedundantSensor::showInfo(const char* sensorName) const {
 	UNUSED(sensorName);
+}
+
+void RpmCalculator::showInfo( const char* sensorName) const {
+
 }

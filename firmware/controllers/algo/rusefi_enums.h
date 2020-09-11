@@ -211,6 +211,7 @@ typedef enum {
 	T_SECONDARY = 1,
 	// todo: I really do not want to call this 'tertiary'. maybe we should rename all of these?
 	T_CHANNEL_3 = 2,
+	T_SYNC = 3,
 	T_NONE = 15
 } trigger_wheel_e;
 
@@ -222,6 +223,8 @@ typedef enum {
 	SHAFT_SECONDARY_RISING = 3,
 	SHAFT_3RD_FALLING = 4,
 	SHAFT_3RD_RISING = 5,
+	SYNC_FALL = 6,
+	SYNC_RISE = 7,
 } trigger_event_e;
 
 typedef enum {

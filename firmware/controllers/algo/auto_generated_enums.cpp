@@ -1028,6 +1028,10 @@ case SHAFT_SECONDARY_FALLING:
   return "SHAFT_SECONDARY_FALLING";
 case SHAFT_SECONDARY_RISING:
   return "SHAFT_SECONDARY_RISING";
+case SYNC_FALL:
+  return "SYNC_FALL";
+case SYNC_RISE:
+  return "SYNC_RISE";
   }
  return NULL;
 }
@@ -1174,6 +1178,8 @@ case T_PRIMARY:
   return "T_PRIMARY";
 case T_SECONDARY:
   return "T_SECONDARY";
+case T_SYNC:
+  return "T_SYNC";
   }
  return NULL;
 }

@@ -6,121 +6,185 @@
  */
 
 #include "tooth_logger.h"
-
+#include "engine.h"
 #include "global.h"
 
 #if EFI_TOOTH_LOGGER
 
-EXTERN_ENGINE;
+#include "tunerstudio_io.h"
 
 #include <cstddef>
 #include "efitime.h"
 #include "efilib.h"
 #include "tunerstudio_outputs.h"
 
+EXTERN_ENGINE;
+
 typedef struct __attribute__ ((packed)) {
-    uint16_t timestamp;
+    uint32_t timestamp;
 } tooth_logger_s;
 
 typedef struct __attribute__ ((packed)) {
-	// the whole order of all packet bytes is reversed, not just the 'endian-swap' integers
 	uint32_t timestamp;
-	// unfortunately all these fields are required by TS...
 	bool priLevel : 1;
 	bool secLevel : 1;
 	bool trigger : 1;
 	bool sync : 1;
 } composite_logger_s;
 
+
+uint8_t compositeLogHistory[TOOTH_PACKET_COUNT];
+
 static composite_logger_s buffer[COMPOSITE_PACKET_COUNT] CCM_OPTIONAL;
+static tooth_logger_s toothHistory[COMPOSITE_PACKET_COUNT] CCM_OPTIONAL;
+
 static size_t NextIdx = 0;
 static volatile bool ToothLoggerEnabled = false;
 
 static uint32_t lastEdgeTimestamp = 0;
 
-static bool trigger1 = false;
-static bool trigger2 = false;
+static bool trigger1;
+static bool trigger2;
+static bool edge;
+static bool sync;
+
 
 int getCompositeRecordCount() {
 	return NextIdx;
 }
 
-static void SetNextCompositeEntry(efitick_t timestamp, bool trigger1, bool trigger2,
-		bool isTDC DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	uint32_t nowUs = NT2US(timestamp);
-	// TS uses big endian, grumble
-	buffer[NextIdx].timestamp = SWAP_UINT32(nowUs);
-	buffer[NextIdx].priLevel = trigger1;
-	buffer[NextIdx].secLevel = trigger2;
-	buffer[NextIdx].trigger = isTDC;
+bool validEdge = false;
+bool valueLogged = false;
+bool validCrank = false;
+bool validCam = false;
+bool validVvt = false;
+bool validSync = false;
+
+uint32_t lasttoothtime;
+uint32_t lastcranktime;
+uint32_t lastcamtime;
+uint32_t thistoothtime;
+
+
+
+static inline void addToothLogEntry(uint32_t lasttoothtime, bool whichtooth, bool edge) {
+	if((engine->toothLogEnabled == true) || (engine->compositeLogEnabled == true))
+	  {
+	    bool valueLogged = false;
+	if (engine->toothLogEnabled == true) {
+		toothHistory[NextIdx].timestamp = SWAP_UINT32(lasttoothtime);
+		valueLogged = true;
+	}
+
+	else if (engine->compositeLogEnabled == true)
+	{
+
+	buffer[NextIdx].timestamp = SWAP_UINT32(lasttoothtime);
+	if (whichtooth == trigger1) {
+	buffer[NextIdx].priLevel = whichtooth;
+	}
+	if (whichtooth == trigger2) {
+	buffer[NextIdx].secLevel = whichtooth;
+	}
+	buffer[NextIdx].trigger = edge;
 	buffer[NextIdx].sync = engine->triggerCentral.triggerState.shaft_is_synchronized;
 
-	NextIdx++;
-
+	uint32_t gap2 = getTimeNowUs() - thistoothtime;
+	toothHistory[NextIdx].timestamp = SWAP_UINT32(gap2);
+	thistoothtime = getTimeNowUs();
+	valueLogged = true;
+	}
+	if (valueLogged == true) {
+		NextIdx++;
+	}
 	static_assert(sizeof(composite_logger_s) == COMPOSITE_PACKET_SIZE, "composite packet size");
 
-	// If we hit the end, loop
-	if (NextIdx >= sizeof(buffer) / sizeof(buffer[0])) {
+	if (NextIdx >= COMPOSITE_PACKET_COUNT - 1) {
 		NextIdx = 0;
 	}
 }
+}
+
 
 void LogTriggerTooth(trigger_event_e tooth, efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// bail if we aren't enabled
 	if (!ToothLoggerEnabled) {
 		return;
 	}
-/*
-		// We currently only support the primary trigger falling edge
-    	// (this is the edge that VR sensors are accurate on)
-    	// Since VR sensors are the most useful case here, this is okay for now.
-    	if (tooth != SHAFT_PRIMARY_FALLING) {
-    		return;
-    	}
-
-    	uint32_t nowUs = NT2US(timestamp);
-    	// 10us per LSB - this gives plenty of accuracy, yet fits 655.35 ms in to a uint16
-    	uint16_t delta = static_cast<uint16_t>((nowUs - lastEdgeTimestamp) / 10);
-    	lastEdgeTimestamp = nowUs;
-
-    	SetNextEntry(delta);
-*/
-
 	switch (tooth) {
 	case SHAFT_PRIMARY_FALLING:
 		trigger1 = false;
+		edge = false;
+		validCrank = true;
 		break;
 	case SHAFT_PRIMARY_RISING:
 		trigger1 = true;
-		break;
-	case SHAFT_SECONDARY_FALLING:
-		trigger2 = false;
-		break;
-	case SHAFT_SECONDARY_RISING:
-		trigger2 = true;
+		edge = false;
+		validCrank = true;
 		break;
 	default:
 		break;
 	}
 
-	SetNextCompositeEntry(timestamp, trigger1, trigger2, false PASS_ENGINE_PARAMETER_SUFFIX);
+	if (engine->toothLogEnabled) {
+			auto gap = getTimeNowUs() - lastcranktime;
+			addToothLogEntry(gap, trigger1, false);
+			lastcranktime = getTimeNowUs();
+	}
+
+	if (engine->compositeLogEnabled) {
+		lastEdgeTimestamp = getTimeNowUs();
+		addToothLogEntry(lastEdgeTimestamp, trigger1, edge);
+
+	}
+
 }
+
+void LogCamTooth(trigger_value_e value DECLARE_ENGINE_PARAMETER_SUFFIX) {
+	// bail if we aren't enabled
+	if (!ToothLoggerEnabled) {
+		return;
+	}
+	switch (value) {
+	case TV_FALL:
+		trigger2 = false;
+		edge = true;
+		validCam = true;
+		break;
+	case TV_RISE:
+		trigger2 = true;
+		edge = true;
+		validCam = true;
+		break;
+	default:
+		break;
+	}
+
+	if (engine->compositeLogEnabled) {
+		lastEdgeTimestamp = getTimeNowUs();
+		addToothLogEntry(lastEdgeTimestamp, trigger2, edge);
+		}
+
+}
+
+
 
 void LogTriggerTopDeadCenter(efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// bail if we aren't enabled
 	if (!ToothLoggerEnabled) {
 		return;
 	}
-	SetNextCompositeEntry(timestamp, trigger1, trigger2, true PASS_ENGINE_PARAMETER_SUFFIX);
+
 }
+
 
 void EnableToothLogger() {
 	// Clear the buffer
 	memset(buffer, 0, sizeof(buffer));
-
+	memset(toothHistory, 0, sizeof(toothHistory));
 	// Reset the last edge to now - this prevents the first edge logged from being bogus
 	lastEdgeTimestamp = getTimeNowUs();
-
+	thistoothtime = getTimeNowUs();
 	// Reset write index
 	NextIdx = 0;
 
@@ -144,9 +208,12 @@ void DisableToothLogger() {
 	ToothLoggerEnabled = false;
 	tsOutputChannels.toothLogReady = false;
 }
-
-ToothLoggerBuffer GetToothLoggerBuffer() {
+ToothLoggerBuffer GetCompositeLoggerBuffer() {
 	return { reinterpret_cast<uint8_t*>(buffer), sizeof(buffer) };
+	return { reinterpret_cast<uint8_t*>(toothHistory), sizeof(toothHistory) };
+}
+ToothLoggerBuffer GetToothLoggerBuffer() {
+	return { reinterpret_cast<uint8_t*>(toothHistory), sizeof(toothHistory) };
 }
 
 #endif /* EFI_TOOTH_LOGGER */

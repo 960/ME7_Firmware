@@ -21,8 +21,8 @@ public:
 };
 
 void initEeprom(void);
-int writeEeprom(uint32_t offset, size_t size, const uint8_t *buffer);
-int readEeprom(uint32_t offset, size_t size, uint8_t *buffer);
+int writeEeprom(flashaddr_t offset, size_t size, const uint8_t *buffer);
+int readEeprom(flashaddr_t offset, size_t size, uint8_t *buffer);
 
 
 

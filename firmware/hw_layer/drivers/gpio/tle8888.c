@@ -169,7 +169,7 @@ const uint8_t watchDogResponses[16][4] = {
 
 /* OS */
 SEMAPHORE_DECL(tle8888_wake, 10 /* or BOARD_TLE8888_COUNT ? */);
-static THD_WORKING_AREA(tle8888_thread_1_wa, 256);
+static THD_WORKING_AREA(tle8888_thread_1_wa, GPIO_DRIVERS_STACK_SIZE);
 
 // todo: much of state is currently global while technically it should be per-chip. but we
 // are lazy and in reality it's usually one chip per board

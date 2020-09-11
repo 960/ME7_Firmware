@@ -52,7 +52,7 @@
  *
  */
 #if !defined(EFI_ENABLE_ASSERTS)
- #define EFI_ENABLE_ASSERTS TRUE
+ #define EFI_ENABLE_ASSERTS FALSE
 #endif /* EFI_ENABLE_ASSERTS */
 
 #if !defined(EFI_ENABLE_MOCK_ADC)
@@ -85,7 +85,7 @@
 /**
  * Bluetooth UART setup support.
  */
-#define EFI_BLUETOOTH_SETUP FALSE
+#define EFI_BLUETOOTH_SETUP TRUE
 
 /**
  * TunerStudio debug output
@@ -139,7 +139,7 @@
 #endif
 
 #ifndef BOARD_TLE8888_COUNT
-#define BOARD_TLE8888_COUNT 	1
+#define BOARD_TLE8888_COUNT 	0
 #endif
 
 #define EFI_ANALOG_SENSORS TRUE
@@ -339,7 +339,7 @@
  *  STM32_UART_USE_USARTx
  * in mcuconf.h
  */
-#define TS_UART_DMA_MODE FALSE
+#define TS_UART_DMA_MODE TRUE
 
 #define TS_UART_DEVICE (&UARTD3)
 //#define TS_SERIAL_DEVICE (&SD3)

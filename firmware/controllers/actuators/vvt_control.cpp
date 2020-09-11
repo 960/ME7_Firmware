@@ -8,30 +8,33 @@
 #include "global.h"
 #include "vvt_control.h"
 #if EFI_VVT_CONTROL
-#if EFI_TUNER_STUDIO
+
 #include "tunerstudio_outputs.h"
-#endif /* EFI_TUNER_STUDIO */
-#include "sensor.h"
-#include "engine.h"
-#include "tps.h"
-#include "map.h"
-#include "io_pins.h"
-#include "engine_configuration.h"
-#include "pwm_generator_logic.h"
-#include "pid.h"
-#include "engine_controller.h"
-#include "periodic_task.h"
 #include "pin_repository.h"
+#include "sensor.h"
+
+#include "global.h"
+#include "os_access.h"
+
+#include "trigger_central.h"
+#include "trigger_decoder.h"
+#include "main_trigger_callback.h"
+#include "engine_configuration.h"
+#include "listener_array.h"
 #include "pwm_generator_logic.h"
-#include "pid_auto_tune.h"
-#include "local_version_holder.h"
-#include "thermistors.h"
+#include "tooth_logger.h"
+
+
 #include "engine_math.h"
+#include "local_version_holder.h"
+#include "trigger_simulator.h"
+
+#include "rpm_calculator.h"
+#include "tooth_logger.h"
+#include "perf_trace.h"
 #define NO_PIN_PERIOD 500
 
-#if defined(HAS_OS_ACCESS)
-#error "Unexpected OS ACCESS HERE"
-#endif
+
 
 EXTERN_ENGINE;
 
@@ -41,7 +44,7 @@ static Pid vvtControlPid(vvtPidS);
 static bool shouldResetPid = false;
 
 
-static vvt_Map3D_t vvtMap("vvtmap", 1);
+static vvt_Map3D_t vvtMap("vvtmap");
 static bool isEnabled = engineConfiguration->isVvtControlEnabled;
 
 
@@ -71,8 +74,8 @@ int getPeriodMs()
 		vvtControlPid.postState(&tsOutputChannels);
 #endif /* EFI_TUNER_STUDIO */
 
-	float rpm = GET_RPM_VALUE;
-	float mapValue = getMap(PASS_ENGINE_PARAMETER_SIGNATURE);
+	float rpm = GET_RPM();
+	auto mapValue = Sensor::get(SensorType::Map);
 	auto tps = Sensor::get(SensorType::DriverThrottleIntent);
 	auto coolant = Sensor::get(SensorType::Clt);
 
@@ -92,7 +95,7 @@ int getPeriodMs()
 		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, tps.Value);
 		}
 	else if (engineConfiguration->vvt.vvtLoadAxis == VVT_LOAD_MAP) {
-		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, mapValue);
+		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, mapValue.Value);
 		}
 	else if (engineConfiguration->vvt.vvtLoadAxis == VVT_LOAD_CLT) {
 		targetAngle = vvtMap.getValue(rpm / RPM_1_BYTE_PACKING_MULT, coolant.Value);

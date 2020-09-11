@@ -6,7 +6,6 @@
 
 #include "thermistors.h"
 
-
 #include <math.h>
 
 SensorResult ThermistorFunc::convert(float ohms) const {

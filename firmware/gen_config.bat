@@ -35,8 +35,8 @@ IF NOT ERRORLEVEL 0 EXIT /B 1
 rem This would automatically copy latest file to 'dev' TS project
 set ts_path="%HOMEDRIVE%%HOMEPATH%\Documents\TunerStudioProjects"
 echo %ts_path%
-cp tunerstudio/ME7_Ecu.ini deliver\ME7_Ecu_V2\ME7_Ecu_V2.ini
-
+cp tunerstudio/ME7_Ecu_V2.ini deliver\ME7_Ecu_V2\ME7_Ecu_V2.ini
+cp tunerstudio/ME7_Ecu_V3.ini deliver\ME7_Ecu_V3\ME7_Ecu_V3.ini
 
 
 call gen_config_board ME7_Ecu_V2
@@ -45,10 +45,5 @@ IF NOT ERRORLEVEL 0 EXIT /B 1
 
 
 call gen_config_board ME7_Ecu_V3
-IF NOT ERRORLEVEL 0 echo ERROR generating
-IF NOT ERRORLEVEL 0 EXIT /B 1
-
-
-call gen_config_board Stm_Adapter
 IF NOT ERRORLEVEL 0 echo ERROR generating
 IF NOT ERRORLEVEL 0 EXIT /B 1

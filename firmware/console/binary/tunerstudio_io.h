@@ -13,13 +13,13 @@
 #include "pin_repository.h"
 #endif
 
-#define PROTOCOL  "001"
+
 
 #define PROTOCOL  "001"
+#define TS_RESPONSE_BURN_OK 4
+#define TS_RESPONSE_COMMAND_OK 7
+#define TS_RESPONSE_OK 0
 
-#define TS_RESPONSE_OK 0x00
-#define TS_RESPONSE_BURN_OK 0x04
-#define TS_RESPONSE_COMMAND_OK 0x07
 
 #define TS_RESPONSE_UNDERRUN 0x80
 #define TS_RESPONSE_OVERRUN 0x81
@@ -48,7 +48,56 @@ struct ts_channel_s {
 	UARTDriver *uartp = nullptr;
 #endif // TS_UART_DMA_MODE
 };
+
 #define TS_PROTOCOL "001"
+
+#define TS_SINGLE_WRITE_COMMAND 'W'
+#define TS_TEST_COMMAND 't' // 0x74
+#define TS_BURN_COMMAND 'B'
+#define TS_CHUNK_WRITE_COMMAND 'C'
+#define TS_COMMAND_F 'F'
+
+#define TS_CRC_CHECK_COMMAND 'k'
+#define TS_EXECUTE 'E'
+
+#define TS_GET_CONFIG_ERROR 'e'
+#define TS_GET_FIRMWARE_VERSION 'S'
+
+#define TS_GET_STRUCT '9'
+#define TS_GET_TEXT 'G'
+#define TS_HELLO_COMMAND 'Q'
+#define TS_IO_TEST_COMMAND 'Z'
+#define TS_ONLINE_PROTOCOL 'z'
+#define TS_OUTPUT_COMMAND 'O'
+#define TS_PAGE_COMMAND 'P'
+#define TS_PERF_TRACE_BEGIN '_'
+#define TS_PERF_TRACE_GET_BUFFER 'b'
+#define TS_READ_COMMAND 'R'
+
+#define TS_SD_PROTOCOL_DO 1
+#define TS_SD_PROTOCOL_FETCH_COMPRESSED 8
+#define TS_SD_PROTOCOL_FETCH_DATA 0x14
+#define TS_SD_PROTOCOL_FETCH_INFO 0x11
+#define TS_SD_PROTOCOL_READ_DIR 2
+#define TS_SD_PROTOCOL_REMOVE_FILE 6
+#define TS_SD_PROTOCOL_RTC 7
+#define TS_SD_R_COMMAND 'r'
+#define TS_SD_W_COMMAND 'w'
+
+#define TS_COMPOSITE_DISABLE 2
+#define TS_COMPOSITE_ENABLE 1
+#define TS_SET_LOGGER_SWITCH 'l'
+#define TS_GET_LOGGER_GET_BUFFER 'L'
+#define TS_GET_COMPOSITE_BUFFER_DONE_DIFFERENTLY '8'
+
+#define TS_START_TOOTH_LOGGER 'H'
+#define TS_STOP_TOOTH_LOGGER 'h'
+
+
+
+
+/*
+
 #define TS_OUTPUT_COMMAND 'O'
 #define TS_HELLO_COMMAND 'S'
 #define TS_CRC_CHECK_COMMAND 'k'
@@ -66,6 +115,8 @@ struct ts_channel_s {
 #define TS_COMMAND_F 'F' // 0x46
 
 #define TS_GET_CONFIG_ERROR 'e' // returns getFirmwareError()
+// 0x77
+#define TS_IO_TEST_COMMAND 'Z'
 
 // High speed logger commands
 #define TS_SET_LOGGER_MODE   'l'
@@ -78,7 +129,7 @@ struct ts_channel_s {
 #define TS_SINGLE_WRITE_COMMAND 'W' // 0x57 pageValueWrite
 #define TS_CHUNK_WRITE_COMMAND 'C' // 0x43 pageChunkWrite
 #define TS_BURN_COMMAND 'B' // 0x42 burnCommand
-#define TS_IO_TEST_COMMAND 'w' // 0x77
+
 // 0x45
 #define TS_EXECUTE 'E'
 // 0x39
@@ -86,6 +137,9 @@ struct ts_channel_s {
 // 0x47
 #define TS_GET_TEXT 'G'
 #define TS_CRC_CHECK_COMMAND 'k' // 0x6B
+
+*/
+
 
 #define CRC_VALUE_SIZE 4
 // todo: double-check this
@@ -103,7 +157,7 @@ bool stopTsPort(ts_channel_s *tsChannel);
 
 // that's 1 second
 #define SR5_READ_TIMEOUT TIME_MS2I(1000)
-
+void startBtConn(void);
 void sr5WriteData(ts_channel_s *tsChannel, const uint8_t * buffer, int size);
 void sr5WriteCrcPacket(ts_channel_s *tsChannel, const uint8_t responseCode, const void *buf, const uint16_t size);
 void sr5SendResponse(ts_channel_s *tsChannel, ts_response_format_e mode, const uint8_t * buffer, int size);

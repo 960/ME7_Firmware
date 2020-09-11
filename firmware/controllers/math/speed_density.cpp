@@ -28,7 +28,7 @@ EXTERN_ENGINE;
 
 fuel_Map3D_t veMap("VE");
 fuel_Map3D_t ve2Map("VE2");
-afr_Map3D_t afrMap("AFR", 1.0f / PACK_MULT_AFR_CFG);
+afr_Map3D_t afrMap("AFR");
 
 #define tpMin 0
 #define tpMax 100
@@ -114,6 +114,6 @@ void setDefaultVETable(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 }
 
 void initSpeedDensity(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	veMap.init(config->veTable, config->fmap_table, config->frpm_table);
+	veMap.init(config->veTable1, config->fmap_table, config->frpm_table);
 	afrMap.init(config->afrTable, config->afrLoadBins, config->afrRpmBins);
 }

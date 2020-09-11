@@ -11,25 +11,16 @@ enable2ndByteCanID = false
    	; keyword    =  referenceName,  DisplayName
 
 [MegaTune]
- ; https://rusefi.com/forum/viewtopic.php?p=36201#p36201
- 	signature    = @@TS_SIGNATURE@@ 
+   MTversion      = 2.25
+
+   queryCommand   = "Q"
+   signature      = "MS Ext"
+   versionInfo    = "S" ;This info is what is displayed to user
 
 [TunerStudio]
-   queryCommand   = "S"
-   versionInfo    = "V"  ; firmwave version for title bar.
-   signature    = @@TS_SIGNATURE@@ ; signature is expected to be 7 or more characters.
+   iniSpecVersion = 3.64
 
-  
 
-[KeyActions]          
-
-showPanel = fp1,  allPins1 
-showPanel = fp2,  allPins2 
-showPanel = dbg,  debug
-showPanel = con,  connection
-showPanel = sim,  ecuStimulator
-	    
- 
 		
 [Constants]
 ; new packet serial format with CRC
@@ -37,20 +28,8 @@ showPanel = sim,  ecuStimulator
 
    endianness          = little
    nPages              = 1
-   pageSize = @@TS_CONFIG_SIZE@@
+ 	
  pageIdentifier      = "\x00\x00"
-   ;pageReadCommand     = "R%2o%2c"
-   ;burnCommand         = "B"
-   ;pageActivate        = "P"
-   ;pageValueWrite      = "W%2o%v"
-   ;pageChunkWrite      = "C%2o%2c%v"
-   ;crc32CheckCommand   = "k%2o%2c"
- ; crc32CheckCommand   = "k%2o\x00\x00\x00\x04"
-  ; retrieveConfigError = "e"
-
- 
-
- 
    pageReadCommand     = "R\x00\x00%2o%2c"
    burnCommand         = "B\x00\x00"
    pageActivate        = "P\x00\x00"
@@ -60,16 +39,15 @@ showPanel = sim,  ecuStimulator
    crc32CheckCommand   = "k\x00\x00\x00\x00\x00\x00"
    retrieveConfigError = "e"
 
+
+
 ;communication settings
-  
 ;e.g. put writeblocks off and add an interwrite delay
-  ; writeBlocks = on
-   interWriteDelay = 5 ;Ignored when tsWriteBlocks is on
+   writeBlocks = on
+   interWriteDelay = 10 ;Ignored when tsWriteBlocks is on
     pageActivationDelay = 10
-   blockReadTimeout    = 3000; Milliseconds general timeout
-   
+   blockReadTimeout    = 3000; Milliseconds general timeout 
   delayAfterPortOpen = 1000 
-   
    blockingFactor = 256 ; max chunk size
 ;end communication settings
 
@@ -97,7 +75,24 @@ showPanel = sim,  ecuStimulator
 
 
 [LoggerDefinition]
-  ; valid logger types: composite, tooth, trigger, csv
+  loggerDef = tooth, "Tooth Logger", tooth
+       ;dataReadCommand = "r\\x00\\xf4\\x00\\x00\\x04\\x00" ; standard TS command format
+       startCommand = "H"
+       stopCommand = "h"
+       ;dataReadCommand = "T" ; Basic TS command format
+       dataReadCommand = "L" ; Basic TS command format. Note that this is shared with the composite logger. Firmware detects which log is currently running
+       dataReadTimeout = 5000 ; time in ms
+       continuousRead = true
+       dataReadyCondition = { toothLogReady == 1 }
+       dataLength =  500; in bytes, including headers, footers and data (not used). 4 bytes * 127 entries
+       ;dataLength = 128 ; in bytes, including headers, footers and data (not used)
+
+       ;recordDef = headerLen. footerLen, recordLen
+       recordDef =   0,   0,   4; in bytes, the recordLen is for each record, currently limited to 4 bytes
+
+       ;recordField = Name,          HeaderName,      startBit,   bitCount,   scale,  units, updateCondition
+       recordField = toothTime,         "ToothTime",     0,          32,       1.0,    "uS"
+
 ;  loggerDef = compositeLogger, "Primary Trigger Logger", tooth
   loggerDef = compositeLogger, "Trigger Logger", composite
         startCommand = "l\x01"
@@ -109,35 +104,62 @@ showPanel = sim,  ecuStimulator
         ; each packet is @@COMPOSITE_PACKET_SIZE@@ and we have @@COMPOSITE_PACKET_COUNT@@ of those
         dataLength = @@COMPOSITE_DATA_LENGTH@@
 
-;tooth
-       ; recordDef = headerLen, footerLen, recordLen
-;       recordDef =   0,   0,   @@COMPOSITE_PACKET_SIZE@@
+		recordDef =   0,   0,  5
 
-       ; uint16 that stores 1/100 second
-;       recordField = toothTime, "tooth", 0, 16, 0.01, "ms"
+;recordDef = headerLen. footerLen, recordLen
+
+ ;recordField = Name, 		HeaderName, startBit, bitCount, scale, 	units, 	updateCondition
+ 
+ 	;recordField = 	crnkCam, 	"CrnkCm", 		1, 		1, 		1.0, 	""
+ 	;recordField = 	edge, 		"Edge", 		2, 		1, 		1.0, 	""
+ 
+ 	
+
+ 	; hidden calcField serves as intermediate variable
+ 	
+ 
+ 	; Composite compatability fields
+ 	recordField =  	priLevel, 		"PriLevel", 	0, 		1, 		1.0, 	"H/L" ;, { trigger == 0 }
+ 	recordField =  	secLevel, 		"SecLevel", 	1, 		1, 		1.0, 	"H/L" ;, { trigger == 1 }
+ 	recordField =  	trigger, 		"Trigger", 		2, 		1, 		1.0, 	""
+	recordField =  	sync, 			"Sync", 		3, 		1, 		1.0, 	""
+	recordField = 	refTime, 		"RefTime", 		8, 		32, 	0.001, 	"uS"
+
+	;recordField = toothTime,         "ToothTime",     0,          32,       1.0,    "uS"
 
 
-		; recordDef = headerLen, footerLen, recordLen
-		recordDef =   0,   0,   @@COMPOSITE_PACKET_SIZE@@
+ 	calcField 	=  	toothTime, 		"ToothTime", "ms", { refTime - pastValue(refTime, 1) }
+
+calcField = maxTime, 		"MaxTime", "ms", { maxValue(refTime) }, hidden
+ calcField = time,                "Time",   "ms",  { refTime }
+
+ ; currently the "Time" field needs to be at the end of the row for it to jump to the
+ ; record when clicking on the chart.
+ ; So this is created here
+ 
+
+
+
+
 
 		; these names are hard-coded inside TS
-		recordField = priLevel,          "PriLevel",     0,          1,          1.0,    "Flag"
-        recordField = secLevel,          "SecLevel",     1,          1,          1.0,    "Flag"
-        recordField = trigger,           "Trigger",      2,          1,          1.0,    "Flag"
-        recordField = sync,              "Sync",         3,          1,          1.0,    "Flag"
-	   recordField = refTime,           "RefTime",      8,          32,         0.01,  "ms"
+	;	recordField = priLevel,          "PriLevel",      0,          1,          1.0,    "Flag"
+     ;   recordField = secLevel,          "SecLevel",     1,          1,          1.0,    "Flag"
+      ;  recordField = trigger,           "Trigger",      2,          1,          1.0,    "Flag"
+       ; recordField = sync,              "Sync",         3,          1,          1.0,    "Flag"
+		; recordField = refTime,           "RefTime",     8,          32,         0.01,  "ms"
 
         ; hidden calcField serves as intermediate variable
-        calcField = maxTime,               "MaxTime",   "ms",  { maxValue(refTime) }
+       ;calcField = maxTime, "MaxTime", "ms", { maxValue(refTime) }, hidden
 
-        calcField = toothTime,           "ToothTime",    "ms",       { refTime - pastValue(refTime, 1) }
+        ;calcField = toothTime,           "ToothTime",    "ms",       { refTime - pastValue(refTime, 1)}
         ;recordField = time,                "Time",       24,         16,         1.0,    "ms"
-        calcField = time,                "Time",   "ms",  { refTime }
+       ;calcField = time, "Time", "ms", { refTime }
 
 [VeAnalyze]
 
         ;    tableName,  lambdaTargetTableName, lambdaChannel, egoCorrectionChannel, activeCondition
-       veAnalyzeMap = veTableTbl, afrTableTbl, AFRValue, egoCorrection, { 1 }
+       veAnalyzeMap = veTable1Tbl, afrTableTbl, AFRValue, egoCorrection, { 1 }
        lambdaTargetTables = afrTableTbl, afrTSCustom
 
        ; filter =  Name,        "DisplayName", outputChannel, operator, defaultVal, userAdjustable
@@ -245,7 +267,7 @@ showPanel = sim,  ecuStimulator
       iatCorrection   = scalar,  S16,     64,        "%",{1/@@PACK_MULT_PERCENT@@},         0
       cltCorrection   = scalar,  S16,     66,        "%",{1/@@PACK_MULT_PERCENT@@},         0
       baroCorrection  = scalar,  S16,     68,        "%",{1/@@PACK_MULT_PERCENT@@},         0
-      fuelPidCorrection=scalar,  S16,     70,       "%",{1/@@PACK_MULT_PERCENT@@},         0
+      egoCorrection=scalar,  S16,     70,       "%",{1/@@PACK_MULT_PERCENT@@},         0
 
 ; Wall model AE
       wallFuelAmount  = scalar,  U16,     72,     "ms",{1/@@PACK_MULT_MS@@},         0
@@ -344,8 +366,15 @@ showPanel = sim,  ecuStimulator
 
 	; we use this to match logs to tunes
 	tuneCrc16         = scalar,  U16,    244, "crc16",           1,         0
-	widebandIdent	= scalar,  S16,    246,    "val",           1,       0.0
-knock1 = scalar, S08, 250, "dbv", 1, 0
+    sd_status         = scalar,  U08,    246,  "", 1.0, 0.0
+
+; Transmission
+      tcuCurrentGear  = scalar,  S08,     247,   "gear",    1,         0
+      tcuDesiredGear  = scalar,  S08,     262,   "gear",    1,         0
+
+secl = scalar, U08,  263, "sec",    1.000, 0.000
+
+	knock1 = scalar, S08, 250, "dbv", 1, 0
 	knock2 = scalar, S08, 251, "dbv", 1, 0
 	knock3 = scalar, S08, 252, "dbv", 1, 0
 	knock4 = scalar, S08, 253, "dbv", 1, 0
@@ -353,7 +382,12 @@ knock1 = scalar, S08, 250, "dbv", 1, 0
 	knock6 = scalar, S08, 255, "dbv", 1, 0
 	knock7 = scalar, S08, 256, "dbv", 1, 0
 	knock8 = scalar, S08, 257, "dbv", 1, 0
+	
  	map_bar      = { (MAPValue - 100) / 101.33 }
+
+	time             = { timeNow                                       }
+   	        
+
 ;
 ; see TunerStudioOutputChannels struct
 ;
@@ -362,8 +396,8 @@ knock1 = scalar, S08, 250, "dbv", 1, 0
 	LM_SPEED_DENSITY = {3},
 	LM_REAL_MAF = {4}
 
-      egoCorrection   = { 100 }
-      time            = { timeNow }
+     
+    
 
 	; These "synthetic" channels provide the Y-axis (load) value for gen purp PWM table's Y axes
 	gppwm1_load = {(gppwm1_loadAxis == 0) ? TPSValue : ((gppwm1_loadAxis == 1) ? MAPValue : ((gppwm1_loadAxis == 2) ? coolant : ((gppwm1_loadAxis == 3) ? intake : ((gppwm1_loadAxis == 4) ? fuelingLoad : ignitionLoad))))}
@@ -448,6 +482,13 @@ curve = narrowToWideOxygenCurve, "Narrow to Wideband approximation"
     suppressGraph 	= true
     showTextValues 	= true
 
+	curve = knockThresholdCurve, "Engine knock threshold RPM based"
+      columnLabel = "RPM", "Threshold"
+      xAxis       =  0, 8000, 10
+      yAxis       =  0,  8, 10
+      xBins       = knockNoiseRpmBins, RPMValue
+      yBins       = knockNoise
+      gauge       = RPMGauge
 
 curve = mapAccelTaper, "Engine Load Acceleration Enrichment Decay"
     columnLabel 	= "", ""
@@ -558,7 +599,7 @@ curve = crankingDurationCurve, "First Crank Enrichment     Addition To Cranking 
 	showTextValues 	= true
     suppressGraph 	= true
 
-curve = cltIdleCurve, "Warmup Idle Correction"
+curve = cltIdleCurve, "Warmup Idle Air Correction"
     columnLabel 	= "Coolant", "% Trim"
 	xAxis       	= -40, 120, 10
     yAxis       	=  0,  3, 10
@@ -592,6 +633,14 @@ curve = cltIdleRPMCurve, "Idle Target RPM"
     yBins       	= cltIdleRpm, RPMValue
 	suppressGraph 	= true
     showTextValues 	= true
+	
+curve = iacCoastingCurve, "Coasting IAC Position for Auto-Idle"
+      columnLabel = "Coolant", "Multiplier"
+      xAxis       = -40, 120, 9
+      yAxis       =  0,  100, 10
+      xBins       = iacCoastingBins, coolant
+      yBins       = iacCoasting
+      gauge       = idleAirValvePositionGauge
 
 curve = idleAdvanceCurve, "Idle Advance Angle"
     columnLabel 	= "RPM", "degrees"
@@ -657,11 +706,11 @@ curve = crankingAdvanceCurve, "Cranking Advance Angle"
 [TableEditor]
    ;       table_id,    map3d_id,    "title",      page
 
-table = veTableTbl,  veTableMap,  "Fuel Table",   1
+table = veTable1Tbl,  veTableMap,  "Fuel Table",   1
 	xyLabels 	= "RPM", "LOAD"
     xBins       = frpm_table,  RPMValue
     yBins       = fmap_table,   fuelingLoad
-    zBins       = veTable
+    zBins       = veTable1
     gridOrient  = 250,   0, 340 
     upDownLabel = "(RICHER)", "(LEANER)"
 
@@ -742,13 +791,14 @@ table = pedalToTpsTbl,  pedalToTpsMap,  "Throttle Target Position",   1
       gridOrient  = 250,   0, 340 ; Space 123 rotation of grid in degrees.
       upDownLabel = "(RICHER)", "(LEANER)"
 
-table = iacPidMultTbl,  iacPidMultMap,  "IAC PID Multiplier Table",   1
-	xyLabels 	= "RPM", "LOAD"
-    xBins       = iacPidMultRpmBins,  RPMValue
-    yBins       = iacPidMultLoadBins,  fuelingLoad
-    zBins       = iacPidMultTable
-    gridOrient  = 250,   0, 340
-    upDownLabel = "(Later)", "(Sooner)"
+   table = iacPidMultTbl,  iacPidMultMap,  "IAC PID Multiplier Table",   1
+      ;       constant, variable
+      xBins       = iacPidMultRpmBins,  RPMValue
+      yBins       = iacPidMultLoadBins,  fuelingLoad
+      zBins       = iacPidMultTable
+;      gridHeight  = 2.0
+      gridOrient  = 250,   0, 340 ; Space 123 rotation of grid in degrees.
+      upDownLabel = "(Later)", "(Sooner)"
 
 	table = gppwm1Tbl, gppwm1Map, "GP#1", 1
 		xyLabels = "RPM", ""
@@ -788,12 +838,7 @@ gaugeCategory = Knock
    	knock7Gauge = knock7, 		"Knock Cyl 7", "dBv", -60, 10, -60, -60, 10, 10, 0, 0
    	knock8Gauge = knock8, 		"Knock Cyl 8", "dBv", -60, 10, -60, -60, 10, 10, 0, 0
 
-gaugeCategory = Sensors - Extra 2
 
-   	rpmAccelerationGa = rpmAcceleration,     "rpm delta",        "dRpm",        0,      3,       0,      1,       3,     4,   1,   1
-   	fuelTankLevelGauge   = fuelTankLevel,"Fuel level",           "x",        0,      7,      10,     10,     100,   100,   1,   2
-   	speedToRpmRatioGauge = speedToRpmRatio, "speed2rpm", "",     0,   100,     0,    0,    100,  100,   4,   4
- 	
 
 gaugeCategory = ECU Status
   
@@ -885,7 +930,7 @@ gaugeCategory = Fueling
    injectorLagMsGauge = injectorLagMs,       @@GAUGE_NAME_INJECTOR_LAG@@,      "mSec",        0,   25.5,     1.0,    1.2,      20,    25,   3, 1
    fuelRunningGauge     = fuelRunning,       @@GAUGE_NAME_FUEL_RUNNING@@,      "mSec",        0,   25.5,     1.0,    1.2,      20,    25,   3, 1
    baseFuelGauge     = baseFuel,       @@GAUGE_NAME_FUEL_BASE@@,      "mSec",        0,   25.5,     1.0,    1.2,      20,    25,   3, 1
-   fuelPidCorrectionGauge = fuelPidCorrection,       @@GAUGE_NAME_FUEL_PID_CORR@@,      "%",        -10,   10,     -8, -5, 5, 8,   3, 1
+   fuelPidCorrectionGauge = egoCorrection,       @@GAUGE_NAME_FUEL_PID_CORR@@,      "%",        -10,   10,     -8, -5, 5, 8,   3, 1
    fuelingLoadGauge = fuelingLoad, @@GAUGE_NAME_FUEL_LOAD@@, "%", 0, 300, 0, 0, 300, 300, 1, 1
 
 gaugeCategory = Throttle Body (incl. ETB)
@@ -973,7 +1018,6 @@ gaugeCategory = WideBand
     indicator = { needBurn }, "Config Ok",  "Unsaved Changes",   white, black, yellow,   black
     indicator = { hasSdCard}, "No SD",   "with SD",   white, black, green,   black
     indicator = { ind_fuel_pump}, "Fuel Pump Off",   "Fuel Pump On",   white, black, green,   black
-    indicator = { clutchUpState }, "Clutch Off",   "Clutch On",   white, black, red,   black
     indicator = { clutchDownState }, "Clutch",   "Clutch Down",   white, black, yellow,   black
     indicator = { brakePedalIndicator }, "Brake Off", "Brake On",   white, black, red,   black
     indicator = { acSwitchIndicator }, "AC on",   "AC off",   yellow, black, white,   black
@@ -992,24 +1036,23 @@ gaugeCategory = WideBand
 
 [Datalog]
    ;       Channel          Label          Type    Format
-   entry = time,            @@GAUGE_NAME_TIME@@,        float,  "%.3f"
-   entry = RPMValue,        @@GAUGE_NAME_RPM@@,         int,    "%d"
-   entry = firmwareVersion, @@GAUGE_NAME_VERSION@@,     int,    "%d"
-   entry = coolant,         @@GAUGE_NAME_CLT@@,         float,  "%.2f"
+   entry = time,           "Time",        float,  "%.3f"
+	entry = secl,            "SecL",         int,    "%d"
+   entry = RPMValue,        "RPM",         int,    "%d"
+   entry = coolant,         "CLT",         float,  "%.2f"
    entry = intake,          @@GAUGE_NAME_IAT@@,         float,  "%.2f"
    entry = oilPressure,		"Oil Press",   float,  "%.1f"
-   entry = TPSValue,        @@GAUGE_NAME_TPS@@,         float,  "%.2f"
+   entry = TPSValue,        "TPS",         float,  "%.2f"
    entry = TPS2Value,       @@GAUGE_NAME_TPS2@@,        float, "%.2f"
    entry = MAFValue,        @@GAUGE_NAME_MAF@@,         float,  "%.2f"
-   entry = MAPValue,        @@GAUGE_NAME_MAP@@,         float,  "%.1f"
+   entry = MAPValue,        "MAP",         float,  "%.1f"
    entry = AFRValue,        "AFR",         float,  "%.2f"
-   entry = VBatt,           @@GAUGE_NAME_VBAT@@,       float,  "%.2f"
+   entry = VBatt,           "Battery V",       float,  "%.2f"
    entry = engineLoad,	    @@GAUGE_NAME_ENGINE_LOAD@@, 	   float,  "%.1f"
    entry = fuelingLoad,     @@GAUGE_NAME_FUEL_LOAD@@,     float, "%.1f"
    entry = ignitionLoad,    @@GAUGE_NAME_IGNITION_LOAD@@, float, "%.1f"
-   entry = ignitionAdvance,	@@GAUGE_NAME_TIMING_ADVANCE@@,	   float,  "%.2f"
-   entry = knockLevel,	    @@GAUGE_NAME_KNOCK_LEVEL@@, 	   float,  "%.2f"
-   entry = knockCount,		@@GAUGE_NAME_KNOCK_COUNTER@@,	   int,    "%d"
+   entry = ignitionAdvance,	"Advance",	   float,  "%.2f"
+   
    entry = vehicleSpeedKph,	@@GAUGE_NAME_VVS@@,	   float,  "%.2f"
    entry = speedToRpmRatio, "s2rpm",	   float,  "%.3f"
    entry = rpmAcceleration, "dRPM",        float,  "%.3f"
@@ -1024,47 +1067,40 @@ gaugeCategory = WideBand
    entry = fuelRunning,     @@GAUGE_NAME_FUEL_RUNNING@@, float,  "%.3f"
    entry = actualLastInjection,     @@GAUGE_NAME_FUEL_LAST_INJECTION@@, float,  "%.3f"
    entry = baseFuel,	    @@GAUGE_NAME_FUEL_BASE@@,  float,  "%.2f"
-   entry = fuelPidCorrection,@@GAUGE_NAME_FUEL_PID_CORR@@,  float,  "%.2f"
-   entry = veValue,         @@GAUGE_NAME_FUEL_VE@@,    float,  "%.3f"
-   entry = injectorDutyCycle,@@GAUGE_NAME_FUEL_INJ_DUTY@@,float,"%.3f"
+   entry = egoCorrection,"Gego",  float,  "%.2f"
+   entry = veValue,         "Current VE",    float,  "%.3f"
+   entry = injectorDutyCycle,"PW",float,"%.3f"
    entry = coilDutyCycle,	@@GAUGE_NAME_DWELL_DUTY@@,	float,"%.3f"
-   entry = currentTargetAfr,@@GAUGE_NAME_TARGET_AFR@@,	float,"%.3f"
+   entry = currentTargetAfr,"AFR Target",	float,"%.3f"
 
-   	entry = injectorLagMs,   @@GAUGE_NAME_INJECTOR_LAG@@, float,  "%.3f"
-   	entry = fuelRunning,     @@GAUGE_NAME_FUEL_RUNNING@@, float,  "%.3f"
-   	entry = actualLastInjection,     @@GAUGE_NAME_FUEL_LAST_INJECTION@@, float,  "%.3f"
-   	entry = baseFuel,	    @@GAUGE_NAME_FUEL_BASE@@,  float,  "%.2f"
-   	entry = fuelPidCorrection,"EGO cor1",  float,  "%.2f"
-   	entry = veValue,         @@GAUGE_NAME_FUEL_VE@@,    float,  "%.3f"
-   	entry = injectorDutyCycle,@@GAUGE_NAME_FUEL_INJ_DUTY@@,float,"%.3f"
-   	entry = coilDutyCycle,	@@GAUGE_NAME_DWELL_DUTY@@,	float,"%.3f"
-   	entry = currentTargetAfr,@@GAUGE_NAME_TARGET_AFR@@,	float,"%.3f"
-
+  
    entry = engineLoadAccelExtra, @@GAUGE_NAME_FUEL_EL_EXTRA@@,float,  "%.3f"
-   entry = engineLoadDelta, "fuel: load change",float,  "%.3f"
+   entry = engineLoadDelta, "Load Change",float,  "%.3f"
 
-   entry = deltaTps,		@@GAUGE_NAME_FUEL_TPS_ROC@@,float,  "%.3f"
+   entry = deltaTps,		"TPS DOT",float,  "%.3f"
    entry = tpsAccelFuel,    @@GAUGE_NAME_FUEL_TPS_EXTRA@@,    float,  "%.3f"
 
    entry = wallFuelCorrection,@@GAUGE_NAME_FUEL_WALL_CORRECTION@@,	float,   "%.3f"
    entry = wallFuelAmount, @@GAUGE_NAME_FUEL_WALL_AMOUNT@@,	float,   "%.3f"
    
-   entry = baroCorrection,  @@GAUGE_NAME_FUEL_BARO_CORR@@,float,"%.3f"
-   entry = iatCorrection,   @@GAUGE_NAME_FUEL_IAT_CORR@@,	float,   "%.3f"
-   entry = cltCorrection,	@@GAUGE_NAME_FUEL_CLT_CORR@@, float,"%.3f"
+   entry = baroCorrection,  "Gbaro",float,"%.3f"
+   entry = iatCorrection,  "Gair",	float,   "%.3f"
+   entry = cltCorrection,	"Gwarm", float,"%.3f"
 
-   entry = sparkDwellValue,	@@GAUGE_COIL_DWELL_TIME@@, float,"%.3f"
-   entry = vvtPosition, @@GAUGE_NAME_VVT@@, float,"%.2f"
-   entry = injectionOffset, "injOffset"  , float, "%.2F"
-
+   	entry = sparkDwellValue,	@@GAUGE_COIL_DWELL_TIME@@, float,"%.3f"
+   	entry = vvtPosition, @@GAUGE_NAME_VVT@@, float,"%.2f"
+ 	entry = injectionOffset, "injOffset"  , float, "%.2F"
+	entry = knockCount,		@@GAUGE_NAME_KNOCK_COUNTER@@,	   int,    "%d"
+	entry = knockLevel,	    "Knock Level", 	   float,  "%.2f"
+   
     entry = knock1, "Knock 1", int, "%d"
-   entry = knock2, "Knock 2", int, "%d"
-   entry = knock3, "Knock 3", int, "%d"
-   entry = knock4, "Knock 4", int, "%d"
-   entry = knock5, "Knock 5", int, "%d"
-   entry = knock6, "Knock 6", int, "%d"
-   entry = knock7, "Knock 7", int, "%d"
-   entry = knock8, "Knock 8", int, "%d"
+   	entry = knock2, "Knock 2", int, "%d"
+   	entry = knock3, "Knock 3", int, "%d"
+   	entry = knock4, "Knock 4", int, "%d"
+   	entry = knock5, "Knock 5", int, "%d"
+   	entry = knock6, "Knock 6", int, "%d"
+   	entry = knock7, "Knock 7", int, "%d"
+   	entry = knock8, "Knock 8", int, "%d"
 
 ; is there a way to log parameter?   entry = debugMode,   "debugMode",int,"%d"
    entry = debugFloatField1,   {bitStringValue( debugFieldF1List,  debugMode )},float,"%.4f", { !enableLogDebugChannels }
@@ -1081,9 +1117,6 @@ gaugeCategory = WideBand
    entry = debugIntField5,     {bitStringValue( debugFieldI5List,  debugMode )},int,"%d", { !enableLogDebugChannels }
 
 
-; Alternator_PID: D setting
-   	entry = debugFloatField5,   @@GAUGE_NAME_DEBUG_F5@@,float,"%.4f", { !enableLogDebugChannels }
-
    entry = engineMode,   "Engine Mode",int,"%d"
    entry = warningCounter,   @@GAUGE_NAME_WARNING_COUNTER@@,int,"%d"
    entry = lastErrorCode,   @@GAUGE_NAME_WARNING_LAST@@,int,"%d"
@@ -1099,7 +1132,7 @@ gaugeCategory = WideBand
    
    entry = tCharge, "tCharge",float,"%.3f"
    
-   entry = clutchUpState,   @@INDICATOR_NAME_CLUTCH_UP@@,int,"%d"
+   
    entry = clutchDownState,   @@INDICATOR_NAME_CLUTCH_DOWN@@,int,"%d"
    entry = brakePedalIndicator,   @@INDICATOR_NAME_BRAKE_DOWN@@,int,"%d"
    entry = acSwitchIndicator,   @@INDICATOR_NAME_AC_SWITCH@@,int,"%d"
@@ -1169,7 +1202,7 @@ menuDialog = main
 	    subMenu = std_separator
 		subMenu = afrTableTbl,						"Target AFR Table", 0, {enableInjectors == 1}
 		subMenu = std_separator
-		subMenu = veTableTbl,						"Main Fuel Table ", 0, {enableInjectors == 1}
+		subMenu = veTable1Tbl,						"Main Fuel Table ", 0, {enableInjectors == 1}
 		
 	
 
@@ -1184,6 +1217,9 @@ menuDialog = main
 		subMenu = std_separator
 		groupMenu = 	"Corrections"
 		groupChildMenu = ignitionIatCorrTableTbl,	"IAT Correction", 0, {enableIgnition == 1}
+		groupChildMenu = ignitionCylExtra,			 "Induvidual Cylinder Offsets", {enableIgnition == 1}
+
+	
 		subMenu = std_separator
 		subMenu = dwellSettings,					"Coil Dwell Time", 0, {enableIgnition == 1}
 		subMenu = ignitionTableTbl,					"Main Ignition Table ", 0, {enableIgnition == 1}
@@ -1191,22 +1227,21 @@ menuDialog = main
 
 
 	menu = "&Cranking/Idle"
-        subMenu = crankingIgnition, 				"Cranking Ignition Settings"
-		subMenu = std_separator	
-	    subMenu = crankingFuel,       				"Cranking Fuel Settings"
-		subMenu = std_separator
-		subMenu = crankingAirSettings,               	"Cranking Air Settings"
+      
+		subMenu = crankingSettings,               	"Cranking Settings"
 		subMenu = std_separator
 		# Corrections
-	    groupMenu = 		"Cranking Enrichment"
+	    groupMenu = "Cranking Enrichment"
 	    groupChildMenu = crankingDurationCurve,	   	"First Crank Enrichment"
 		groupChildMenu = crankingCltCurve,			"Cranking Enrichment Table"
 		subMenu = crankingAdvanceCurve,				"Cranking Ignition Table", 0, {enableCrankingTimingTable == 1}
+		subMenu = cltCrankingCurve                   "Cranking Air Curve", {overrideCrankingIacSetting == 1}
 		# Idle
 		subMenu = std_separator	
 		subMenu = idlehw,							"Idle hardware"
 		subMenu = std_separator						
 		subMenu = etbIdleSettingsDialog,           	"Idle Settings", {useETBforIdleControl == 1}
+		subMenu = idleTimingPidCorrDialog,	"Closed-loop idle timing"
 		subMenu = std_separator
 		subMenu = idleSettingsDialog,				"Idle Settings", {useSolenoidIdle == 1}
 		subMenu = std_separator	
@@ -1216,7 +1251,7 @@ menuDialog = main
 		subMenu = idleAdvanceCurve,					"Idle Ignition Table", 0, {useSeparateAdvanceForIdle == 1}
 		subMenu = idleTimingPidCorrDialog,			"Closed-loop Idle Timing", {useIdleTimingPidControl == 1}		
 		subMenu = iacCoastingCurve,					"Coasting IAC Position for Auto-Idle", 0, {useIacTableForCoasting == 1}
-     	
+     	subMenu = iacPidMultTbl, 					"Idle Pid Table", {useIacPidMultTable == 1}
 	  
 		
 
@@ -1258,6 +1293,8 @@ menuDialog = main
 	menu = "&Outputs" 
 		subMenu = boostDialog,          			"Boost Control"
 		subMenu = boostPidDialog,        			"Closed Loop Boost",    { boostType == 1 }
+		subMenu = std_separator
+		subMenu = vvtDialog,						"VVT Settings"
 		subMenu = std_separator
 	   	subMenu = gppwm1, "General Purpose PWM 1"
 		subMenu = gppwm2, "General Purpose PWM 2"
@@ -1335,72 +1372,72 @@ menuDialog = main
 ; see TS_IO_TEST_COMMAND in firmware code
 ;
 
-cmd_erase_fault_codes 	= "w\x00\x11\x00\x01"
-cmd_test_spk1  			= "w\x00\x12\x00\x01"
-cmd_test_spk2  			= "w\x00\x12\x00\x02"
-cmd_test_spk3  			= "w\x00\x12\x00\x03"
-cmd_test_spk4  			= "w\x00\x12\x00\x04"
-cmd_test_spk5  			= "w\x00\x12\x00\x05"
-cmd_test_spk6  			= "w\x00\x12\x00\x06"
-cmd_test_spk7  			= "w\x00\x12\x00\x07"
-cmd_test_spk8  			= "w\x00\x12\x00\x08"
-cmd_test_spk9  			= "w\x00\x12\x00\x09"
-cmd_test_spk10 			= "w\x00\x12\x00\x0a"
-cmd_test_spk11 			= "w\x00\x12\x00\x0b"
-cmd_test_spk12 			= "w\x00\x12\x00\x0c"
-cmd_test_spk13 			= "w\x00\x12\x00\x0d"
-cmd_test_spk14 			= "w\x00\x12\x00\x0e"
-cmd_test_spk15 			= "w\x00\x12\x00\x0f"
-cmd_test_spk16 			= "w\x00\x12\x00\x10"
+cmd_erase_fault_codes 	= "Z\x00\x11\x00\x01"
+cmd_test_spk1  = "Z\x00\x12\x00\x01"
+cmd_test_spk2  = "Z\x00\x12\x00\x02"
+cmd_test_spk3  = "Z\x00\x12\x00\x03"
+cmd_test_spk4  = "Z\x00\x12\x00\x04"
+cmd_test_spk5  = "Z\x00\x12\x00\x05"
+cmd_test_spk6  = "Z\x00\x12\x00\x06"
+cmd_test_spk7  = "Z\x00\x12\x00\x07"
+cmd_test_spk8  = "Z\x00\x12\x00\x08"
+cmd_test_spk9  = "Z\x00\x12\x00\x09"
+cmd_test_spk10 = "Z\x00\x12\x00\x0a"
+cmd_test_spk11 = "Z\x00\x12\x00\x0b"
+cmd_test_spk12 = "Z\x00\x12\x00\x0c"
+cmd_test_spk13 = "Z\x00\x12\x00\x0d"
+cmd_test_spk14 = "Z\x00\x12\x00\x0e"
+cmd_test_spk15 = "Z\x00\x12\x00\x0f"
+cmd_test_spk16 = "Z\x00\x12\x00\x10"
 		
 		
-cmd_test_inj1  			= "w\x00\x13\x00\x01"
-cmd_test_inj2  			= "w\x00\x13\x00\x02"
-cmd_test_inj3  			= "w\x00\x13\x00\x03"
-cmd_test_inj4  			= "w\x00\x13\x00\x04"
-cmd_test_inj5  			= "w\x00\x13\x00\x05"
-cmd_test_inj6  			= "w\x00\x13\x00\x06"
-cmd_test_inj7  			= "w\x00\x13\x00\x07"
-cmd_test_inj8  			= "w\x00\x13\x00\x08"
-cmd_test_inj9  			= "w\x00\x13\x00\x09"
-cmd_test_inj10 			= "w\x00\x13\x00\x0a"
-cmd_test_inj11 			= "w\x00\x13\x00\x0b"
-cmd_test_inj12 			= "w\x00\x13\x00\x0c"
-cmd_test_inj13 			= "w\x00\x13\x00\x0d"
-cmd_test_inj14 			= "w\x00\x13\x00\x0e"
-cmd_test_inj15 			= "w\x00\x13\x00\x0f"
-cmd_test_inj16 			= "w\x00\x13\x00\x10"
+cmd_test_inj1  = "Z\x00\x13\x00\x01"
+cmd_test_inj2  = "Z\x00\x13\x00\x02"
+cmd_test_inj3  = "Z\x00\x13\x00\x03"
+cmd_test_inj4  = "Z\x00\x13\x00\x04"
+cmd_test_inj5  = "Z\x00\x13\x00\x05"
+cmd_test_inj6  = "Z\x00\x13\x00\x06"
+cmd_test_inj7  = "Z\x00\x13\x00\x07"
+cmd_test_inj8  = "Z\x00\x13\x00\x08"
+cmd_test_inj9  = "Z\x00\x13\x00\x09"
+cmd_test_inj10 = "Z\x00\x13\x00\x0a"
+cmd_test_inj11 = "Z\x00\x13\x00\x0b"
+cmd_test_inj12 = "Z\x00\x13\x00\x0c"
 
-		
-cmd_test_fuel_pump   		= "w\x00\x14\x00\x01"
-cmd_calibrate_tps_1_closed  = "w\x00\x14\x00\x02"
-cmd_calibrate_tps_1_wot	    = "w\x00\x14\x00\x03"
-cmd_calibrate_tps_2_closed  = "w\x00\x14\x00\x04"
-cmd_calibrate_tps_2_wot     = "w\x00\x14\x00\x05"
-cmd_calibrate_pedal_up      = "w\x00\x14\x00\x06"
-cmd_calibrate_pedal_down    = "w\x00\x14\x00\x07"
-cmd_tle8888_init     		= "w\x00\x14\x00\x08"
-cmd_test_ac_relay     		= "w\x00\x14\x00\x09"
-cmd_write_config     		= "w\x00\x14\x00\x0A"
-cmd_test_starter_relay     	 = "w\x00\x14\x00\x0B"
-cmd_etb_autotune             = "w\x00\x14\x00\x0C"
-cmd_enable_self_stim         = "w\x00\x14\x00\x0D"
-cmb_etb_auto_calibrate       = "w\x00\x14\x00\x0E"
-cmd_disable_self_stim        = "w\x00\x14\x00\x0F"
-cmd_etb_autotune_stop        = "w\x00\x14\x00\x10"
 
-cmd_test_radiator_fan        = "w\x00\x15\x00\x01"
-cmd_test_check_engine_light  = "w\x00\x16\x00\x01"
-cmd_test_idle_valve          = "w\x00\x17\x00\x01"
-cmd_cj125_calibrate          = "w\x00\x18\x00\x00"
-cmd_cj125_reset          	 = "w\x00\x19\x00\x00"
-cmd_test_main_relay            = "w\x00\x20\x00\x00"
-cmd_stop_engine              = "w\x00\x79\x00\x00"
+
+cmd_test_fuel_pump           = "Z\x00\x14\x00\x01"
+cmd_calibrate_tps_1_closed   = "Z\x00\x14\x00\x02"
+cmd_calibrate_tps_1_wot      = "Z\x00\x14\x00\x03"
+cmd_calibrate_tps_2_closed   = "Z\x00\x14\x00\x04"
+cmd_calibrate_tps_2_wot      = "Z\x00\x14\x00\x05"
+cmd_calibrate_pedal_up       = "Z\x00\x14\x00\x06"
+cmd_calibrate_pedal_down     = "Z\x00\x14\x00\x07"
+cmd_tle8888_init     		 = "Z\x00\x14\x00\x08"
+cmd_test_ac_relay     		 = "Z\x00\x14\x00\x09"
+cmd_write_config     		 = "Z\x00\x14\x00\x0A"
+cmd_test_starter_relay     	 = "Z\x00\x14\x00\x0B"
+cmd_etb_autotune             = "Z\x00\x14\x00\x0C"
+cmd_enable_self_stim         = "Z\x00\x14\x00\x0D"
+cmb_etb_auto_calibrate       = "Z\x00\x14\x00\x0E"
+cmb_etb_auto_calibrate_2     = "Z\x00\x14\x00\x11"
+cmd_disable_self_stim        = "Z\x00\x14\x00\x0F"
+cmd_etb_autotune_stop        = "Z\x00\x14\x00\x10"
+
+cmd_test_radiator_fan        = "Z\x00\x15\x00\x01"
+cmd_test_check_engine_light  = "Z\x00\x16\x00\x01"
+cmd_test_idle_valve          = "Z\x00\x17\x00\x01"
+cmd_cj125_calibrate          = "Z\x00\x18\x00\x00"
+
+cmd_cj125_reset          	 = "Z\x00\x19\x00\x00"
+cmd_test_main_relay          = "Z\x00\x20\x00\x00"
+cmd_start_bluetooth          = "Z\x00\x21\x00\x00"
+cmd_stop_engine              = "Z\x00\x79\x00\x00"
 
 ; reboot ECU
-cmd_reset_controller        = "w\x00\xbb\x00\x00"
+cmd_reset_controller        = "Z\x00\xbb\x00\x00"
 ; jump to DFU mode
-cmd_dfu         			= "w\x00\xba\x00\x00"
+cmd_dfu         			= "Z\x00\xba\x00\x00"
 
 
 [UserDefined]
@@ -1489,10 +1526,11 @@ dialog = triggerInputs,					"Trigger Inputs"
 		field = ""
 		field = "VVT Input",		  					pinCam1
 		field = "Invert VVT Signal",				invertCamVVTSignal
+		field = "VVT Tooth Offset",		            	vvtOffset
 		field = ""
 		field = "Active Edge",						vvtCamSensorUseRise, {trigger_type != 80}
-	    field = "Trigger Wheel", 					vvtMode, { isVvtControlEnabled && vvt_vvtType == 1 }
-
+	    field = "Trigger Wheel", 					vvtMode
+		field = "Do not print messages in case of sync error",  silentTriggerError
 	dialog = triggerConfiguration, "Trigger Setup",	border
         panel =  triggerConfig, West
 		panel = triggerInputs, East
@@ -1687,7 +1725,14 @@ dialog = triggerInputs,					"Trigger Inputs"
 		commandButton = "Spark #8", cmd_test_spk8
 
 
-
+dialog = crankingAirSettings,"Air"
+		slider = "Cranking Air Valve Position",					crankingIACposition
+ 		field = "For E-Throttle, This Means % Of Max Idle Opening"
+		field = ""
+		field = "Use IAC Position Correction For Cranking",	overrideCrankingIacSetting
+		
+		field = "Afterstart Hold Duration In Cranking Position"
+		field = "Afterstart Hold",					afterCrankingIACtaperDuration
 
 dialog = crankingIgnition, "Ignition"
 		field = "Use separate Advance Table for cranking",		enableCrankingTimingTable
@@ -1698,6 +1743,7 @@ dialog = crankingIgnition, "Ignition"
 		field = "Cranking Dwell Angle", 						crankingChargeAngle, {enableFixedDwellCranking == 0}
 
 dialog = crankingFuel, "Fuel"
+
 		field = "Cranking Injection Mode",						crankingInjectionMode
 		field = "Fuel Map Are Normally Used"
 		field = "Fuel Source For Cranking",             		useRunningMathForCranking
@@ -1705,11 +1751,13 @@ dialog = crankingFuel, "Fuel"
 		field = "Priming Duration at -40C degrees",				startOfCrankingPrimingPulse
 		field = "Priming Falloff temperature", 					primeInjFalloffTemperature
 		field = "Enable Cylinder Cleanup",						isCylinderCleanupEnabled
-		field = ""
 		field = "Enable Fast Start(Without Trigger Sync)",		isFasterEngineSpinUpEnabled
 
-	dialog = crankingAir, "Air"		
-		field = "Override Throttle multiplier for cranking",	overrideCrankingIacSetting
+	dialog = crankingSettings, "Cranking", 	xAxis
+		
+		panel = crankingIgnition
+		panel = crankingFuel
+		panel = crankingAirSettings
 #			Engine->idle Settings	
 
 		
@@ -1746,14 +1794,30 @@ dialog = crankingFuel, "Fuel"
 	
 
 
-	dialog = crankingAirSettings,""
-		slider = "Cranking Air Valve Position",					crankingIACposition
- 		field = "For E-Throttle, This Means % Of Max Idle Opening"
-		field = ""
-		field = "Afterstart Hold Duration In Cranking Position"
-		field = "Afterstart Hold",					afterCrankingIACtaperDuration
- 	
 	
+ 	
+		
+dialog = idlePidSettings, "PID IAC Control"	
+		field = "#See Idle Target RPM Curve"
+		field = "use Cic Pid",							useCicPidForIdle
+		field = "P-factor",								idleRpmPid_pFactor
+		field = "I-factor",								idleRpmPid_iFactor
+		field = "derivativeFilterLoss",					idle_derivativeFilterLoss
+		field = "antiwindupFreq",						idle_antiwindupFreq
+		field = "D-factor",								idleRpmPid_dFactor
+		field = "Offset",								idleRpmPid_offset
+		field = "A/C Offset extra",						acIdleExtraOffset
+		field = "Min",									idleRpmPid_minValue
+		field = "A/C Min extra",						acIdleExtraMin
+		field = "Max",									idleRpmPid_maxValue
+		field = "iTerm Min",							idlerpmpid_iTermMin
+		field = "iTerm Max",							idlerpmpid_iTermMax
+		field = "period",								idleRpmPid_periodMs
+		field = "RPM dead zone to deactivate IAC pid",	idlePidRpmDeadZone
+		field = "RPM upper limit to deactivate IAC pid",idlePidRpmUpperLimit
+		field = "PID Extra for low RPM",				pidExtraForLowRpm
+		field = "Use IAC PID Multiplier Table",			useIacPidMultTable
+
 	dialog = idleSettings,""		
 		field = "Control Mode",									idleMode
 		slider = "Manual Idle Position",						manIdlePosition, horizontal, {idleMode == 1}
@@ -1763,14 +1827,16 @@ dialog = crankingFuel, "Fuel"
 		field = "Idle Solenoid Frequency",   					idle_solenoidFrequency, {useETBforIdleControl == 0}
 		field = "Idle Ignition"
 		field = "Separate Ignition Table",	               		useSeparateAdvanceForIdle
-		field = "Instant Rpm Method",	useInstantRpmForIdle
-	    field = "PID Settings"
-		field = "Enable Pid-Cic",	useCicPidForIdle
-	    field = "idleIncrementalPidCic",						idleIncrementalPidCic
-		field = "Disable Above TPS",							idlePidDeactivationTpsThreshold, {idleMode == 0}
-		field = "AntiWindup Frequency",							idle_antiwindupFreq
-		field = "Derivative FilterLoss",						idle_derivativeFilterLoss
+		field = "Use separate VE Table for idle",		useSeparateVeForIdle
+		field = "Use separate IAC Table For Coasting",	useIacTableForCoasting, {idleMode == 0}
+		field = idleIncrementalPidCic,					idleIncrementalPidCic
+		field = "TPS deactivation threshold",			idlePidDeactivationTpsThreshold
+		field = "Extra IAC if Throttle Pressed",						iacByTpsTaper;
+	
+		field = "#See Warmup idle multiplier"
+		field = "! Solenoid Idle control requires above zero RPM"
 		
+
 
 	dialog = etbIdleSettings,""
 		field = "Maximum Allowed TPS For Idle Control To Operate"
@@ -1779,40 +1845,22 @@ dialog = crankingFuel, "Fuel"
 		slider = "Idle Position (% TPS Of Maximum Allowed Idle Range)",	manIdlePosition, horizontal, {idleMode == 1}
     	field = ""
 		field = "Idle Ignition"
-		field = "Separate Ignition Table For Idle",	        	useSeparateAdvanceForIdle, {idleMode == 0}
-		field = ""
-		field = "PID Settings"	
-				field = "Instant Rpm Method",	useInstantRpmForIdle
-		field = "Disable Above Pedal Position",					idlePidDeactivationTpsThreshold, {idleMode == 0}
+		field = "Separate Ignition Table",	               		useSeparateAdvanceForIdle
+		field = "Use separate VE Table for idle",		useSeparateVeForIdle
+		field = "Use separate IAC Table For Coasting",	useIacTableForCoasting, {idleMode == 0}
+		field = idleIncrementalPidCic,					idleIncrementalPidCic
+		field = "TPS deactivation threshold",			idlePidDeactivationTpsThreshold
+		field = "Extra IAC if Throttle Pressed",						iacByTpsTaper;
+		
 
-
-	dialog = idlePidSettings, "Idle PID Control"	
-		field = ""
-		field = "P-Gain                        	%/100 Rpm",idleRpmPid_pFactor
-		field = "I-Gain                   	%/100 Rpm/Sec",idleRpmPid_iFactor
-		field = "D-Gain                   	%/100 Rpm/Sec",idleRpmPid_dFactor
-		field = "Update Rate",	idleRpmPid_periodMs
-		field = "Min",									    idleRpmPid_minValue
-		field = "Max",										idleRpmPid_maxValue
-		field = "I-Term Min",								idlerpmpid_iTermMin
-		field = "I-Term Max",								idlerpmpid_iTermMax
-		field = "Offset",										idleRpmPid_offset
-		field = ""
-		field = "PID Are Disabled Within This Range From Target-Rpm"
-		field = "Rpm DeadBand",								idlePidRpmDeadZone
-		field = ""
-		field = "Rpm Above Target-Rpm To Disable Idle Control"
-		field = "Rpm",	 									idlePidRpmUpperLimit
-		field = ""
-		field = "Additional PID Gain At Low Rpm",			pidExtraForLowRpm
 		
 		
-	dialog = idleSettingsDialog, "", xAxis
+dialog = idleSettingsDialog, "", xAxis
 	    panel = idleSettings
         panel = idlePidSettings, { idleMode == 0}
 		
 	
-	dialog = etbIdleSettingsDialog, "", xAxis
+dialog = etbIdleSettingsDialog, "", xAxis
 	    panel = etbIdleSettings
         panel = idlePidSettings, { idleMode == 0}
 
@@ -1832,15 +1880,8 @@ dialog = crankingFuel, "Fuel"
 		field = "RPM working zone for timing pid",			idleTimingPidWorkZone, {useIdleTimingPidControl == 1}
 		field = "RPM working zone falloff",					idlePidFalloffDeltaRpm, {useIdleTimingPidControl == 1}
 		field = "RPM dead zone to deactivate timing pid",	idleTimingPidDeadZone, {useIdleTimingPidControl == 1}
-
-#			Cranking->Cranking Settings
 	
-	dialog = postCrankingEnrichment, "Post-cranking short-time fuel enrichment (NOT IMPLEMENTED #331)"
-		field = "Post-Cranking factor", 				postCrankingFactor
-		field = "Duration", 							postCrankingDurationSec
-		
-#			Sensors->AUX2 Thermistor Sensor Setting		
-
+	
 	dialog = auxTempSensor1Sensor,	"aux1 Thermistor Settings"
 		field = "Input",								auxTempSensor1_adcChannel
 		field = "Bias Resistor",       					auxTempSensor1_bias_resistor, {auxTempSensor1_adcChannel != 16}
@@ -1916,8 +1957,6 @@ dialog = crankingFuel, "Fuel"
 	dialog = DigitalInputs,					"Digital Inputs"
 		field = "Clutch Down Input",					clutchDownPin
 		field = "Input Mode",							clutchDownPinMode
-		field = "Clutch Up Input",						clutchUpPin
-		field = "Input Mode",                          	clutchUpPinMode
 		field = ""
 		field = "Brake Pedal Input",					brakePedalPin
 		field = ""
@@ -2101,7 +2140,7 @@ dialog = crankingFuel, "Fuel"
 	  	field = "Angle Window to look for edge"
 	   	field = "Min Angle",		            	vvtToothMinAngle, { isVvtControlEnabled && vvt_vvtType == 1 }
 	    field = "Max Angle",		            	vvtToothMaxAngle, { isVvtControlEnabled && vvt_vvtType == 1 }
-		field = "Tooth Offset",		            	vvtOffset, { isVvtControlEnabled && vvt_vvtType == 1 }
+		field = "Tooth Offset",		            	vvtOffset, { isVvtControlEnabled  == 1 }
 	   
 		field = "Frequency",						vvt_vvtPwmFrequency, { isVvtControlEnabled }
 		field = "Min Duty",							vvt_vvtPid_minValue, { isVvtControlEnabled }
@@ -2358,8 +2397,9 @@ dialog = crankingFuel, "Fuel"
 		field = "tunerStudioSerialSpeed",				tunerStudioSerialSpeed
 		field = "Use UART/TTL serial?",					useSerialPort
 		field = "uartConsoleSerialSpeed",				uartConsoleSerialSpeed
-	
-	
+	    field = "RX Pin",				binarySerialRxPin
+	 	field = "TX Pin",				binarySerialTxPin
+		commandButton = "Start Bluetooth Setup",    cmd_start_bluetooth
 	
 	dialog = can_settings
 		field = "Can Read Enabled",						canReadEnabled
@@ -2393,9 +2433,9 @@ dialog = crankingFuel, "Fuel"
 		
 
 
-	dialog = allPinsSensors, "Inputs"
-	field = ""
-		field = "Analog Inputs" 
+	dialog = allPinsSensors, "Analog Inputs" 
+
+	
 		field = "Use Two Throttles",                    useSecondEtb
 		field = "#Throttle 1"
 		field = "Throttle pedal Position Channel", 		throttlePedalPositionAdcChannel
@@ -2405,7 +2445,7 @@ dialog = crankingFuel, "Fuel"
 		field = "TPS 2 Sub Input", 						tps2_2AdcChannel,  {useSecondEtb == 1}
 		 
 		field = "#Analog"
-		field = "vBatt Input", 							vbattAdcChannel
+
 		field = "MAF Sensor Input", 					mafAdcChannel
 		field = "AFR Input", 							afr_hwChannel
 		field = "Baro Sensor Input", 					baroSensor_hwChannel
@@ -2419,30 +2459,15 @@ dialog = crankingFuel, "Fuel"
 		field = "Aux Temperature #1",					auxTempSensor1_adcChannel
 		field = "Aux Temperature #2",					auxTempSensor2_adcChannel
 	
-		field = "#Digital Inputs" 
-		
+	
+	dialog = digitalIn, "Digital Inputs"
 		field = "Speed Input",							vehicleSpeedSensorInputPin
 		field = "Clutch Down Input",					clutchDownPin
 		field = "Input Mode",							clutchDownPinMode
-		field = "Clutch Up Input",						clutchUpPin
-		field = "Input Mode",                          	clutchUpPinMode
 		field = "Brake Pedal",							brakePedalPin
 		field = "A/C Switch",							acSwitchAdc
 		
 	
-
- dialog = etbpins, "E-Throttle"
-        field = "Two-wire mode",						etb_use_two_wires
- 	    field = "Throttle 1 Positive",					etbIo1_directionPin1
-		field = "Throttle 1 Negative",					etbIo1_directionPin2  ,  {etb_use_two_wires == 1}
-		field = "Throttle 1 Control",					etbIo1_controlPin1,  {etb_use_two_wires == 0}
-		field = "Throttle 1 Disable",					etbIo1_disablePin,  {etb_use_two_wires == 0}
-		field = "Throttle 2 Positive",					etbIo2_directionPin1,  {useSecondEtb == 1}  
-		field = "Throttle 2 Negative",					etbIo2_directionPin2,  {useSecondEtb == 1}
-		field = "Throttle 2 Control",					etbIo2_controlPin1,  {etb_use_two_wires == 0 && useSecondEtb == 1}     
-
-		
-
 	dialog = allPins1_1
 		panel = allPinsSensors
 	
@@ -2465,8 +2490,7 @@ dialog = crankingFuel, "Fuel"
 		
 
 	dialog = allPins1_2
-	panel = etbpins
-	  
+		panel =digitalIn
 		panel = miscoutputs
 		
 
@@ -2483,7 +2507,6 @@ dialog = crankingFuel, "Fuel"
 
 	
 		dialog = allPins2_1
-		field = "Injector Pin Mode",                    pinInjectorMode
 		field = "Injection Pin 1",						pinInjector1
 		field = "Injection Pin 2",						pinInjector2
 		field = "Injection Pin 3",						pinInjector3
@@ -2772,6 +2795,6 @@ dialog = crankingFuel, "Fuel"
 
 [Tools]
  ;addTool = toolName, PanelName
- addTool = veTableGenerator, "VE Table Generator", veTableTbl
+ addTool = veTableGenerator, "VE Table Generator", veTable1Tbl
  addTool = afrTableGenerator, "AFR Table Generator", afrTableTbl
  

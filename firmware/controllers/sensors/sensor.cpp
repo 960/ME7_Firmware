@@ -1,3 +1,4 @@
+#include "global.h"
 #include "sensor.h"
 #include "efilib.h"
 
@@ -50,6 +51,9 @@ static const char* s_sensorNames[] = {
 	"Invalid",
 	"CLT",
 	"IAT",
+	"RPM",
+	"MAP",
+	"MAF",
 
 	"Oil Pressure",
 
@@ -69,6 +73,8 @@ static const char* s_sensorNames[] = {
 
 	"Aux Temp 1",
 	"Aux Temp 2",
+
+	"Lambda",
 };
 
 static_assert(efi::size(s_sensorNames) == efi::size(s_sensorRegistry));

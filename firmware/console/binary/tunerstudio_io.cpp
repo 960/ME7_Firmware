@@ -24,6 +24,8 @@ EXTERN_ENGINE;
 #include "usbconsole.h"
 
 #if HAL_USE_SERIAL_USB
+// Assert that the USB tx/rx buffers are large enough to fit one full packet
+static_assert(SERIAL_USB_BUFFERS_SIZE >= BLOCKING_FACTOR + 10);
 extern SerialUSBDriver SDU1;
 #endif /* HAL_USE_SERIAL_USB */
 
@@ -58,12 +60,6 @@ void startTsPort(ts_channel_s *tsChannel) {
 		#endif /* CONSOLE_USB_DEVICE */
 		#if defined(TS_UART_DEVICE) || defined(TS_SERIAL_DEVICE)
 			if (CONFIG(useSerialPort)) {
-
-
-				/**
-				 * We have hard-coded USB serial console so that it would be clear how to connect to each specific board,
-				 * but for UART serial we allow users to change settings.
-				 */
 				efiSetPadMode("tunerstudio rx", engineConfiguration->binarySerialRxPin, PAL_MODE_ALTERNATE(TS_SERIAL_AF));
 				efiSetPadMode("tunerstudio tx", engineConfiguration->binarySerialTxPin, PAL_MODE_ALTERNATE(TS_SERIAL_AF));
 
@@ -116,9 +112,7 @@ bool stopTsPort(ts_channel_s *tsChannel) {
 
 void sr5WriteData(ts_channel_s *tsChannel, const uint8_t * buffer, int size) {
         efiAssertVoid(CUSTOM_ERR_6570, getCurrentRemainingStack() > 64, "tunerStudioWriteData");
-#if EFI_SIMULATOR
-			logMsg("chSequentialStreamWrite [%d]\r\n", size);
-#endif
+
 
 #if (PRIMARY_UART_DMA_MODE || TS_UART_DMA_MODE || TS_UART_MODE) && EFI_PROD_CODE
 	if (tsChannel->uartp != nullptr) {

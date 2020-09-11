@@ -29,7 +29,8 @@ typedef struct {
 
 extern tunerstudio_counters_s tsState;
 
-#define CONNECTIVITY_THREAD_STACK (2 * UTILITY_THREAD_STACK_SIZE)
+// SD protocol file removal is one of the stack consuming use-cases
+
 
 /**
  * handle non CRC wrapped command
@@ -43,9 +44,6 @@ int tunerStudioHandleCrcCommand(ts_channel_s *tsChannel, char *data, int incomin
 void handleQueryCommand(ts_channel_s *tsChannel, ts_response_format_e mode);
 
 char *getWorkingPageAddr();
-
-void tunerStudioDebug(const char *msg);
-void tunerStudioError(const char *msg);
 
 void updateTunerStudioState(TunerStudioOutputChannels *tsOutputChannels DECLARE_ENGINE_PARAMETER_SUFFIX);
 void printTsStats(void);

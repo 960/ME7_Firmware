@@ -138,7 +138,6 @@ void EnginePins::unregisterPins() {
 void EnginePins::startPins() {
 	startInjectionPins();
 	startIgnitionPins();
-	startAuxValves();
 }
 
 void EnginePins::reset() {
@@ -161,12 +160,9 @@ void EnginePins::stopIgnitionPins(void) {
 void EnginePins::stopInjectionPins(void) {
 #if EFI_PROD_CODE
 	for (int i = 0; i < INJECTION_PIN_COUNT; i++) {
-		unregisterOutputIfPinOrModeChanged(enginePins.injectors[i], pinInjector[i], pinInjectorMode);
+		unregisterOutputIfPinChanged(enginePins.injectors[i], pinInjector[i]);
 	}
 #endif /* EFI_PROD_CODE */
-}
-
-void EnginePins::startAuxValves(void) {
 }
 
 void EnginePins::startIgnitionPins(void) {
@@ -186,9 +182,8 @@ void EnginePins::startInjectionPins(void) {
 	// todo: should we move this code closer to the injection logic?
 	for (int i = 0; i < engineConfiguration->specs.cylindersCount; i++) {
 		NamedOutputPin *output = &enginePins.injectors[i];
-		if (isPinOrModeChanged(pinInjector[i], pinInjectorMode)) {
-			output->initPin(output->name, CONFIG(pinInjector)[i],
-					&CONFIG(pinInjectorMode));
+		if (isPinChanged(pinInjector[i])) {
+			output->initPin(output->name, CONFIG(pinInjector)[i]);
 		}
 	}
 #endif /* EFI_PROD_CODE */

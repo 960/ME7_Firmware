@@ -15,7 +15,7 @@
 EXTERN_ENGINE;
 
 bool hasVBatt(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	return engineConfiguration->vbattAdcChannel != EFI_ADC_NONE;
+	return engine->vbattAdcChannel != EFI_ADC_NONE;
 }
 
 float getVBatt(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
@@ -23,6 +23,6 @@ float getVBatt(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	extern adcsample_t vbattSampleProteus;
 	return adcToVolts(vbattSampleProteus) * engineConfiguration->vbattDividerCoeff;
 #else
-	return getVoltage("vbatt", engineConfiguration->vbattAdcChannel PASS_ENGINE_PARAMETER_SUFFIX) * engineConfiguration->vbattDividerCoeff;
+	return getVoltage("vbatt", engine->vbattAdcChannel PASS_ENGINE_PARAMETER_SUFFIX) * engineConfiguration->vbattDividerCoeff;
 #endif
 }

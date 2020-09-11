@@ -40,13 +40,7 @@ EXTERN_ENGINE;
 #define CAN_MAZDA_RX_STATUS_1 0x212
 #define CAN_MAZDA_RX_STATUS_2 0x420
 // https://wiki.openstreetmap.org/wiki/VW-CAN
-#define VAG_MOTOR_1 0x280
-#define VAG_MOTOR_2 0x288
-#define VAG_MOTOR_3 0x380
-#define VAG_MOTOR_5 0x480
-#define VAG_MOTOR_6 0x488
-#define VAG_MOTOR_7 0x588
-#define CAN_VAG_IMMO 0x3D0
+
 //w202 DASH
 #define W202_STAT_1	0x308
 #define W202_STAT_2 0x608
@@ -158,68 +152,6 @@ void canDashboardFiat(void) {
 	}
 }
 
-void canDashboardVAG(void) {
-
-	float clt = Sensor::get(SensorType::Clt).value_or(0);
-
-	{
-		CanTxMessage msg(CAN_VAG_IMMO);
-		msg.setShortValue(0x80, 1);
-	}
-	chThdSleepMilliseconds(10);
-
-	  {  	  	  	  	  	  	  	  	// All Torque fields = 0 - 99.06 %  (X * 2.54)
-		//  Motor 1 ($280)
-	CanTxMessage msg(VAG_MOTOR_1);
-			msg[0] = 0x08;
-			msg[1] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);		// inneres Motor-Moment
-			msg.setShortValue(GET_RPM() * 4, 2); //RPM Byte 2-3
-			msg[4] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);		// inneres Moment ohne externe Eingriffe
-			msg[5] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);  // Throttle Pedal
-			msg[6] = 0x00;     // mechanisches Motor-Verlustmoment
-			msg[7] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);     // Drivers Wish Torque
-	  }
-	  chThdSleepMilliseconds(10);
-	  {						//01100101, 10001111, 11101000, 00001011
-		  uint8_t myValues[4] = {0x65, 0x8f, 0xE8, 0x0B};
-		  for(int i=0; i<4; i++)
-		 	{
-	  		  CanTxMessage msg(VAG_MOTOR_2);
-	  			  	  	msg[0] = myValues[i];
-	  		  			msg.setShortValue((int) ((clt + 48.373) / 0.75), 1); // Coolant Temp
-	  		  			msg[2] = 0x00;
-	  		  			msg[4] = 0x00;		// GRA target speed for CAN output (GRA = Cruise control?)
-	  		  			msg[5] = 0x51; 		// Idle target rpm
-	  		  			msg[6] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);   // max possible torque
-	  		  			msg[7] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);   // indexed engine torque at the latest ignition angle for CAN output
-	  		  	  }
-	  }
-	  chThdSleepMilliseconds(10);
-
-		  {
-
-
-
-	  CanTxMessage msg(VAG_MOTOR_6);
-	  	  	  	msg[0] = 0x00;
-	  			msg[1] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);
-	  			msg[2] = (int)(Sensor::get(SensorType::DriverThrottleIntent).Value * 2.5);
-	  			msg[3] = 0x7C;
-	  			msg[4] = 0xA6;
-	  			msg[5] = 0x00;
-	  			msg[6] = 0x00;
-	  			msg[7] = 0x00;
-	  	  }
-
-		  {
-			  CanTxMessage msg(VAG_MOTOR_7);
-			  			msg[0] = 0x08;
-			  			msg[1] = 0x00;
-			  			msg[2] = 0x7C;
-
-			  	  }
-
-}
 
 void canDashboardW202(void) {
 	

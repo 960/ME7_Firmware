@@ -71,7 +71,7 @@ typedef enum {
 
 /* OS */
 SEMAPHORE_DECL(mc33972_wake, 10 /* or BOARD_MC33972_COUNT ? */);
-static THD_WORKING_AREA(mc33972_thread_1_wa, 256);
+static THD_WORKING_AREA(mc33972_thread_1_wa, GPIO_DRIVERS_STACK_SIZE);
 
 /* Driver */
 struct mc33972_priv {

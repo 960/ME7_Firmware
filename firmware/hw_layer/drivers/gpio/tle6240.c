@@ -79,7 +79,7 @@ typedef enum {
 
 /* OS */
 SEMAPHORE_DECL(tle6240_wake, 10 /* or BOARD_TLE6240_COUNT ? */);
-static THD_WORKING_AREA(tle6240_thread_1_wa, 256);
+static THD_WORKING_AREA(tle6240_thread_1_wa, GPIO_DRIVERS_STACK_SIZE);
 
 /* Driver */
 struct tle6240_priv {

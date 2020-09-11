@@ -53,8 +53,15 @@ typedef unsigned int time_t;
  * See getMaxUsedStack() and CountFreeStackSpace()
  * See "threadsinfo" command cmd_threads
  */
+#ifndef GPIO_DRIVERS_STACK_SIZE
+#define GPIO_DRIVERS_STACK_SIZE 256
+#endif
 #ifndef UTILITY_THREAD_STACK_SIZE
 #define UTILITY_THREAD_STACK_SIZE 400
+#endif
+#ifndef CONNECTIVITY_THREAD_STACK
+#define CONNECTIVITY_THREAD_STACK 800
+
 #endif /* UTILITY_THREAD_STACK_SIZE */
 
 #define getCurrentRemainingStack() getRemainingStack(chThdGetSelfX())
@@ -108,7 +115,7 @@ typedef unsigned int time_t;
  * converts efitick_t to efitimeus_t
  */
 #define NT2US(nt) ((nt) / US_TO_NT_MULTIPLIER)
-#define US2MS(us) ((us) * 1000)
+
 #define UNIT_TEST_BUSY_WAIT_CALLBACK() {}
 
 #ifdef __cplusplus

@@ -22,13 +22,13 @@ void addSkippedToothTriggerEvents(trigger_wheel_e wheel, TriggerWaveform *s, int
 	for (int i = 0; i < totalTeethCount - skippedCount - 1; i++) {
 		float angleDown = engineCycle / totalTeethCount * (i + (1 - toothWidth));
 		float angleUp = engineCycle / totalTeethCount * (i + 1);
-		s->addEventClamped(offset + angleDown, wheel, TV_RISE, filterLeft, filterRight);
-		s->addEventClamped(offset + angleUp, wheel, TV_FALL, filterLeft, filterRight);
+		s->addEventClamped(offset + angleDown, wheel, TV_FALL, filterLeft, filterRight);
+		s->addEventClamped(offset + angleUp, wheel, TV_RISE, filterLeft, filterRight);
 	}
 
 	float angleDown = engineCycle / totalTeethCount * (totalTeethCount - skippedCount - 1 + (1 - toothWidth));
-	s->addEventClamped(offset + angleDown, wheel, TV_RISE, filterLeft, filterRight);
-	s->addEventClamped(offset + engineCycle, wheel, TV_FALL, filterLeft, filterRight);
+	s->addEventClamped(offset + angleDown, wheel, TV_FALL, filterLeft, filterRight);
+	s->addEventClamped(offset + engineCycle, wheel, TV_RISE, filterLeft, filterRight);
 }
 
 void initializeSkippedToothTriggerWaveformExt(TriggerWaveform *s, int totalTeethCount, int skippedCount,
@@ -109,15 +109,15 @@ void configureQuickStartSenderWheel(TriggerWaveform *s) {
 
 	s->setTriggerSynchronizationGap3(0, 2, 3);
 
-	s->addEventAngle(offset + 2 * 0, T_PRIMARY, TV_RISE);
-	s->addEventAngle(offset + 2 * 70, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 0, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 70, T_PRIMARY, TV_RISE);
 
-	s->addEventAngle(offset + 2 * 90, T_PRIMARY, TV_RISE);
-	s->addEventAngle(offset + 2 * 110, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 90, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 110, T_PRIMARY, TV_RISE);
 
-	s->addEventAngle(offset + 2 * 180, T_PRIMARY, TV_RISE);
-	s->addEventAngle(offset + 2 * 200, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 180, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 200, T_PRIMARY, TV_RISE);
 
-	s->addEventAngle(offset + 2 * 270, T_PRIMARY, TV_RISE);
-	s->addEventAngle(offset + 2 * 340, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 270, T_PRIMARY, TV_FALL);
+	s->addEventAngle(offset + 2 * 340, T_PRIMARY, TV_RISE);
 }

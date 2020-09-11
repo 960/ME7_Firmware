@@ -17,8 +17,6 @@ public:
 	void configure(thermistor_conf_s &cfg);
 
 
-
-private:
 	// Steinhart-Hart coefficients
 	float m_a = 0;
 	float m_b = 0;

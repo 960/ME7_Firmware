@@ -92,15 +92,10 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 		tc->vvtEventFallCounter++;
 	}
 
-	if (!CONFIG(vvtCamSensorUseRise)) {
+
 #if EFI_TOOTH_LOGGER
-		if (front == TV_RISE) {
-			LogTriggerTooth(SHAFT_SECONDARY_RISING, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
-		} else {
-			LogTriggerTooth(SHAFT_SECONDARY_FALLING, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
-		}
+	LogCamTooth(front);
 #endif /* EFI_TOOTH_LOGGER */
-	}
 
 
 	if (!vvtWithRealDecoder(engineConfiguration->vvtMode) && (CONFIG(vvtCamSensorUseRise) ^ (front != TV_FALL))) {
@@ -145,8 +140,8 @@ void hwHandleVvtCamSignal(trigger_value_e front, efitick_t nowNt DECLARE_ENGINE_
 	switch(engineConfiguration->vvtMode) {
 	case VVT_2JZ:
 		// we do not know if we are in sync or out of sync, so we have to be looking for both possibilities
-		if ((currentPosition < engineConfiguration->vvtToothMinAngle       || currentPosition > engineConfiguration->vvtToothMaxAngle) &&
-		    (currentPosition < engineConfiguration->vvtToothMinAngle + 360 || currentPosition > engineConfiguration->vvtToothMaxAngle + 360)) {
+		if ((currentPosition < config->vvtToothMinAngle       || currentPosition > config->vvtToothMaxAngle) &&
+		    (currentPosition < config->vvtToothMinAngle + 360 || currentPosition > config->vvtToothMaxAngle + 360)) {
 			// outside of the expected range
 			return;
 		}
@@ -237,7 +232,10 @@ uint32_t triggerMaxDuration = 0;
 
 void hwHandleShaftSignal(trigger_event_e signal, efitick_t timestamp) {
 	ScopePerf perf(PE::HandleShaftSignal);
+	
 		LogTriggerTooth(signal, timestamp PASS_ENGINE_PARAMETER_SUFFIX);
+	
+
 	// for effective noise filtering, we need both signal edges, 
 	// so we pass them to handleShaftSignal() and defer this test
 	

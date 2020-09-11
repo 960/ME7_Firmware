@@ -17,6 +17,9 @@
 #include "trigger_central.h"
 #include "local_version_holder.h"
 #include "board.h"
+#include "buttonshift.h"
+#include "tcu.h"
+
 #if EFI_SIGNAL_EXECUTOR_ONE_TIMER
 // PROD real firmware uses this implementation
 #include "single_timer_executor.h"
@@ -26,6 +29,19 @@
 #endif /* EFI_SIGNAL_EXECUTOR_SLEEP */
 
 #define FAST_CALLBACK_PERIOD_MS 5
+
+struct etb_io {
+	brain_pin_e directionPin1;
+	brain_pin_e directionPin2;
+	brain_pin_e controlPin1;
+	brain_pin_e disablePin;
+};
+typedef struct etb_io etb_io;
+
+
+
+
+
 
 class RpmCalculator;
 class AirmassModelBase;
@@ -47,15 +63,11 @@ class IEtbController;
 class IFuelComputer;
 class IInjectorModel;
 
-class TCU {
-public:
-	gear_e currentGear = NEUTRAL;
-};
-
 class PrimaryTriggerConfiguration : public TriggerConfiguration {
 public:
 	PrimaryTriggerConfiguration(Engine *engine);
 	bool isUseOnlyRisingEdgeForTrigger() const;
+	const char * getPrintPrefix() const;
 	bool isSilentTriggerError() const;
 	bool isVerboseTriggerSynchDetails() const;
 	debug_mode_e getDebugMode() const;
@@ -88,10 +100,12 @@ public:
 
 	cyclic_buffer<int> triggerErrorDetection;
 
+	GearControllerBase *gearController;
+
 	PrimaryTriggerConfiguration primaryTriggerConfiguration;
 	VvtTriggerConfiguration vvtTriggerConfiguration;
 
-	TCU tcu;
+	
 
 
 
@@ -109,7 +123,8 @@ public:
 	operation_mode_e getOperationMode(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 
 
-
+	  bool toothLogEnabled = false;
+	  bool compositeLogEnabled = false;
 #if EFI_LAUNCH_CONTROL
 
 	bool tpsCondition = false;
@@ -127,49 +142,63 @@ public:
 	bool vvtPinState = false;
 
 	bool is_enabled_spi_1 = false;
-	bool is_enabled_spi_2 = false;
-	bool is_enabled_spi_3 = false;
-	bool is_enabled_spi_4 = false;
-	brain_pin_e pinSpi1Mosi = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi1Miso = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi1Sck = GPIO_UNASSIGNED;
-
-	brain_pin_e pinSpi2Mosi = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi2Miso = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi2Sck = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi3Mosi = GPIO_UNASSIGNED;
-
-	brain_pin_e pinSpi3Miso = GPIO_UNASSIGNED;
-	brain_pin_e pinSpi3Sck = GPIO_UNASSIGNED;
-
-	brain_pin_e cj125CsPin = GPIO_UNASSIGNED;
-	output_pin_e cj125ModePin = GPIO_UNASSIGNED;
-	pin_output_mode_e cj125ModePinMode = OM_DEFAULT;
+		bool is_enabled_spi_2 = false;
+		bool is_enabled_spi_3 = false;
+		bool is_enabled_spi_4 = false;
 
 
-	brain_pin_e tle8888_cs = GPIO_UNASSIGNED;
 
-	spi_device_e cj125SpiDevice = SPI_NONE;
-	spi_device_e tle8888spiDevice = SPI_NONE;
-	spi_device_e mc33816spiDevice = SPI_NONE;
 
-	pin_output_mode_e cj125CsPinMode = OM_DEFAULT;
-	pin_output_mode_e tle8888_csPinMode = OM_DEFAULT;
+		pin_output_mode_e pinInjectorMode = OM_DEFAULT;
+		adc_channel_e vbattAdcChannel = EFI_ADC_NONE;
+		brain_pin_e pinSpi1Mosi = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi1Miso = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi1Sck = GPIO_UNASSIGNED;
 
-	brain_pin_e mc33816_cs = GPIO_UNASSIGNED;
-	brain_pin_e mc33816_rstb = GPIO_UNASSIGNED;
-	brain_pin_e mc33816_driven = GPIO_UNASSIGNED;
-	brain_pin_e mc33816_flag0 = GPIO_UNASSIGNED;
-	brain_pin_e wboHeaterPin = GPIO_UNASSIGNED;
-	adc_channel_e cj125ua = EFI_ADC_NONE;
-	adc_channel_e cj125ur = EFI_ADC_NONE;
+		brain_pin_e pinSpi2Mosi = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi2Miso = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi2Sck = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi3Mosi = GPIO_UNASSIGNED;
 
-	bool cj125isUaDivided = false;
-	bool cj125isUrDivided = false;
+		brain_pin_e pinSpi3Miso = GPIO_UNASSIGNED;
+		brain_pin_e pinSpi3Sck = GPIO_UNASSIGNED;
 
+		brain_pin_e cj125CsPin = GPIO_UNASSIGNED;
+		output_pin_e cj125ModePin = GPIO_UNASSIGNED;
+		pin_output_mode_e cj125ModePinMode = OM_DEFAULT;
+
+
+		brain_pin_e tle8888_cs = GPIO_UNASSIGNED;
+
+		spi_device_e cj125SpiDevice = SPI_NONE;
+		spi_device_e tle8888spiDevice = SPI_NONE;
+		spi_device_e mc33816spiDevice = SPI_NONE;
+
+		pin_output_mode_e cj125CsPinMode = OM_DEFAULT;
+		pin_output_mode_e tle8888_csPinMode = OM_DEFAULT;
+
+		brain_pin_e mc33816_cs = GPIO_UNASSIGNED;
+		brain_pin_e mc33816_rstb = GPIO_UNASSIGNED;
+		brain_pin_e mc33816_driven = GPIO_UNASSIGNED;
+		brain_pin_e mc33816_flag0 = GPIO_UNASSIGNED;
+		brain_pin_e wboHeaterPin = GPIO_UNASSIGNED;
+		adc_channel_e cj125ua = EFI_ADC_NONE;
+		adc_channel_e cj125ur = EFI_ADC_NONE;
+
+		bool cj125isUaDivided = false;
+		bool cj125isUrDivided = false;
+
+
+
+		bool etb_use_two_wires = false;
+
+		etb_io etbIo[ETB_COUNT];
+		etb_io etbIo2[ETB_COUNT];
+
+
+
+	void stopHardCodedPins(DECLARE_ENGINE_PARAMETER_SIGNATURE);
 	void setHardCodedPins(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-
-
 
 /**
 	 * if 2nd TPS is not configured we do not run 2nd ETB
@@ -225,7 +254,7 @@ public:
 	/**
 	 * this is based on isEngineChartEnabled and engineSnifferRpmThreshold settings
 	 */
-
+	bool isEngineChartEnabled = false;
 	/**
 	 * this is based on sensorChartMode and sensorSnifferRpmThreshold settings
 	 */

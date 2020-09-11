@@ -71,7 +71,7 @@ class AlternatorController : public PeriodicTimerController {
 		}
 
 		// todo: migrate this to FSIO
-		bool alternatorShouldBeEnabledAtCurrentRpm = GET_RPM_VALUE > engineConfiguration->cranking.rpm;
+		bool alternatorShouldBeEnabledAtCurrentRpm = GET_RPM() > engineConfiguration->cranking.rpm;
 		engine->enableAlternatorControl = CONFIG(enableAlternatorControl) && alternatorShouldBeEnabledAtCurrentRpm;
 
 		if (!engine->enableAlternatorControl) {
@@ -112,7 +112,17 @@ void setAltPFactor(float p) {
 	engineConfiguration->alternatorControl.pFactor = p;
 
 	pidReset();
-
+}
+static void applyAlternatorPinState(int stateIndex, PwmConfig *state) /* pwm_gen_callback */ {
+	efiAssertVoid(CUSTOM_ERR_6643, stateIndex < PWM_PHASE_MAX_COUNT, "invalid stateIndex");
+	efiAssertVoid(CUSTOM_IDLE_WAVE_CNT, state->multiChannelStateSequence.waveCount == 1, "invalid idle waveCount");
+	OutputPin *output = state->outputPins[0];
+	int value = state->multiChannelStateSequence.getChannelState(/*channelIndex*/0, stateIndex);
+	/**
+	 * 'engine->isAlternatorControlEnabled' would be false is RPM is too low
+	 */
+	if (!value || engine->enableAlternatorControl)
+		output->setValue(value);
 }
 
 void setDefaultAlternatorParameters(DECLARE_CONFIG_PARAMETER_SIGNATURE) {
@@ -138,12 +148,12 @@ void initAlternatorCtrl( DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	if (CONFIG(onOffAlternatorLogic)) {
 		enginePins.alternatorPin.initPin("Alternator control", CONFIG(pinAlternator));
 	} else {
-		startSimplePwmHard(&alternatorControl,
+		startSimplePwmExt(&alternatorControl,
 				"Alternator control",
 				&engine->executor,
 				CONFIG(pinAlternator),
 				&enginePins.alternatorPin,
-				engineConfiguration->alternatorPwmFrequency, 0.1);
+				engineConfiguration->alternatorPwmFrequency, 0.1, (pwm_gen_callback*)applyAlternatorPinState);
 	}
 	instance.Start();
 }

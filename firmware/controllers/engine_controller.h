@@ -12,7 +12,7 @@
 
 char * getPinNameByAdcChannel(const char *msg, adc_channel_e hwChannel, char *buffer);
 void initPeriodicEvents(DECLARE_ENGINE_PARAMETER_SIGNATURE);
-void initEngineContoller( DECLARE_ENGINE_PARAMETER_SUFFIX);
+void initEngineContoller(DECLARE_ENGINE_PARAMETER_SUFFIX);
 void commonInitEngineController( DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 void initDataStructures(DECLARE_ENGINE_PARAMETER_SIGNATURE);

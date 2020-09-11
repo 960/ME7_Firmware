@@ -17,7 +17,6 @@ public:
 	SensorResult convert(float inputValue) const override;
 
 
-
 private:
 	float m_supplyVoltage = 5.0f;
 	float m_pullupResistor = 1000.0f;

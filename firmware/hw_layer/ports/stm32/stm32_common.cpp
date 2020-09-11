@@ -168,7 +168,7 @@ public:
 
 		// If we have too few usable bits, we run out of resolution, so don't allow that either.
 		// 200 counts = 0.5% resolution
-		if (m_period < 100) {
+		if (m_period < 200) {
 
 			return;
 		}
@@ -217,7 +217,7 @@ private:
 static expected<stm32_pwm_config> getConfigForPin(brain_pin_e pin) {
 	switch (pin) {
 #if STM32_PWM_USE_TIM1
-	case GPIOA_8: return stm32_pwm_config{&PWMD1, 0, 1};
+	//case GPIOA_8: return stm32_pwm_config{&PWMD1, 0, 1};
 	case GPIOA_9: return stm32_pwm_config{&PWMD1, 1, 1};
 	case GPIOA_10: return stm32_pwm_config{&PWMD1, 2, 1};
 	case GPIOA_11: return stm32_pwm_config{&PWMD1, 3, 1};

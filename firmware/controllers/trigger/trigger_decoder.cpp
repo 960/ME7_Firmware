@@ -36,7 +36,7 @@
 #include "trigger_central.h"
 #include "trigger_simulator.h"
 #include "perf_trace.h"
-
+#include "tooth_logger.h"
 TriggerState::TriggerState() {
 	resetTriggerState();
 }
@@ -55,9 +55,7 @@ void TriggerState::setShaftSynchronized(bool value) {
 
 void TriggerState::resetTriggerState() {
 	setShaftSynchronized(false);
-	toothed_previous_time = 0;
-
-	memset(toothDurations, 0, sizeof(toothDurations));
+	gapTracker.reset();
 
 	totalRevolutionCounter = 0;
 	totalTriggerErrorCounter = 0;
@@ -67,7 +65,7 @@ void TriggerState::resetTriggerState() {
 	lastDecodingErrorTime = US2NT(-10000000LL);
 	someSortOfTriggerError = false;
 
-	memset(toothDurations, 0, sizeof(toothDurations));
+
 	curSignal = SHAFT_PRIMARY_FALLING;
 	prevSignal = SHAFT_PRIMARY_FALLING;
 	startOfCycleNt = 0;
@@ -76,7 +74,7 @@ void TriggerState::resetTriggerState() {
 	memset(expectedTotalTime, 0, sizeof(expectedTotalTime));
 
 	totalEventCountBase = 0;
-	isFirstEvent = true;
+
 }
 
 void TriggerState::setTriggerErrorState() {
@@ -272,8 +270,6 @@ bool TriggerState::isValidIndex(const TriggerWaveform *triggerShape) const {
 static trigger_wheel_e eventIndex[6] = { T_PRIMARY, T_PRIMARY, T_SECONDARY, T_SECONDARY, T_CHANNEL_3, T_CHANNEL_3 };
 static trigger_value_e eventType[6] = { TV_FALL, TV_RISE, TV_FALL, TV_RISE, TV_FALL, TV_RISE };
 
-#define getCurrentGapDuration(nowNt) \
-	(isFirstEvent ? 0 : (nowNt) - toothed_previous_time)
 
 #define PRINT_INC_INDEX {}
 
@@ -391,15 +387,6 @@ void TriggerState::decodeTriggerEvent(
 	currentCycle.eventCount[triggerWheel]++;
 
 
-	efitick_t currentDurationLong = getCurrentGapDuration(nowNt);
-
-	/**
-	 * For performance reasons, we want to work with 32 bit values. If there has been more then
-	 * 10 seconds since previous trigger event we do not really care.
-	 */
-	toothDurations[0] =
-			currentDurationLong > 10 * NT_PER_SECOND ? 10 * NT_PER_SECOND : currentDurationLong;
-
 	bool isPrimary = triggerWheel == T_PRIMARY;
 
 	if (needToSkipFall(type) || needToSkipRise(type) || (!considerEventForGap())) {
@@ -409,48 +396,34 @@ void TriggerState::decodeTriggerEvent(
 		nextTriggerEvent();
 	} else {
 
-		isFirstEvent = false;
-// todo: skip a number of signal from the beginning
+
 		bool isSynchronizationPoint;
 		bool wasSynchronized = shaft_is_synchronized;
 
 		if (triggerShape->isSynchronizationNeeded) {
 
-			currentGap = 1.0 * toothDurations[0] / toothDurations[1];
 
 			if (triggerConfiguration->getDebugMode() == DBG_TRIGGER_COUNTERS) {
 #if EFI_TUNER_STUDIO
-				tsOutputChannels.debugFloatField6 = currentGap;
+				tsOutputChannels.debugFloatField6 = gapTracker.getLastGap();
 				tsOutputChannels.debugIntField3 = currentCycle.current_index;
 #endif /* EFI_TUNER_STUDIO */
 			}
 
-			bool isSync = true;
-			for (int i = 0;i<GAP_TRACKING_LENGTH;i++) {
-				bool isGapCondition = cisnan(triggerShape->syncronizationRatioFrom[i]) || (toothDurations[i] > toothDurations[i + 1] * triggerShape->syncronizationRatioFrom[i]
-					&& toothDurations[i] < toothDurations[i + 1] * triggerShape->syncronizationRatioTo[i]);
+			gapTracker.trackTooth(nowNt);
 
-				isSync &= isGapCondition;
+			isSynchronizationPoint = gapTracker.isMatch(triggerShape->syncronizationRatioFrom, triggerShape->syncronizationRatioTo);
 
-			}
-			isSynchronizationPoint = isSync;
 			if (isSynchronizationPoint) {
 				enginePins.debugTriggerSync.setValue(1);
+
+
 			}
 
-
-			/**
-			 * todo: technically we can afford detailed logging even with 60/2 as long as low RPM
-			 * todo: figure out exact threshold as a function of RPM and tooth count?
-			 * Open question what is 'triggerShape->getSize()' for 60/2 is it 58 or 58*2 or 58*4?
-			 */
-			//bool silentTriggerError = triggerShape->getSize() > 40 && triggerConfiguration->isSilentTriggerError();
-
-#if EFI_UNIT_TEST
-			actualSynchGap = 1.0 * toothDurations[0] / toothDurations[1];
-#endif /* EFI_UNIT_TEST */
+			bool silentTriggerError = triggerShape->getSize() > 40 && triggerConfiguration->isSilentTriggerError();
 
 			enginePins.debugTriggerSync.setValue(0);
+
 
 		} else {
 			/**
@@ -511,11 +484,6 @@ void TriggerState::decodeTriggerEvent(
 			;
 		}
 
-		for (int i = GAP_TRACKING_LENGTH; i > 0; i--) {
-			toothDurations[i] = toothDurations[i - 1];
-		}
-
-		toothed_previous_time = nowNt;
 	}
 	if (!isValidIndex(triggerShape) && triggerStateListener) {
 		triggerStateListener->OnTriggerInvalidIndex(currentCycle.current_index);

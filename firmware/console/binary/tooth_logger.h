@@ -25,7 +25,7 @@ void DisableToothLogger();
 
 // A new tooth has arrived! Log to the buffer if enabled.
 void LogTriggerTooth(trigger_event_e tooth, efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX);
-
+void LogCamTooth(trigger_value_e value DECLARE_ENGINE_PARAMETER_SUFFIX);
 void LogTriggerTopDeadCenter(efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX);
 
 struct ToothLoggerBuffer
@@ -36,3 +36,4 @@ struct ToothLoggerBuffer
 
 // Get a reference to the buffer
 ToothLoggerBuffer GetToothLoggerBuffer();
+ToothLoggerBuffer GetCompositeLoggerBuffer();

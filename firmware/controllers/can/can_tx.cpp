@@ -18,8 +18,7 @@
 
 EXTERN_ENGINE;
 
-CanWrite::CanWrite()
-	: PeriodicController("CAN TX", NORMALPRIO, 50)
+CanWrite::CanWrite() : PeriodicController("CAN TX", NORMALPRIO, 50)
 {
 }
 
@@ -34,7 +33,9 @@ void CanWrite::PeriodicTask(efitime_t nowNt) {
 		canDashboardFiat();
 		break;
 	case CAN_BUS_NBC_VAG:
-		canDashboardVAG();
+		can_VAG_10Ms();
+		can_VAG_20Ms();
+		can_VAG_50Ms();
 		break;
 	case CAN_BUS_MAZDA_RX8:
 		canMazdaRX8();

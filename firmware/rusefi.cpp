@@ -145,7 +145,8 @@ void runRusEfi(void) {
 	initPinRepository();
 
 #if EFI_INTERNAL_FLASH
-	chThdSleepMilliseconds(10);
+
+	chThdSleepMilliseconds(20);
 	readConfiguration();
 #endif /* EFI_INTERNAL_FLASH */
 

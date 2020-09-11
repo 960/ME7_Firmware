@@ -19,9 +19,9 @@
 #include "speed_density.h"
 #include "advance_map.h"
 #include "os_util.h"
-
+#include "pin_repository.h"
 #include "auxiliaries.h"
-
+#include "tooth_logger.h"
 
 #include "perf_trace.h"
 #include "sensor.h"
@@ -122,7 +122,7 @@ static void cylinderCleanupControl(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 	bool newValue;
 	if (engineConfiguration->isCylinderCleanupEnabled) {
-		newValue = !engine->rpmCalculator.isRunning(PASS_ENGINE_PARAMETER_SIGNATURE) && Sensor::get(SensorType::DriverThrottleIntent).value_or(0) > CLEANUP_MODE_TPS;
+		newValue = !engine->rpmCalculator.isRunning() && Sensor::get(SensorType::DriverThrottleIntent).value_or(0) > CLEANUP_MODE_TPS;
 	} else {
 		newValue = false;
 	}
@@ -134,8 +134,8 @@ static void cylinderCleanupControl(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
 void Engine::periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 	ScopePerf perf(PE::EnginePeriodicSlowCallback);
-	updateSlowSensors(PASS_ENGINE_PARAMETER_SIGNATURE);
 	
+	updateSlowSensors(PASS_ENGINE_PARAMETER_SIGNATURE);
 
 #if EFI_AUXILIARIES
 	initAuxiliaries(PASS_ENGINE_PARAMETER_SIGNATURE);
@@ -150,7 +150,7 @@ void Engine::periodicSlowCallback(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 #if (BOARD_TLE8888_COUNT > 0)
 	static efitick_t tle8888CrankingResetTime = 0;
 
-	if (CONFIG(useTLE8888_cranking_hack) && ENGINE(rpmCalculator).isCranking(PASS_ENGINE_PARAMETER_SIGNATURE)) {
+	if (CONFIG(useTLE8888_cranking_hack) && ENGINE(rpmCalculator).isCranking()) {
 		efitick_t nowNt = getTimeNowNt();
 		if (nowNt - tle8888CrankingResetTime > MS2NT(300)) {
 			requestTLE8888initialization();
@@ -173,6 +173,20 @@ extern float vBattForTle8888;
  * We are executing these heavy (logarithm) methods from outside the trigger callbacks for performance reasons.
  * See also periodicFastCallback
  */
+
+void Engine::stopHardCodedPins(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
+	brain_pin_markUnused(etbIo[0].directionPin1);
+	brain_pin_markUnused(etbIo[0].directionPin2);
+	brain_pin_markUnused(etbIo[0].controlPin1);
+	brain_pin_markUnused(etbIo[0].disablePin);
+
+	brain_pin_markUnused(etbIo[1].directionPin1);
+	brain_pin_markUnused(etbIo[1].directionPin2);
+	brain_pin_markUnused(etbIo[1].controlPin1);
+	brain_pin_markUnused(etbIo[1].disablePin);
+
+}
+
 
 void Engine::setHardCodedPins(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
 
@@ -271,7 +285,7 @@ void Engine::OnTriggerStateProperState(efitick_t nowNt) {
 
 	triggerCentral.triggerState.runtimeStatistics(&triggerCentral.triggerFormDetails, nowNt PASS_ENGINE_PARAMETER_SUFFIX);
 
-	rpmCalculator.setSpinningUp(nowNt PASS_ENGINE_PARAMETER_SUFFIX);
+	rpmCalculator.setSpinningUp(nowNt);
 }
 
 void Engine::OnTriggerSynchronizationLost() {
@@ -279,14 +293,14 @@ void Engine::OnTriggerSynchronizationLost() {
 	EXPAND_Engine;
 
 	// Needed for early instant-RPM detection
-	engine->rpmCalculator.setStopSpinning(PASS_ENGINE_PARAMETER_SIGNATURE);
+	engine->rpmCalculator.setStopSpinning();
 }
 
 void Engine::OnTriggerInvalidIndex(int currentIndex) {
 	Engine *engine = this;
 	EXPAND_Engine;
 	// let's not show a warning if we are just starting to spin
-	if (GET_RPM_VALUE != 0) {
+	if (GET_RPM() != 0) {
 		warning(CUSTOM_SYNC_ERROR, "sync error: index #%d above total size %d", currentIndex, triggerCentral.triggerShape.getSize());
 		triggerCentral.triggerState.setTriggerErrorState();
 	}
@@ -303,13 +317,16 @@ void Engine::OnTriggerSyncronization(bool wasSynchronized) {
 	 	 * We can check if things are fine by comparing the number of events in a cycle with the expected number of event.
 	 	 */
 		bool isDecodingError = triggerCentral.triggerState.validateEventCounters(&triggerCentral.triggerShape);
-		enginePins.triggerErrorPin.setValue(isDecodingError);
 
+		enginePins.triggerDecoderErrorPin.setValue(isDecodingError);
 
 		// 'triggerStateListener is not null' means we are running a real engine and now just preparing trigger shape
 		// that's a bit of a hack, a sweet OOP solution would be a real callback or at least 'needDecodingErrorLogic' method?
+
+		efitick_t nowSync = getTimeNowNt();
 		if (isDecodingError) {
 			OnTriggerStateDecodingError();
+
 		}
 
 		engine->triggerErrorDetection.add(isDecodingError);
@@ -367,7 +384,7 @@ bool Engine::isInShutdownMode() const {
 }
 
 injection_mode_e Engine::getCurrentInjectionMode(DECLARE_ENGINE_PARAMETER_SIGNATURE) {
-	return rpmCalculator.isCranking(PASS_ENGINE_PARAMETER_SIGNATURE) ? CONFIG(crankingInjectionMode) : CONFIG(injectionMode);
+	return rpmCalculator.isCranking() ? CONFIG(crankingInjectionMode) : CONFIG(injectionMode);
 }
 
 // see also in TunerStudio project '[doesTriggerImplyOperationMode] tag

@@ -30,6 +30,9 @@
 struct pid_s;
 class Logging;
 
+/**
+ * default basic implementation also known as PidParallelController
+ */
 class Pid : public pid_state_s {
 
 public:

@@ -11,6 +11,7 @@
 #include "trigger_structure.h"
 #include "engine_configuration.h"
 #include "trigger_state_generated.h"
+#include "gap_tracker.h"
 
 class TriggerState;
 
@@ -26,8 +27,9 @@ struct TriggerStateListener {
 class TriggerConfiguration {
 public:
 	virtual bool isUseOnlyRisingEdgeForTrigger() const = 0;
-	//virtual bool isSilentTriggerError() const = 0;
-	//virtual bool isVerboseTriggerSynchDetails() const = 0;
+	virtual bool isSilentTriggerError() const = 0;
+	virtual bool isVerboseTriggerSynchDetails() const = 0;
+	virtual const char * getPrintPrefix() const = 0;
 	virtual debug_mode_e getDebugMode() const = 0;
 	virtual trigger_type_e getType() const = 0;
 };
@@ -109,9 +111,7 @@ public:
 	/**
 	 * current duration at index zero and previous durations are following
 	 */
-	uint32_t toothDurations[GAP_TRACKING_LENGTH + 1];
-
-	efitick_t toothed_previous_time;
+	GapTracker<GAP_TRACKING_LENGTH> gapTracker;
 
 	current_cycle_state_s currentCycle;
 

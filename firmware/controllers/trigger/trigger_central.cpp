@@ -232,9 +232,11 @@ uint32_t triggerMaxDuration = 0;
 
 void hwHandleShaftSignal(trigger_event_e signal, efitick_t timestamp) {
 	ScopePerf perf(PE::HandleShaftSignal);
-	
-		LogTriggerTooth(signal, timestamp PASS_ENGINE_PARAMETER_SUFFIX);
-	
+	if (signal == SHAFT_PRIMARY_RISING) {
+	LogCrankTooth(TV_RISE PASS_ENGINE_PARAMETER_SUFFIX);
+	} else {
+	LogCrankTooth(TV_FALL PASS_ENGINE_PARAMETER_SUFFIX);
+	}
 
 	// for effective noise filtering, we need both signal edges, 
 	// so we pass them to handleShaftSignal() and defer this test

@@ -75,10 +75,7 @@ static inline void addToothLogEntry(uint32_t lasttoothtime, bool whichtooth, boo
 		toothHistory[NextIdx].timestamp = SWAP_UINT32(lasttoothtime);
 		valueLogged = true;
 	}
-
-	else if (engine->compositeLogEnabled == true)
-	{
-
+	else if (engine->compositeLogEnabled == true) {
 	buffer[NextIdx].timestamp = SWAP_UINT32(lasttoothtime);
 	if (whichtooth == trigger1) {
 	buffer[NextIdx].priLevel = whichtooth;
@@ -106,38 +103,32 @@ static inline void addToothLogEntry(uint32_t lasttoothtime, bool whichtooth, boo
 }
 
 
-void LogTriggerTooth(trigger_event_e tooth, efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
+void LogCrankTooth(trigger_value_e level DECLARE_ENGINE_PARAMETER_SUFFIX) {
 	// bail if we aren't enabled
 	if (!ToothLoggerEnabled) {
 		return;
 	}
-	switch (tooth) {
-	case SHAFT_PRIMARY_FALLING:
+	switch (level) {
+	case TV_FALL:
 		trigger1 = false;
 		edge = false;
-		validCrank = true;
 		break;
-	case SHAFT_PRIMARY_RISING:
+	case TV_RISE:
 		trigger1 = true;
 		edge = false;
-		validCrank = true;
 		break;
 	default:
 		break;
 	}
-
 	if (engine->toothLogEnabled) {
 			auto gap = getTimeNowUs() - lastcranktime;
 			addToothLogEntry(gap, trigger1, false);
 			lastcranktime = getTimeNowUs();
 	}
-
 	if (engine->compositeLogEnabled) {
 		lastEdgeTimestamp = getTimeNowUs();
 		addToothLogEntry(lastEdgeTimestamp, trigger1, edge);
-
 	}
-
 }
 
 void LogCamTooth(trigger_value_e value DECLARE_ENGINE_PARAMETER_SUFFIX) {
@@ -164,16 +155,6 @@ void LogCamTooth(trigger_value_e value DECLARE_ENGINE_PARAMETER_SUFFIX) {
 		lastEdgeTimestamp = getTimeNowUs();
 		addToothLogEntry(lastEdgeTimestamp, trigger2, edge);
 		}
-
-}
-
-
-
-void LogTriggerTopDeadCenter(efitick_t timestamp DECLARE_ENGINE_PARAMETER_SUFFIX) {
-	// bail if we aren't enabled
-	if (!ToothLoggerEnabled) {
-		return;
-	}
 
 }
 
